@@ -458,33 +458,45 @@ app.post('/api/domain-queries', async (req, res) => {
 // Domain Availability Check
 // Domain Availability Check using only WHOIS
 
+const axios = require('axios');
+
 app.post('/api/check-domain-availability', logSession, checkSession, async (req, res) => {
-  const { domain } = req.body;
+    const { domain } = req.body;
 
-  if (!domain) {
-      return res.status(400).json({ success: false, message: 'Domain name is required.' });
-  }
+    if (!domain) {
+        return res.status(400).json({ success: false, message: 'Domain name is required.' });
+    }
 
-  whois.lookup(domain, (err, data) => {
-      if (err) {
-          console.error('WHOIS lookup error:', err);
-          return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
-      }
+    try {
+        const response = await axios.get(`https://www.whoisxmlapi.com/whoisserver/WhoisService`, {
+            params: {
+                apiKey: 'at_E8AuS5C4xMjV0w4DDPL4e0Oy9qbYv',  // Replace with your WhoisXML API key
+                domainName: domain,
+                outputFormat: 'json',
+            },
+        });
 
-      // Check WHOIS response for common "not found" indicators
-      if (data.includes("No match for domain") || data.includes("Domain not found")) {
-          return res.json({
-              success: true,
-              message: `The domain ${domain} is available!`,
-          });
-      }
+        const whoisData = response.data.WhoisRecord;
 
-      return res.json({
-          success: false,
-          message: `The domain ${domain} is already taken.`,
-      });
-  });
+        // Check if domain is available
+        if (whoisData.domainAvailability === "AVAILABLE") {
+            return res.json({
+                success: true,
+                message: `The domain ${domain} is available!`,
+            });
+        }
+
+        return res.json({
+            success: false,
+            message: `The domain ${domain} is already taken.`,
+        });
+
+    } catch (error) {
+        console.error('WHOIS API Error:', error);
+        return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
+    }
 });
+
 
 // Start the server
 app.listen(port, () => {
