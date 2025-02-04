@@ -468,14 +468,14 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
   try {
       let whoisData;
       try {
-          // Attempt WHOIS lookup with 'whois2' first
-          whoisData = await whois2(domain);  // This is your primary WHOIS provider
+          // Attempt WHOIS lookup with 'whois2' first (if 'whois2' supports timeout configuration)
+          whoisData = await whois2(domain, { timeout: 10000 });  // 10-second timeout for 'whois2'
       } catch (error) {
           console.log('Error with whois2, attempting fallback WHOIS provider...');
           
-          // Fallback to the 'whois' library if 'whois2' fails
+          // Fallback to the 'whois' library with a timeout
           whoisData = await new Promise((resolve, reject) => {
-              whois.lookup(domain, (err, data) => {
+              whois.lookup(domain, { timeout: 10000 }, (err, data) => {  // 10-second timeout for 'whois'
                   if (err) return reject(err);
                   resolve(data);
               });
@@ -502,9 +502,8 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
   }
 });
 
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
-
