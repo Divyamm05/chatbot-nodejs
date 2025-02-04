@@ -207,35 +207,42 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
 
   try {
     // Check if OTP exists in Firestore and is valid
-    const db = admin.firestore();
-    const otpDoc = await db.collection('otp_records').doc(email).get();
+    const otpRef = db.collection('otp_records').doc(email);
+    const otpDoc = await otpRef.get();
 
     if (!otpDoc.exists) {
       return res.status(404).json({ success: false, message: 'No OTP found for this email.' });
     }
 
     const otpData = otpDoc.data();
-    if (otpData.otp !== otp || new Date(otpData.expires_at.toDate()) < new Date()) {
+    if (otpData.otp !== otp || otpData.expires_at.toDate() < new Date()) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
     }
-    
 
     // OTP is valid, now verify email via Firebase Authentication
-    await auth.getUserByEmail(email);
-    req.session.verified = true;
-    req.session.userState = 'awaiting_domain_name';
+    try {
+      await auth.getUserByEmail(email); // Verifying email with Firebase Authentication
+      req.session.verified = true;
+      req.session.userState = 'awaiting_domain_name';
 
-    res.json({
-      success: true,
-      message: 'OTP verified successfully. Please choose one of the following options:',
-      options: [
-        { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
-        { text: 'More Options', action: 'askMoreOptions' },
-      ],
-    });
+      res.json({
+        success: true,
+        message: 'OTP verified successfully. Please choose one of the following options:',
+        options: [
+          { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
+          { text: 'More Options', action: 'askMoreOptions' },
+        ],
+      });
+    } catch (firebaseError) {
+      console.error('Error during Firebase Auth verification:', firebaseError);
+      if (firebaseError.code === 'auth/user-not-found') {
+        return res.status(404).json({ success: false, message: 'No user found with this email address.' });
+      }
+      res.status(500).json({ success: false, message: 'Internal server error during Firebase Auth verification.' });
+    }
   } catch (error) {
     console.error('Error during OTP verification:', error);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    res.status(500).json({ success: false, message: 'Internal server error during OTP verification.' });
   }
 });
 
