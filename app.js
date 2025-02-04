@@ -466,38 +466,17 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
   }
 
   try {
-      let whoisData;
-      try {
-          // Attempt WHOIS lookup with 'whois2' first (if 'whois2' supports timeout configuration)
-          whoisData = await whois2(domain, { timeout: 10000 });  // 10-second timeout for 'whois2'
-      } catch (error) {
-          console.log('Error with whois2, attempting fallback WHOIS provider...');
-          
-          // Fallback to the 'whois' library with a timeout
-          whoisData = await new Promise((resolve, reject) => {
-              whois.lookup(domain, { timeout: 10000 }, (err, data) => {  // 10-second timeout for 'whois'
-                  if (err) return reject(err);
-                  resolve(data);
-              });
-          });
-      }
+      const whoisData = await whois2(domain);  // Returns WHOIS data as a JSON object
 
-      console.log('WHOIS Data:', whoisData);  // Log the WHOIS data to inspect its structure
-
-      // Check if WHOIS data contains information indicating the domain is taken
-      if (
-          whoisData.includes("Registrar") || 
-          whoisData.includes("Creation Date") ||
-          whoisData.includes("Domain Status") ||
-          whoisData.includes("No match for domain")
-      ) {
+      // If WHOIS response contains 'registrar' or 'creationDate', it's taken
+      if (whoisData.registrar || whoisData.creationDate) {
           return res.json({
               success: false,
               message: `The domain ${domain} is already taken.`,
           });
       }
 
-      // If no significant WHOIS data found, assume domain is available
+      // If no significant WHOIS data, assume available
       return res.json({
           success: true,
           message: `The domain ${domain} is available!`,
@@ -508,7 +487,6 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
       return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
