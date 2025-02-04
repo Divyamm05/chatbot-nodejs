@@ -28,6 +28,9 @@ app.use(session({
   cookie: { secure: false },  // Set to `true` in production with HTTPS
 }));
 
+const COHERE_API_KEY = process.env.COHERE_API_KEY;
+const COHERE_API_URL = 'https://api.cohere.ai/v1/generate';
+
 const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString('utf-8'));
 
 // Firebase Admin setup
