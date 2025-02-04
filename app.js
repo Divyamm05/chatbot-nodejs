@@ -458,8 +458,6 @@ app.post('/api/domain-queries', async (req, res) => {
 // Domain Availability Check
 // Domain Availability Check using only WHOIS
 
-const axios = require('axios');
-
 app.post('/api/check-domain-availability', logSession, checkSession, async (req, res) => {
     const { domain } = req.body;
 
@@ -470,7 +468,7 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
     try {
         const response = await axios.get(`https://www.whoisxmlapi.com/whoisserver/WhoisService`, {
             params: {
-                apiKey: 'at_E8AuS5C4xMjV0w4DDPL4e0Oy9qbYv',  // Replace with your WhoisXML API key
+                apiKey: 'process.env.WHOIS_XML_API_KEY',  // Replace with your WhoisXML API key
                 domainName: domain,
                 outputFormat: 'json',
             },
