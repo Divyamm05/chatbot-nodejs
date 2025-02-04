@@ -29,10 +29,10 @@ app.use(session({
 
 // Firebase Admin setup
 admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
+  credential: admin.credential.cert(serviceAccount)
 });
 
-const auth = admin.auth();
+const db = admin.firestore();
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
