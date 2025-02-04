@@ -466,7 +466,21 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
   }
 
   try {
-      const whoisData = await whois2(domain);  // Returns WHOIS data as a JSON object
+      let whoisData;
+      try {
+          // Attempt WHOIS lookup with 'whois2' first
+          whoisData = await whois2(domain);  // This is your primary WHOIS provider
+      } catch (error) {
+          console.log('Error with whois2, attempting fallback WHOIS provider...');
+          
+          // Fallback to the 'whois' library if 'whois2' fails
+          whoisData = await new Promise((resolve, reject) => {
+              whois.lookup(domain, (err, data) => {
+                  if (err) return reject(err);
+                  resolve(data);
+              });
+          });
+      }
 
       // If WHOIS response contains 'registrar' or 'creationDate', it's taken
       if (whoisData.registrar || whoisData.creationDate) {
