@@ -148,36 +148,55 @@ if (loadingContainer) {
   }
   
 
-  // Verify OTP and proceed to domain section
-  async function verifyOTP() {
-    const email = document.getElementById('user-email').value.trim();
-    const otp = document.getElementById('otp-code').value.trim();
+  app.post('/api/verify-otp', logSession, async (req, res) => {
+    const { otp } = req.body;
+    const email = req.session.email;
 
-    if (!otp) {
-      updateChatLog('Please enter the OTP to proceed.', 'bot');
-      return;
+    if (!email || !otp) {
+        return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
+    }
+
+    // If the user is a tester, skip OTP verification
+    if (email === 'tester@abc.com') {
+        req.session.verified = true;
+        req.session.userState = 'awaiting_domain_name';
+        return res.json({
+            success: true,
+            message: 'Logged in as tester, skipping OTP verification.',
+            options: [
+                { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
+                { text: 'More Options', action: 'askMoreOptions' },
+            ],
+        });
     }
 
     try {
-      const response = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
-      });
+        const [rows] = await db.query(
+            'SELECT * FROM otp_records WHERE email = ? AND otp = ? AND expires_at > NOW()',
+            [email, otp]
+        );
 
-      const data = await response.json();
+        if (rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+        }
 
-      if (data.success) {
-        updateChatLog(data.message || 'OTP verified successfully!', 'bot');
-        document.getElementById('otp-section').style.display = 'none';
-        document.getElementById('domain-options').style.display = 'flex'; // Show domain options after OTP verification
-      } else {
-        updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
-      }
+        req.session.verified = true; // Set verification flag
+        req.session.userState = 'awaiting_domain_name';
+
+        res.json({
+            success: true,
+            message: 'OTP verified successfully. Please choose one of the following options:',
+            options: [
+                { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
+                { text: 'More Options', action: 'askMoreOptions' },
+            ],
+        });
     } catch (error) {
-      updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
+        console.error('Error during OTP verification:', error);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
-  }
+});
+
 
   // Show domain section for domain input
   function showDomainSection() {
