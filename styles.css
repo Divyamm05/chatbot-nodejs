@@ -1,0 +1,1038 @@
+/* General Body Styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #ecf0f1;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Chatbox Styles */
+#chatbox {
+  width: 350px;
+  height: 80vh;
+  max-height: 80vh;
+  background-color: #34495e;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  bottom: 40px;
+  right: 20px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  transform: translateY(100%);
+  opacity: 0;
+  overflow: hidden;
+  justify-content: flex-start; /* Align content from the top */
+}
+
+#chatbox.visible {
+  transform: translateY(-10%);
+  opacity: 1;
+}
+
+#chatbox.minimized {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.header {
+  font-size: 18px;
+  font-weight: 600;
+  background-color: #16a085;
+  color: #ffffff;
+  text-align: center;
+  padding: 12px;
+  border-bottom: 1px solid #1abc9c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px 20px 0 0;
+  position: relative; /* Ensures proper positioning */
+}
+
+
+/* Close button style */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  border: none;
+  background: none;
+}
+
+.close-btn:hover {
+  color: #ffdddd;
+}
+
+.chat-log {
+  flex-grow: 7;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #2c3e50;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  opacity: 1;
+  visibility: visible;
+  animation: fadeIn 0.5s forwards;
+  max-height: 70%;
+  border-bottom: 2px solid #1abc9c;
+  height: 70%;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.message {
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  max-width: 80%;
+  word-wrap: break-word;
+  border-radius: 15px;
+  max-width: 90%; 
+}
+
+.bot-message {
+  background-color: #16a085;
+  color: #ffffff;
+  align-self: flex-start;
+  margin-left: 20px;
+}
+
+.user-message {
+  background-color: #34495e;
+  color: #f39c12;
+  align-self: flex-end;
+  margin-right: 20px;
+}
+
+.chat-input {
+  padding: 15px;
+  background-color: #34495e;
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 20px 20px;
+  box-sizing: border-box;
+  bottom: 0%;
+}
+
+
+.chat-input.hidden {
+  display: none;
+}
+
+.chat-input input {
+  flex-grow: 1;
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.chat-input input::placeholder {
+  color: #95a5a6;
+}
+
+.chat-input input:focus {
+  border-color: #1abc9c;
+}
+
+.chat-input button {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chat-input button:hover {
+  background-color: #16a085;
+}
+
+.chat-input button:nth-child(3) {
+  display: block;
+  width: 100%;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chat-input button:nth-child(3):hover {
+  background-color: #bd1401; /* Change background on hover */
+}
+
+/* Back Button Styling (Full width) */
+#back-to-domain-section {
+  width: 100%; /* Full width */
+  margin-top: 10px;
+  padding: 12px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#back-to-domain-section:hover {
+  background-color: #bd1401;
+}
+
+
+/* Add to your existing CSS */
+.timestamp {
+  font-size: 0.8em;
+  color: #95a5a6;
+  text-align: right;
+  margin-top: 5px;
+}
+
+.message-content {
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+/* OTP Section Layout */
+#otp-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 30%;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+}
+
+#otp-section input {
+  width: calc(100% - 160px);
+  margin-right: 10px;
+  box-sizing: border-box;
+}
+
+#otp-section button {
+  width: auto;
+  padding: 8px 18px;
+  margin-left: 10px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+#otp-section button:hover {
+  background-color: #1abc9c;
+}
+
+#otp-section button:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+#email-section {
+  display: flex;
+  align-items: center;
+  height: 30%;
+  gap: 10px;
+}
+
+#email-section input {
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  flex-grow: 1;
+}
+
+#email-section button {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+#email-section button:hover {
+  background-color: #1abc9c;
+}
+
+/* Domain Options and Button Container */
+#domain-options {
+  display: none;
+  flex-direction: column;
+  padding: 15px 20px;
+  gap: 10px;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  height: 30%;
+  box-sizing: border-box;
+}
+
+#domain-options.visible {
+  display: flex;
+}
+
+#domain-options .button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+#domain-options .button-container button {
+  padding: 8px 16px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+#domain-options .button-container button:hover {
+  background-color: #1abc9c;
+}
+
+#domain-options-next {
+  display: none;
+  flex-direction: column;
+  padding: 15px 20px;
+  gap: 6px;
+  max-width: 350px;
+  max-height: 120px;
+  overflow: hidden;
+}
+
+#domain-options-next.visible {
+  display: flex;
+}
+
+#domain-options-next button {
+  padding: 6px 12px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  gap: 6px;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  max-height: 120px;
+}
+
+#domain-options-next button:hover {
+  background-color: #16a085;
+}
+
+/* Ensure buttons are wrapped directly by #domain-options-next and not any other container */
+#domain-options-next .button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* More Options and Button Container */
+#more-options {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  position: absolute;
+  top: 80.5%;
+  width: 100%;
+  box-sizing: border-box;
+  height: 20%;
+  overflow-y: auto;
+}
+
+#more-options.visible {
+  display: flex;
+  height: auto;
+}
+
+#more-options-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+#more-options-buttons button {
+  padding: 8px 16px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: calc(50% - 10px);
+}
+
+#more-options-buttons button:hover {
+  background-color: #16a085;
+}
+
+/* When More Options is Visible */
+#more-options.visible {
+  display: flex;
+  height: auto;
+}
+
+#more-options-buttons button:nth-child(3) {
+  background-color: #16a085; /* Change background color */
+  color: #ffffff; /* Change text color */
+  border-radius: 20px; /* Adjust border radius */
+  font-size: 14px; /* Change font size */
+  font-weight: bold; /* Make the font bold */
+  width: 100%; /* Make the button span the full width */
+  padding: 10px 0; /* Adjust padding */
+  cursor: pointer; /* Make the cursor pointer */
+  transition: background-color 0.3s ease;
+}
+
+#more-options-buttons button:nth-child(3):hover {
+  background-color: #bd1401; /* Change background on hover */
+}
+
+/* Domain Query Section */
+#domain-query-section {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center;
+  justify-content: flex-start;
+  height: auto; /* Adjust to content height */
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  box-sizing: border-box;
+  padding: 20px; /* Add some space around */
+}
+
+/* Wrapper for Input & Submit Button */
+.domain-query-wrapper {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px; /* Adds space between input and back button */
+}
+
+/* Input Field Styling */
+.domain-query-wrapper input {
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  flex-grow: 1;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.domain-query-wrapper input::placeholder {
+  color: #95a5a6;
+}
+
+.domain-query-wrapper input:focus {
+  border-color: #f1c40f;
+}
+
+/* Submit Button Styling */
+.domain-query-wrapper button {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  height: 40px;
+  transition: background-color 0.3s ease;
+}
+
+/* Button Hover effect */
+.domain-query-wrapper button:hover {
+  background-color: #16a085;
+}
+
+/* Disabled Button */
+.domain-query-wrapper button:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+/* Back Button Styling (Full width) */
+#back-to-domain-section {
+  width: 100%; /* Make sure it takes full width */
+  padding: 12px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px; /* Space from input section */
+}
+
+#back-to-domain-section:hover {
+  background-color: #bd1401;
+}
+
+
+#domain-query-wrapper {
+  display: flex;
+  width: 100%;
+  padding: 2px;
+  height: 35px;
+  gap: 8px;
+  justify-content: center;
+}
+
+#domain-query-text {
+  flex: 1; /* Takes up most of the row */
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  height: 35px;
+  box-sizing: border-box;
+}
+
+#domain-query-text {
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  width: 100%; /* Adjust width to take up most of the space */
+  font-size: 14px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+/* Styling for Submit Button */
+#submit-domain-query {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#submit-domain-query:hover {
+  background-color: #16a085;
+}
+
+/* Full-width Back Button */
+#back-to-domain-section {
+  width: 100%; /* Make the back button span the full width */
+  padding: 12px 18px;
+  background-color: #1abc9c;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#back-to-domain-section:hover {
+  background-color: #bd1401;
+}
+
+/* Full-width button inside domain-query-section */
+#domain-query-section .full-width-button {
+  display: block;
+  width: 100%; /* Makes the button span the full width */
+  margin-top: 10px; /* Space above the button */
+  background-color: #f1c40f; /* Button background color */
+  color: #ffffff; /* Text color */
+  border-radius: 5px; /* Rounded corners */
+  font-size: 14px; /* Font size */
+  font-weight: bold; /* Bold text */
+  padding: 10px 0; /* Adjust the padding */
+  cursor: pointer; /* Pointer cursor */
+  transition: background-color 0.3s ease;
+}
+
+#domain-query-section .full-width-button:hover {
+  background-color: #bd1401; /* Background color on hover */
+}
+
+
+/* Domain Section */
+#domain-section {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  width: 100%;
+  height: 30%;
+  box-sizing: border-box;
+}
+
+#domain-section input {
+  padding: 12px;
+  height: 100%;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+}
+
+/* Button Style */
+#domain-section button#submit-domain {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#domain-section button#submit-domain:hover {
+  background-color: #16a085;
+}
+
+#domain-availability-check-section {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center;
+  height: auto;
+  padding: 1px;
+  background-color: #34495e;
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#domain-check-wrapper {
+  display: flex;
+  width: 100%;
+  padding: 2px;
+  height: 35px;
+  gap: 8px;
+  justify-content: center;
+}
+
+#domain-name-availability {
+  flex: 1; /* Takes up most of the row */
+  padding: 12px;
+  border-radius: 30px;
+  margin-left : 5px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  height: 30%;
+  box-sizing: border-box;
+}
+
+#domain-availability-input {
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  width: 100%; /* Adjust width to take up most of the space */
+  font-size: 14px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+#check-domain-availability {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#check-domain-availability:hover {
+  background-color: #16a085;
+}
+
+/* Full-width Back button */
+#back-to-domain-section {
+  width: 100%; /* Make the back button span the full width */
+  padding: 12px 18px;
+  background-color: #1abc9c;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#back-to-domain-section:hover {
+  background-color: #bd1401;
+}
+
+#domain-availability-check-section .full-width-button {
+  display: block; /* This ensures the button moves to the next line */
+  width: 100%; /* Makes the button span the full width */
+  margin-top: 10px; /* Optional, for some space above the button */
+  background-color: #f1c40f; /* Change background color */
+  color: #ffffff; /* Text color */
+  border-radius: 5px; /* Border radius */
+  font-size: 14px; /* Font size */
+  font-weight: bold; /* Font weight */
+  padding: 10px 0; /* Adjust padding */
+  cursor: pointer; /* Pointer cursor */
+  transition: background-color 0.3s ease;
+}
+
+#domain-availability-check-section .full-width-button:hover {
+  background-color: #bd1401; /* Background color on hover */
+}
+
+/* Wrapper for input field and suggest button (new) */
+#domain-suggestions-wrapper {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Input field for domain name suggestions */
+#domain-name-suggestions {
+  flex: 1; /* Takes up most of the row */
+  padding: 12px;
+  border-radius: 30px;
+  margin-left: 5px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  height: 30%;
+  box-sizing: border-box;
+}
+
+/* Suggest button */
+#submit-domain {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for suggest button */
+#submit-domain:hover {
+  background-color: #16a085;
+}
+
+/* Back button below the wrapper */
+#back-to-previous-section {
+  width: 100%; /* Make the back button span the full width */
+  padding: 12px 18px;
+  background-color: #1abc9c;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for back button */
+#back-to-previous-section:hover {
+  background-color: #bd1401;
+}
+
+
+/* Assistant Logo */
+#assistant-logo {
+  position: absolute; /* Changed from fixed to absolute */
+  bottom: 10px; /* Adjust position inside the chatbox */
+  right: 10px; /* Adjust position inside the chatbox */
+  background-color: #f1c40f;
+  color: #fff;
+  border-radius: 50%;
+  padding: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  font-size: 26px;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+#assistant-logo:hover {
+  transform: scale(1.1);
+}
+
+/* Responsive Adjustments */
+
+@media (max-width: 1024px) {
+  #chatbox {
+    width: 90vw;
+    height: 65vh;
+    max-height: 65vh;
+    bottom: 10px;
+    right: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Assistant logo */
+  #assistant-logo {
+    bottom: 10px;
+    right: 10px;
+    font-size: 22px;
+    padding: 16px;
+  }
+
+  .header {
+    font-size: 16px; /* Adjust font size for smaller screens */
+    padding: 10px; /* Slightly reduce padding */
+  }
+
+  .chat-log {
+    font-size: 16px;
+    flex-grow: 1;
+    margin-bottom: 10px;
+  }
+
+  .chat-input input,
+  .chat-input button {
+    font-size: 14px;
+  }
+
+  #otp-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  #otp-section input {
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  #otp-section button {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px 18px;
+  }
+
+  .more-options {
+    margin-top: 10px;
+    border: 2px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+}
+
+/* For screens 600px and below */
+@media (max-width: 600px) {
+  #chatbox {
+    width: 90vw;
+    height: 70vh;
+    max-height: 70vh;
+    bottom: 10px;
+    right: 10px;
+    overflow-y: auto;
+  }
+
+  /* Assistant logo */
+  #assistant-logo {
+    bottom: 10px;
+    right: 10px;
+    font-size: 18px;
+    padding: 12px;
+  }
+
+  .header {
+    font-size: 12px; /* Further reduce font size */
+    padding: 6px; /* Further reduce padding */
+  }
+  .chat-log {
+    font-size: 14px;
+  }
+
+  .chat-input input,
+  .chat-input button {
+    font-size: 12px;
+  }
+
+  #otp-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  #otp-section input {
+    width: 100%;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  #otp-section button {
+    width: 100%;
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+
+  .more-options {
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    padding: 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+}
+
+/* For screens 375px (iPhone SE size and smaller) */
+@media (max-width: 375px) {
+  #chatbox {
+    width: 90vw;
+    height: 75vh;
+    max-height: 75vh;
+    bottom: 10px;
+    right: 10px;
+    overflow-y: auto;
+  }
+
+  /* Assistant logo */
+  #assistant-logo {
+    bottom: 10px;
+    right: 10px;
+    font-size: 16px;
+    padding: 10px;
+  }
+  .header {
+    font-size: 11px; /* Further reduce font size */
+    padding: 5px; /* Further reduce padding */
+  }
+
+  .chat-log {
+    font-size: 12px;
+  }
+
+  .chat-input input,
+  .chat-input button {
+    font-size: 11px;
+  }
+
+  #otp-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #otp-section input {
+    width: 100%;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  #otp-section button {
+    width: 100%;
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+
+  .more-options {
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    font-size: 11px;
+    text-align: center;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

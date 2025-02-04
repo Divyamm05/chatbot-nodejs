@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Chatbot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Assistant Icon -->
+  <div id="assistant-logo" onclick="toggleChatbox()">💬</div>
+
+  <!-- Chatbox -->
+  <div id="chatbox" class="minimized">
+    <div class="header">
+      Welcome!!
+      <span class="close-btn" onclick="closeChatbox()">×</span> <!-- Close button added -->
+    </div>
+    <div class="chat-log" id="chat-log">
+      <div class="message bot-message">Hello! Please enter your registered email address to get started.</div>
+    </div>
+
+    <!-- Email Section -->
+    <div class="chat-input" id="email-section">
+      <input type="email" id="user-email" placeholder="Enter your email" autofocus>
+      <button id="submit-email" onclick="requestOTP()">Submit</button>
+    </div>
+
+    <!-- OTP Section -->
+    <div class="chat-input" style="display:none" id="otp-section">
+      <input type="text" id="otp-code" placeholder="Enter OTP">
+      <button id="verify-otp" onclick="verifyOTP()">Verify</button>
+      <button id="resend-otp" onclick="resendOTP()">Resend</button>
+    </div>
+
+    <!-- Domain Section for Suggestions -->
+    <div class="chat-input" style="display:none" id="domain-section">
+      <div id="domain-suggestions-wrapper">
+        <input type="text" id="domain-name-suggestions" placeholder="Enter domain or keywords">
+        <button id="submit-domain" onclick="getDomainSuggestions()">Suggest</button>
+      </div>
+      <div id="loading-container">
+        <div class="loading-spinner"></div>
+      </div>      
+      <button id="back-to-previous-section" onclick="goBackToPreviousSection()">Back</button>
+    </div>
+
+    <!-- Domain Availability Section -->
+    <div class="chat-input" style="display:none" id="domain-availability-section">
+      <div id="domain-availability-check-section">
+        <div id="domain-check-wrapper">
+          <input type="text" id="domain-query-input" placeholder="Enter domain to check availability">
+          <button onclick="checkDomainAvailability()">Check</button>
+        </div>
+        <div id="loading-container" style="display:none;">
+          <div class="loading-spinner"></div>
+        </div>   
+        <button id="back-to-domain-section" onclick="goBackToDomainSection()">Back</button>
+      </div>
+    </div>
+
+    <!-- Domain Query Section -->
+    <div class="chat-input" style="display:none" id="domain-query-section">
+      <div id="domain-query-wrapper">
+        <input type="text" id="domain-query-text" placeholder="Enter domain-related query...">
+        <button onclick="submitDomainQuery()">Submit</button>
+      </div>
+      <div id="loading-container" style="display:none;">
+        <div class="loading-spinner"></div>
+      </div>   
+      <button id="back-to-domain-section" onclick="goBackToDomainSection()">Back</button>
+    </div>
+
+    <!-- Domain Options Section after OTP verification -->
+    <div id="domain-options" style="display:none;">
+      <div class="button-container">
+        <button id="get-domain-suggestions-btn" onclick="showDomainSection()" tabindex="0">Get Domain Name Suggestions</button>
+        <button id="more-options-btn" onclick="askMoreOptions()" tabindex="1">More Options</button>
+      </div>
+    </div>
+
+    <!-- Domain Suggestions Section -->
+    <div id="domain-options-next" style="display:none;">
+      <div class="button-container">
+        <button onclick="getMoreSuggestions()">More Suggestions for this Domain</button>
+        <button onclick="getNewDomainSuggestions()">Suggestions for a Different Domain</button>
+        <button onclick="askMoreOptions()">More Options</button>
+      </div>
+    </div>
+
+    <!-- More Options Section -->
+    <div id="more-options" style="display:none;">
+      <div id="more-options-buttons">
+        <button onclick="submitDomainCheck()">Domain Name Availability Check</button>
+        <button onclick="showDomainQueries()">Domain Name Related Queries</button>
+        <button onclick="closeMoreOptions()">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
