@@ -459,41 +459,57 @@ app.post('/api/domain-queries', async (req, res) => {
 // Domain Availability Check using only WHOIS
 
 app.post('/api/check-domain-availability', logSession, checkSession, async (req, res) => {
-    const { domain } = req.body;
+  const { domain } = req.body;
 
-    if (!domain) {
-        return res.status(400).json({ success: false, message: 'Domain name is required.' });
-    }
+  if (!domain) {
+      return res.status(400).json({ success: false, message: 'Domain name is required.' });
+  }
 
-    try {
-        const response = await axios.get(`https://www.whoisxmlapi.com/whoisserver/WhoisService`, {
-            params: {
-                apiKey: process.env.WHOIS_XML_API_KEY,  // Replace with your WhoisXML API key
-                domainName: domain,
-                outputFormat: 'json',
-            },
-        });
+  try {
+      // Function to check availability of a single domain
+      const isAvailable = (domain) => {
+          return new Promise((resolve, reject) => {
+              // Ensure the domain has a valid extension
+              if (!domain.match(/\.\w{2,}$/)) {
+                  return reject(new Error(`Invalid domain format: ${domain}`));
+              }
 
-        const whoisData = response.data.WhoisRecord;
+              whois.lookup(domain, (err, data) => {
+                  if (err) {
+                      return reject(new Error(`WHOIS lookup failed for ${domain}: ${err.message}`));
+                  }
 
-        // Check if domain is available
-        if (whoisData.domainAvailability === "AVAILABLE") {
-            return res.json({
-                success: true,
-                message: `The domain ${domain} is available!`,
-            });
-        }
+                  // Check if the domain is available
+                  if (data && (data.includes("No match for domain") || data.includes("Domain not found"))) {
+                      resolve(true);  // Domain is available
+                  } else {
+                      resolve(false); // Domain is not available
+                  }
+              });
+          });
+      };
 
-        return res.json({
-            success: false,
-            message: `The domain ${domain} is already taken.`,
-        });
+      // Check availability for the provided domain
+      const availability = await isAvailable(domain);
 
-    } catch (error) {
-        console.error('WHOIS API Error:', error);
-        return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
-    }
+      if (availability) {
+          return res.json({
+              success: true,
+              message: `The domain ${domain} is available!`,
+          });
+      } else {
+          return res.json({
+              success: false,
+              message: `The domain ${domain} is already taken.`,
+          });
+      }
+
+  } catch (error) {
+      console.error('Error checking domain availability:', error);
+      return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
+  }
 });
+
 
 
 // Start the server
