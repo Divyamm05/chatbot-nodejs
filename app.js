@@ -1,3 +1,188 @@
+require('dotenv').config();
+const express = require('express');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const session = require('express-session');
+const mysql = require('mysql2/promise');
+const axios = require('axios');
+const { OpenAI } = require('openai');
+const whois = require('whois');
+const whois2 = require('whois-json');
+const Fuse = require('fuse.js');
+const admin = require('firebase-admin');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+// Session timeout duration
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+// Session setup
+app.use(session({
+  secret: 'your_secret_key',  // Use a secret key to sign the session ID cookie
+  resave: false,              // Don't resave the session if it hasn't changed
+  saveUninitialized: true,    // Save uninitialized sessions (required for new sessions)
+  cookie: { secure: false },  // Set to `true` in production with HTTPS
+}));
+
+const COHERE_API_KEY = process.env.COHERE_API_KEY;
+const COHERE_API_URL = 'https://api.cohere.ai/v1/generate';
+
+const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString('utf-8'));
+
+// Firebase Admin setup
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const auth = admin.auth();
+const db = admin.firestore();
+
+// Nodemailer setup
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Middleware to log session details
+function logSession(req, res, next) {
+  console.log('Session Details:', {
+    email: req.session.email,
+    verified: req.session.verified,
+    sessionID: req.sessionID,
+  });
+  next();
+}
+
+// Middleware to check session validity
+function checkSession(req, res, next) {
+  if (!req.session.email || !req.session.verified) {
+    return res.status(401).json({ success: false, message: 'Session expired. Please log in again.' });
+  }
+  next();
+}
+
+// Tester login without checking Firebase
+app.post('/api/tester-login', logSession, (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required for tester login.' });
+  }
+
+  req.session.email = email;
+  req.session.verified = true;  // Skips OTP
+  req.session.userState = 'awaiting_domain_name'; // Set user state as needed
+
+  res.json({
+    success: true,
+    message: 'Logged in as tester successfully.',
+    options: [
+      { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
+      { text: 'More Options', action: 'askMoreOptions' },
+    ],
+  });
+});
+
+app.post('/api/check-email', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required." });
+  }
+
+  req.session.email = email;
+
+  try {
+    const usersRef = db.collection('users');
+    const query = await usersRef.where('email', '==', email).get(); // Query to match email field
+
+    if (query.empty) {
+      return res.status(404).json({ success: false, message: "Email not found in our records." });
+    }
+
+    const userDoc = query.docs[0]; // Access the first matching document
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 60000); // OTP expiration time (1 minute)
+
+    const otpRef = db.collection('otp_records').doc(email);
+    await otpRef.set({
+      otp,
+      expires_at: expiresAt,
+    }, { merge: true });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your OTP Code',
+      text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true, message: 'OTP sent to your email address.' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+// Resend OTP if valid or generate new OTP
+app.post('/api/resend-otp', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required." });
+  }
+
+  try {
+    const otpRef = db.collection('otp_records').doc(email);
+    const otpDoc = await otpRef.get();
+
+    if (otpDoc.exists && otpDoc.data().expires_at.toDate() > new Date()) {
+      const otp = otpDoc.data().otp;
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Your OTP Code',
+        text: `Your OTP code is: ${otp}. It is still valid for 1 minute.`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'OTP resent to your email address.' });
+    } else {
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const expiresAt = new Date(Date.now() + 60000);
+
+      await otpRef.set({
+        otp,
+        expires_at: expiresAt,
+      }, { merge: true });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Your OTP Code',
+        text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'New OTP sent to your email address.' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+// Verify OTP and proceed to domain section
 app.post('/api/verify-otp', logSession, async (req, res) => {
   const { otp } = req.body;
   const email = req.session.email;
@@ -45,8 +230,6 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
-
-
 
 // Get domain name suggestions
 // Get domain name suggestions
