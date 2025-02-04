@@ -458,31 +458,6 @@ app.post('/api/domain-queries', async (req, res) => {
 // Domain Availability Check
 // Domain Availability Check using only WHOIS
 
-const whoisCheck = (domain, retries = 3) => {
-  return new Promise((resolve, reject) => {
-    const attemptWhois = async (attempt) => {
-      try {
-        const data = await whois2(domain);
-        if (data.registrar || data.creationDate) {
-          resolve(false); // Domain is taken
-        } else {
-          resolve(true); // Domain is available
-        }
-      } catch (error) {
-        if (attempt < retries) {
-          console.log(`Retrying WHOIS lookup for ${domain}... Attempt ${attempt + 1}`);
-          setTimeout(() => attemptWhois(attempt + 1), 2000); // Retry after a delay
-        } else {
-          console.error(`WHOIS lookup failed for ${domain}:`, error);
-          reject(new Error(`WHOIS lookup failed after ${retries} attempts.`));
-        }
-      }
-    };
-    
-    attemptWhois(0); // Start the first attempt
-  });
-};
-
 app.post('/api/check-domain-availability', logSession, checkSession, async (req, res) => {
   const { domain } = req.body;
 
@@ -490,27 +465,25 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
       return res.status(400).json({ success: false, message: 'Domain name is required.' });
   }
 
-  try {
-      const whoisData = await whois2(domain);  // Returns WHOIS data as a JSON object
+  whois.lookup(domain, (err, data) => {
+      if (err) {
+          console.error('WHOIS lookup error:', err);
+          return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
+      }
 
-      // If WHOIS response contains 'registrar' or 'creationDate', it's taken
-      if (whoisData.registrar || whoisData.creationDate) {
+      // Check WHOIS response for common "not found" indicators
+      if (data.includes("No match for domain") || data.includes("Domain not found")) {
           return res.json({
-              success: false,
-              message: `The domain ${domain} is already taken.`,
+              success: true,
+              message: `The domain ${domain} is available!`,
           });
       }
 
-      // If no significant WHOIS data, assume available
       return res.json({
-          success: true,
-          message: `The domain ${domain} is available!`,
+          success: false,
+          message: `The domain ${domain} is already taken.`,
       });
-
-  } catch (error) {
-      console.error('WHOIS lookup error:', error);
-      return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
-  }
+  });
 });
 
 // Start the server
