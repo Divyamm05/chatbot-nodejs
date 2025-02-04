@@ -458,6 +458,31 @@ app.post('/api/domain-queries', async (req, res) => {
 // Domain Availability Check
 // Domain Availability Check using only WHOIS
 
+const whoisCheck = (domain, retries = 3) => {
+  return new Promise((resolve, reject) => {
+    const attemptWhois = async (attempt) => {
+      try {
+        const data = await whois2(domain);
+        if (data.registrar || data.creationDate) {
+          resolve(false); // Domain is taken
+        } else {
+          resolve(true); // Domain is available
+        }
+      } catch (error) {
+        if (attempt < retries) {
+          console.log(`Retrying WHOIS lookup for ${domain}... Attempt ${attempt + 1}`);
+          setTimeout(() => attemptWhois(attempt + 1), 2000); // Retry after a delay
+        } else {
+          console.error(`WHOIS lookup failed for ${domain}:`, error);
+          reject(new Error(`WHOIS lookup failed after ${retries} attempts.`));
+        }
+      }
+    };
+    
+    attemptWhois(0); // Start the first attempt
+  });
+};
+
 app.post('/api/check-domain-availability', logSession, checkSession, async (req, res) => {
   const { domain } = req.body;
 
