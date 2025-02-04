@@ -482,15 +482,22 @@ app.post('/api/check-domain-availability', logSession, checkSession, async (req,
           });
       }
 
-      // If WHOIS response contains 'registrar' or 'creationDate', it's taken
-      if (whoisData.registrar || whoisData.creationDate) {
+      console.log('WHOIS Data:', whoisData);  // Log the WHOIS data to inspect its structure
+
+      // Check if WHOIS data contains information indicating the domain is taken
+      if (
+          whoisData.includes("Registrar") || 
+          whoisData.includes("Creation Date") ||
+          whoisData.includes("Domain Status") ||
+          whoisData.includes("No match for domain")
+      ) {
           return res.json({
               success: false,
               message: `The domain ${domain} is already taken.`,
           });
       }
 
-      // If no significant WHOIS data, assume available
+      // If no significant WHOIS data found, assume domain is available
       return res.json({
           success: true,
           message: `The domain ${domain} is available!`,
