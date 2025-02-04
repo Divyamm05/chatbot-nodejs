@@ -390,7 +390,7 @@ app.post('/api/domain-queries', async (req, res) => {
     'renew a domain', 'free domain services', 'custom domain for website'
   ];
 
-  const fuse = new Fuse(allowedTopics, { includeScore: true, threshold: 0.4 });
+  const fuse = new Fuse(allowedTopics, { includeScore: true, threshold: 0.7 });
 
   // 🔹 Break the query into meaningful parts (handling same-sentence loophole)
   const queryParts = query.toLowerCase()
