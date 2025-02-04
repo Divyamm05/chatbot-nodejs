@@ -4,15 +4,15 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const session = require('express-session');
 const mysql = require('mysql2/promise');
-const axios = require('axios'); // Added axios import
+const axios = require('axios');
 const { OpenAI } = require('openai');
 const whois = require('whois');
-const whois2 = require('whois-json'); 
+const whois2 = require('whois-json');
 const Fuse = require('fuse.js');
-
-
+const admin = require('firebase-admin');
 const app = express();
 const port = 3000;
+
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -27,13 +27,12 @@ app.use(session({
   cookie: { secure: false },  // Set to `true` in production with HTTPS
 }));
 
-// MySQL connection
-const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: process.env.DB_PASSWORD,
-  database: 'test',
+// Firebase Admin setup
+admin.initializeApp({
+  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
 });
+
+const auth = admin.auth();
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
@@ -43,12 +42,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-
-// OpenAI setup
-// Hugging Face API setup
-const COHERE_API_KEY = process.env.COHERE_API_KEY;
-const COHERE_API_URL = 'https://api.cohere.ai/v1/generate';
-
 
 // Middleware to log session details
 function logSession(req, res, next) {
@@ -60,7 +53,6 @@ function logSession(req, res, next) {
   next();
 }
 
-
 // Middleware to check session validity
 function checkSession(req, res, next) {
   if (!req.session.email || !req.session.verified) {
@@ -69,7 +61,7 @@ function checkSession(req, res, next) {
   next();
 }
 
-// Tester login without checking the database
+// Tester login without checking Firebase
 app.post('/api/tester-login', logSession, (req, res) => {
   const { email } = req.body;
 
@@ -90,7 +82,6 @@ app.post('/api/tester-login', logSession, (req, res) => {
     ],
   });
 });
-
 
 // Check email and send OTP (modified to allow tester login)
 app.post('/api/check-email', logSession, async (req, res) => {
@@ -114,20 +105,19 @@ app.post('/api/check-email', logSession, async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Email not found in our records. Please enter the registered email id.' });
-    }
+    // Use Firebase to check if the email exists
+    const userRecord = await auth.getUserByEmail(email);
 
+    // If the user exists, send OTP or proceed with session management
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 60000); // OTP valid for 1 minute
 
-    await db.query(
-      `INSERT INTO otp_records (email, otp, expires_at)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE otp = VALUES(otp), expires_at = VALUES(expires_at)`,
-      [email, otp, expiresAt]
-    );
+    // Save OTP details in Firebase Firestore (optional)
+    const db = admin.firestore();
+    await db.collection('otp_records').doc(email).set({
+      otp,
+      expiresAt,
+    });
 
     req.session.email = email;
 
@@ -146,10 +136,45 @@ app.post('/api/check-email', logSession, async (req, res) => {
     });
   } catch (error) {
     console.error('Error during email check:', error);
+    if (error.code === 'auth/user-not-found') {
+      return res.status(404).json({ success: false, message: 'Email not found in our records. Please enter the registered email id.' });
+    }
     res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
 
+// Sample route to test Firebase authentication
+app.post('/api/verify-otp', async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
+  }
+
+  try {
+    const db = admin.firestore();
+    const otpDoc = await db.collection('otp_records').doc(email).get();
+
+    if (!otpDoc.exists) {
+      return res.status(404).json({ success: false, message: 'No OTP found for this email.' });
+    }
+
+    const otpData = otpDoc.data();
+    if (otpData.otp !== otp || new Date(otpData.expiresAt) < new Date()) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+    }
+
+    // OTP is valid, now verify email via Firebase Authentication
+    await auth.getUserByEmail(email);
+    req.session.email = email;
+    req.session.verified = true;
+
+    res.json({ success: true, message: 'OTP verified successfully.' });
+  } catch (error) {
+    console.error('Error during OTP verification:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
 
 
 // Resend OTP
@@ -169,21 +194,21 @@ app.post('/api/resend-otp', logSession, async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Email not found in our records.' });
-    }
+    // Use Firebase to check if the email exists
+    const userRecord = await auth.getUserByEmail(email);
 
+    // Generate a new OTP
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 60000); // OTP valid for 1 minute
 
-    await db.query(
-      `INSERT INTO otp_records (email, otp, expires_at)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE otp = VALUES(otp), expires_at = VALUES(expires_at)`,
-      [email, otp, expiresAt]
-    );
+    // Save OTP in Firestore
+    const db = admin.firestore();
+    await db.collection('otp_records').doc(email).set({
+      otp,
+      expiresAt,
+    });
 
+    // Send OTP via email
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -203,7 +228,6 @@ app.post('/api/resend-otp', logSession, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
-
 
 // Verify OTP and proceed to domain section
 app.post('/api/verify-otp', logSession, async (req, res) => {
@@ -229,18 +253,24 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM otp_records WHERE email = ? AND otp = ? AND expires_at > NOW()',
-      [email, otp]
-    );
+    // Check if OTP exists in Firestore and is valid
+    const db = admin.firestore();
+    const otpDoc = await db.collection('otp_records').doc(email).get();
 
-    if (rows.length === 0) {
+    if (!otpDoc.exists) {
+      return res.status(404).json({ success: false, message: 'No OTP found for this email.' });
+    }
+
+    const otpData = otpDoc.data();
+    if (otpData.otp !== otp || new Date(otpData.expiresAt) < new Date()) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
     }
 
-    req.session.verified = true; // Set verification flag
+    // OTP is valid, now verify email via Firebase Authentication
+    await auth.getUserByEmail(email);
+    req.session.verified = true;
     req.session.userState = 'awaiting_domain_name';
-    
+
     res.json({
       success: true,
       message: 'OTP verified successfully. Please choose one of the following options:',
