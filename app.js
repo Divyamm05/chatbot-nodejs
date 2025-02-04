@@ -215,9 +215,10 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
     }
 
     const otpData = otpDoc.data();
-    if (otpData.otp !== otp || new Date(otpData.expiresAt) < new Date()) {
+    if (otpData.otp !== otp || new Date(otpData.expires_at.toDate()) < new Date()) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
     }
+    
 
     // OTP is valid, now verify email via Firebase Authentication
     await auth.getUserByEmail(email);
