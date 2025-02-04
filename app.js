@@ -27,6 +27,8 @@ app.use(session({
   cookie: { secure: false },  // Set to `true` in production with HTTPS
 }));
 
+const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString('utf-8'));
+
 // Firebase Admin setup
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
