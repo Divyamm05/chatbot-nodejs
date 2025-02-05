@@ -482,12 +482,18 @@ async function submitDomainQuery() {
         data.suggestions.forEach(suggestion => {
           updateChatLog(`- ${suggestion}`, 'bot');
         });
-      } else {
       }
 
       // Show the generated answer if available
       if (data.answer) {
         updateChatLog(`Answer: ${data.answer}`, 'bot');
+
+        // After adding the answer, scroll to the start of the answer
+        const chatLog = document.querySelector('.chat-log');
+        const answerElement = chatLog.querySelector('.bot-message:last-child');
+        if (answerElement) {
+          answerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
 
     } else {
@@ -500,6 +506,7 @@ async function submitDomainQuery() {
     updateChatLog("This chatbot can answer domain related questions only", 'bot');
   }
 }
+
 
 function switchSection(newSectionId) {
   document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });
