@@ -367,8 +367,6 @@ app.post('/api/domain-suggestions', async (req, res) => {
   }
 });
 
-
-
 // Domain Name Related Queries
 // Handle domain name related queries
 
