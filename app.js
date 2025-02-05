@@ -18,14 +18,14 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Session timeout duration
-const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+const SESSION_TIMEOUT = 30 * 60 * 1000; 
 
 // Session setup
 app.use(session({
-  secret: 'your_secret_key',  // Use a secret key to sign the session ID cookie
-  resave: false,              // Don't resave the session if it hasn't changed
-  saveUninitialized: true,    // Save uninitialized sessions (required for new sessions)
-  cookie: { secure: false },  // Set to `true` in production with HTTPS
+  secret: 'your_secret_key',  
+  resave: false,              
+  saveUninitialized: true,    
+  cookie: { secure: false },  
 }));
 
 const COHERE_API_KEY = process.env.COHERE_API_KEY;
@@ -77,8 +77,8 @@ app.post('/api/tester-login', logSession, (req, res) => {
   }
 
   req.session.email = email;
-  req.session.verified = true;  // Skips OTP
-  req.session.userState = 'awaiting_domain_name'; // Set user state as needed
+  req.session.verified = true;  
+  req.session.userState = 'awaiting_domain_name'; 
 
   res.json({
     success: true,
@@ -101,16 +101,16 @@ app.post('/api/check-email', async (req, res) => {
 
   try {
     const usersRef = db.collection('users');
-    const query = await usersRef.where('email', '==', email).get(); // Query to match email field
+    const query = await usersRef.where('email', '==', email).get(); 
 
     if (query.empty) {
       return res.status(404).json({ success: false, message: "Email not found in our records." });
     }
 
-    const userDoc = query.docs[0]; // Access the first matching document
+    const userDoc = query.docs[0]; 
 
     const otp = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 60000); // OTP expiration time (1 minute)
+    const expiresAt = new Date(Date.now() + 60000); 
 
     const otpRef = db.collection('otp_records').doc(email);
     await otpRef.set({
@@ -191,7 +191,6 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
   }
 
-  // If the user is a tester, skip OTP verification
   if (email === 'tester@abc.com') {
       req.session.verified = true;
       req.session.userState = 'awaiting_domain_name';
@@ -214,7 +213,7 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
           return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
       }
 
-      req.session.verified = true; // Set verification flag
+      req.session.verified = true; 
       req.session.userState = 'awaiting_domain_name';
 
       res.json({
@@ -231,8 +230,7 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
   }
 });
 
-// Get domain name suggestions
-// Get domain name suggestions
+s
 // Function to check availability of multiple domains
 const checkDomainsAvailability = async (suggestions) => {
   const availabilityChecks = suggestions.map((domain) =>
@@ -289,9 +287,9 @@ app.post('/api/domain-suggestions', async (req, res) => {
 
   try {
     // Modify the prompt to focus on professional, short, and industry-specific domains
-    const prompt = `Suggest 10 unique and professional domain names related to "${domain}". The names should be brandable, suitable for a legitimate business, and easy to remember. Use common domain extensions such as .com, .net, and .co. Avoid using numbers, hyphens, or generic words. The suggestions should reflect the type of business represented by the term "${domain}". Please give only the domain names, no extra information. The domain names should be unique so that they are available to register`;
+    const prompt = `Suggest 10 unique and professional domain names related to "${domain}". The names should be brandable, suitable for a legitimate business, and easy to remember. Use common domain extensions such as .com, .net, and .co. Avoid using numbers, hyphens, or generic words. The suggestions should reflect the type of business represented by the term "${domain}". Please give only the domain names, no extra information. The domain names should be unique so that they are available to register. Do not use hyphens in suggesting domain names`;
 
-    // 1. Generate domain name suggestions using Cohere API
+    //Generate domain name suggestions using Cohere API
     const getDomainSuggestions = async () => {
       const response = await axios.post(
         COHERE_API_URL,
@@ -312,9 +310,9 @@ app.post('/api/domain-suggestions', async (req, res) => {
 
       // Clean up and filter the domain names
       let suggestions = rawText
-        .split('\n') // Split by new line
-        .map((s) => cleanDomainName(s)) // Clean the text (remove numbers or extra characters)
-        .filter((s) => s.match(/\.\w{2,}$/)); // Keep only valid domain names with extensions
+        .split('\n')  
+        .map((s) => cleanDomainName(s))
+        .filter((s) => s.match(/\.\w{2,}$/)); 
 
       return suggestions;
     };
@@ -322,18 +320,14 @@ app.post('/api/domain-suggestions', async (req, res) => {
     let availableDomains = [];
     let attempts = 0;
 
-    // Loop until we find 5 available domains or stop after 20 attempts
     while (availableDomains.length < 5 && attempts < 20) {
       console.log(`Attempt #${attempts + 1} to find available domains...`);
 
-      // Generate domain suggestions
       const suggestions = await getDomainSuggestions();
       console.log('Generated suggestions:', suggestions);
 
-      // Check availability for each domain suggestion using WHOIS
       const availableSuggestions = await checkDomainsAvailability(suggestions);
 
-      // Add unique available domains
       availableDomains = [...new Set([...availableDomains, ...availableSuggestions])];
 
       if (availableDomains.length < 5) {
@@ -342,20 +336,17 @@ app.post('/api/domain-suggestions', async (req, res) => {
       }
     }
 
-    // If we couldn't find 5 available domains after 20 attempts
     if (availableDomains.length < 5) {
       return res.status(500).json({
         success: false,
-        message: 'Unable to find 5 available domain names. Please try again later.',
+        message: 'Unable to find available domain names. Please try again later.',
       });
     }
 
-    // Format the output with <br /> for proper line breaks
     const formattedDomains = availableDomains
       .map((domain) => `${domain} - ✅ Available`)
       .join('<br />');
 
-    // Return the formatted domains
     res.json({
       success: true,
       domains: formattedDomains,
@@ -368,8 +359,6 @@ app.post('/api/domain-suggestions', async (req, res) => {
 });
 
 // Domain Name Related Queries
-// Handle domain name related queries
-
 app.post('/api/domain-queries', async (req, res) => {
   const { query } = req.body;
   console.log('Received query:', query);
@@ -390,7 +379,6 @@ app.post('/api/domain-queries', async (req, res) => {
 
   const fuse = new Fuse(allowedTopics, { includeScore: true, threshold: 0.5 });
 
-  // 🔹 Break the query into meaningful parts (handling same-sentence loophole)
   const queryParts = query.toLowerCase()
     .split(/[\.\?\!\,\;]+|\band\b|\bor\b|\balso\b|\bthen\b|\bafter that\b|\bwhile\b/)
     .map(part => part.trim())
@@ -398,7 +386,6 @@ app.post('/api/domain-queries', async (req, res) => {
 
   console.log("🧐 Query Parts:", queryParts);
 
-  // 🔹 Strict Check: *All* parts must be domain-related
   let validParts = 0;
   let invalidParts = 0;
 
@@ -453,8 +440,6 @@ app.post('/api/domain-queries', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error generating response. Please try again later.' });
   }
 });
-// Domain Availability Check
-// Domain Availability Check using only WHOIS
 
 const dns = require('dns').promises;
 
