@@ -467,7 +467,7 @@ app.post('/api/check-domain-availability', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Domain name is required.' });
   }
 
-  try {d
+  try {
       await dns.resolve(domain);
       return res.json({ success: false, message: `The domain ${domain} is already taken.` });
   } catch (error) {
