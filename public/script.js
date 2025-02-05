@@ -1,11 +1,9 @@
   // Function to toggle the chatbox visibility
   function toggleChatbox() {
     if (chatbox.classList.contains('minimized')) {
-      // If chatbox is minimized, make it visible
       chatbox.classList.remove('minimized');
       chatbox.classList.add('visible');
     } else if (chatbox.classList.contains('visible')) {
-      // If chatbox is visible, minimize it
       chatbox.classList.remove('visible');
       chatbox.classList.add('minimized');
     }
@@ -19,24 +17,20 @@
   window.addEventListener('load', () => {
     const emailVerified = localStorage.getItem('emailVerified');
     if (emailVerified === 'true') {
-      // Enable resend OTP functionality
       document.getElementById('resend-otp').style.display = 'block';
     }
   });
-  // Update chat log with messages
 
   function updateChatLog(message, sender) {
     console.log("updateChatLog called:", message);
     const chatLog = document.querySelector('.chat-log');
 
-    // Prevent duplicate messages
     const lastMessage = chatLog.lastElementChild?.textContent;
     if (lastMessage === message) return;
 
     const newMessage = document.createElement('div');
     newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
 
-    // Check if the message is "Generating domain names..." and add a spinner next to it
     if (message === "Generating domain names...") {
         newMessage.innerHTML = `<span>${message}</span> <div class="loading-spinner"></div>`;
     } else {
@@ -49,10 +43,9 @@
 
 const loadingContainer = document.getElementById('loading-container');
 if (loadingContainer) {
-    loadingContainer.style.display = 'none';  // Hide the global spinner
+    loadingContainer.style.display = 'none';  
 }
-  
-  // Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
+
   function scrollToBottom() {
     const chatLog = document.querySelector('.chat-log');
     if (chatLog) {
@@ -60,14 +53,12 @@ if (loadingContainer) {
     }
   }
   
-
   // Function to show the button press in the chat log
   function logButtonPress(buttonName) {
     updateChatLog(`You pressed the "${buttonName}" button.`, 'user');
   }
 
   let userEmail = '';
-  // Request OTP (modified for tester login)
   async function requestOTP() {
     const emailInput = document.getElementById('user-email');
     const email = emailInput.value.trim();
@@ -90,9 +81,8 @@ if (loadingContainer) {
         const data = await response.json();
         updateChatLog(data.message || 'An error occurred. Please try again.', 'bot');
         
-        // Clear the email input field after showing the error message
-        emailInput.value = '';  // This clears the email input field
-        return;  // Exit early if email is not found
+        emailInput.value = '';  
+        return;  
       }
     
       const data = await response.json();
@@ -117,8 +107,7 @@ if (loadingContainer) {
     }
   }
   
-
-  // Resend OTP (triggered by the "Resend OTP" button)
+  // Resend OTP 
   async function resendOTP() {
     const email = document.getElementById('user-email').value.trim();
     if (!email) {
@@ -170,7 +159,7 @@ if (loadingContainer) {
       if (data.success) {
         updateChatLog(data.message || 'OTP verified successfully!', 'bot');
         document.getElementById('otp-section').style.display = 'none';
-        document.getElementById('domain-options').style.display = 'flex'; // Show domain options after OTP verification
+        document.getElementById('domain-options').style.display = 'flex'; 
       } else {
         updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
       }
@@ -181,10 +170,10 @@ if (loadingContainer) {
 
   // Show domain section for domain input
   function showDomainSection() {
-    document.getElementById('domain-options').style.display = 'none'; // Hide domain options
-    document.getElementById('domain-section').style.display = 'flex'; // Show domain input
-    document.getElementById('domain-options-next').style.display = 'none'; // Hide 'next' options
-    document.getElementById('more-options').style.display = 'none'; // Hide more options
+    document.getElementById('domain-options').style.display = 'none'; 
+    document.getElementById('domain-section').style.display = 'flex';
+    document.getElementById('domain-options-next').style.display = 'none'; 
+    document.getElementById('more-options').style.display = 'none'; 
     updateChatLog('Please enter a domain name for suggestions.', 'bot');
   }
 
@@ -199,7 +188,7 @@ if (loadingContainer) {
     }
 
     updateChatLog(`Domain entered: ${domain}`, 'user');
-    updateChatLog('Generating domain names...', 'bot');  // Spinner appears inside chat log
+    updateChatLog('Generating domain names...', 'bot'); 
 
     try {
         const response = await fetch('/api/domain-suggestions', {
@@ -209,7 +198,6 @@ if (loadingContainer) {
         });
         const data = await response.json();
 
-        // Remove the spinner by replacing the last message
         const chatLog = document.querySelector('.chat-log');
         const lastMessage = chatLog.lastElementChild;
         if (lastMessage && lastMessage.textContent.includes("Generating domain names...")) {
@@ -232,39 +220,32 @@ if (loadingContainer) {
     }
 }
 
-  
-
 // Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
 function scrollToBottom() {
-    const lastMessage = document.querySelector('.message:last-child');  // Find the last message in the chat
+    const lastMessage = document.querySelector('.message:last-child');  
     if (lastMessage) {
-        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });  // Scroll to the last message
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });  
     }
 }
 
-
-// New function to handle "Back" button functionality
 function goBackToPreviousSection() {
-    // Hide domain suggestions section
     document.getElementById('domain-section').style.display = 'none';
 
-    // Show the previous section (for example, domain options or email input)
-    document.getElementById('domain-options').style.display = 'flex'; // Show the domain options again
+    document.getElementById('domain-options').style.display = 'flex'; 
 }
 
-  // Get more suggestions for the same domain
   function getMoreSuggestions() {
     logButtonPress('More Suggestions');
     updateChatLog('Fetching more suggestions for the same domain...', 'bot');
-    getDomainSuggestions(); // Re-fetch domain suggestions
+    getDomainSuggestions(); 
   }
 
   // Get suggestions for a different domain
   function getNewDomainSuggestions() {
     logButtonPress('Get New Domain Suggestions');
-    document.getElementById('domain-name-suggestions').value = ''; // Clear the input field
-    document.getElementById('domain-section').style.display = 'flex'; // Show domain input again
-    document.getElementById('domain-options-next').style.display = 'none'; // Ensure 'next' is hidden again
+    document.getElementById('domain-name-suggestions').value = ''; 
+    document.getElementById('domain-section').style.display = 'flex'; 
+    document.getElementById('domain-options-next').style.display = 'none';
     updateChatLog('Please enter a new domain name for suggestions.', 'bot');
   }
 
@@ -277,10 +258,9 @@ function goBackToPreviousSection() {
     const domainInput = document.getElementById('domain-name-availability');
     const submitDomainButton = document.getElementById('check-domain-availability');
 
-// Show the domain input field without hiding the button
 if (domainSection.style.display === 'none') {
   domainSection.style.display = 'flex';
-  domainInput.focus(); // Focus on the domain input
+  domainInput.focus(); 
   updateChatLog('Please enter a domain name to check its availability.', 'bot');
   return;
 }
@@ -294,7 +274,6 @@ if (domainSection.style.display === 'none') {
 
     updateChatLog(`Domain entered: ${domain}`, 'user');
 
-    // Simulate checking availability
     fetch('/api/check-domain-availability', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -312,7 +291,6 @@ if (domainSection.style.display === 'none') {
         updateChatLog('An error occurred while checking domain availability. Please try again.', 'bot');
       });
 
-    // Optionally, clear the domain input after the check
     domainInput.value = '';
   }
 
@@ -322,10 +300,8 @@ if (domainSection.style.display === 'none') {
     const checkDomainButton = document.getElementById('check-domain-availability'); // Corrected ID
     const backToDomainButton = document.getElementById('back-to-domain-section');
 
-    // Ensure the section is visible
     domainAvailabilitySection.style.display = 'block';
 
-    // Get the input value
     const domainToCheck = domainAvailabilityInput.value.trim();
 
     if (!domainToCheck) {
@@ -335,7 +311,6 @@ if (domainSection.style.display === 'none') {
 
     updateChatLog(`Domain to check: ${domainToCheck}`, 'user');
 
-    // Simulate domain availability check process
     fetch('/api/check-domain-availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,18 +328,15 @@ if (domainSection.style.display === 'none') {
         updateChatLog('An error occurred while checking domain availability. Please try again.', 'bot');
     });
 
-    // Keep the back button visible
     backToDomainButton.style.display = 'inline-block';
 
-    // Optionally, clear input field after check
     domainAvailabilityInput.value = '';
 }
 
   
   function goBackToMoreOptions() {
-    // Hide the domain availability section and show the more options section
     document.getElementById('domain-availability-section').style.display = 'none';
-    document.getElementById('more-options').style.display = 'flex'; // Show More Options
+    document.getElementById('more-options').style.display = 'flex'; 
   }
 
   // Ask for more options
@@ -380,28 +352,24 @@ if (domainSection.style.display === 'none') {
 
   // Close "More Options" and reset buttons
 function closeMoreOptions() {
-    // Hide more options and domain-related elements
     document.getElementById("more-options").style.display = "none";
     document.getElementById("domain-section").style.display = "none";
-    document.getElementById("domain-options").style.display = "flex"; // Show the domain options again
+    document.getElementById("domain-options").style.display = "flex"; 
     
-    // Make the domain suggestion buttons visible
     document.getElementById("get-domain-suggestions-btn").style.display = "block";
     document.getElementById("more-options-btn").style.display = "block";
 
-    // Reset domain availability section and input if they exist
     const domainAvailabilitySection = document.getElementById('domain-availability-section');
     const domainNameAvailability = document.getElementById('domain-name-availability');
 
     if (domainAvailabilitySection) {
-        domainAvailabilitySection.style.display = 'none'; // Hide availability section
+        domainAvailabilitySection.style.display = 'none'; 
     }
     
     if (domainNameAvailability) {
-        domainNameAvailability.value = ''; // Clear the input field safely
+        domainNameAvailability.value = ''; 
     }
 
-    // Reset the chat log to prompt the user again
     updateChatLog('What would you like to do next?', 'bot');
 }
 
@@ -415,24 +383,21 @@ function showDomainQueries() {
 
   const chatLog = document.querySelector('.chat-log');
   if (!chatLog) {
-    console.log("Chat log not found"); // Debugging
+    console.log("Chat log not found");
     return;
   }
 
-  // Display query prompt
   const queryMessage = document.createElement('div');
   queryMessage.className = 'bot-message message';
   queryMessage.innerHTML = 'Please enter your domain-related question:';
   chatLog.appendChild(queryMessage);
   chatLog.scrollTop = chatLog.scrollHeight;
 
-  // Show the domain query section
   const domainQuerySection = document.getElementById('domain-query-section');
   if (domainQuerySection.style.display === 'none' || domainQuerySection.style.display === '') {
     domainQuerySection.style.display = 'flex';
   }
 
-  // Focus on the input field
   const domainQueryInput = document.getElementById('domain-query-text');
   if (domainQueryInput) {
     domainQueryInput.focus();
@@ -440,43 +405,36 @@ function showDomainQueries() {
 }
 
 async function submitDomainQuery() {
-  console.log("submitDomainQuery called"); // Debugging
+  console.log("submitDomainQuery called"); 
 
   const queryInput = document.getElementById('domain-query-text');
   const queryText = queryInput.value.trim();
 
-  // Check if query is empty
   if (!queryText) {
     updateChatLog("Please enter a valid query to proceed.", 'bot');
     return;
   }
 
-  // Show the user's question and a loading message
   updateChatLog(`Your question: ${queryText}`, 'user');
   updateChatLog('Searching for domain-related information...', 'bot');
 
   try {
     console.log('Sending query to backend:', queryText);
 
-    // Send the query to the backend
     const response = await fetch('/api/domain-queries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: queryText }),
     });
 
-    // Check if the response is OK (status code 2xx)
     if (!response.ok) {
       throw new Error(`Failed to fetch data. Status: ${response.status}`);
     }
 
-    // Parse the response
     const data = await response.json();
     console.log('Backend response:', data);
 
-    // If the request was successful
     if (data.success) {
-      // Show the suggestions if available
       if (data.suggestions?.length > 0) {
         updateChatLog("Suggested Topics:", 'bot');
         data.suggestions.forEach(suggestion => {
@@ -484,11 +442,9 @@ async function submitDomainQuery() {
         });
       }
 
-      // Show the generated answer if available
       if (data.answer) {
         updateChatLog(`Answer: ${data.answer}`, 'bot');
 
-        // After adding the answer, scroll to the start of the answer
         const chatLog = document.querySelector('.chat-log');
         const answerElement = chatLog.querySelector('.bot-message:last-child');
         if (answerElement) {
@@ -497,7 +453,6 @@ async function submitDomainQuery() {
       }
 
     } else {
-      // If the backend indicates failure
       updateChatLog(`Error: ${data.message}`, 'bot');
     }
 
@@ -510,7 +465,7 @@ async function submitDomainQuery() {
 
 function switchSection(newSectionId) {
   document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });
-  updateChatLog(`Switched to ${newSectionId}`, 'bot'); // Log the section switch
+  updateChatLog(`Switched to ${newSectionId}`, 'bot'); 
 }
 
 
@@ -519,9 +474,7 @@ document.addEventListener('keydown', function(event) {
   if (event.key === 'Enter') {
     const activeElement = document.activeElement;
 
-    // Check if the active element is an input field (email, OTP, domain, etc.)
     if (activeElement && activeElement.tagName === 'INPUT') {
-      // Find the button that is closest to the active input field and trigger its click event
       const button = activeElement.closest('.chat-input').querySelector('button');
       if (button) {
         button.click();
@@ -531,13 +484,11 @@ document.addEventListener('keydown', function(event) {
 });
 
   function goBackToDomainSection() {
-    // Remove the input field container if it exists
     const inputFieldContainer = document.querySelector('.query-input-container');
     if (inputFieldContainer) {
         inputFieldContainer.remove();
     }
 
-    // Hide the entire domain availability section
     const domainAvailabilitySection = document.getElementById('domain-availability-section');
     if (domainAvailabilitySection) {
         domainAvailabilitySection.style.display = 'none';
@@ -548,16 +499,15 @@ document.addEventListener('keydown', function(event) {
         domainquerySection.style.display = 'none';
     }
 
-    // Show the "More Options" section
     const moreOptions = document.getElementById('more-options');
     if (moreOptions) {
         moreOptions.style.display = 'block';
-        moreOptions.scrollIntoView({ behavior: 'smooth' }); // Scroll to the section smoothly
+        moreOptions.scrollIntoView({ behavior: 'smooth' }); 
     }
 }
 
 function goToOTPSection() {
-  switchSection('otp-section');  // Switches to the OTP section and auto-scrolls
+  switchSection('otp-section'); 
   updateChatLog("Now in OTP section", 'bot');
 }
 
@@ -571,16 +521,13 @@ function hideDomainQuerySection() {
 
 document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
 
-// Event listener for the Enter key (keyboard navigation and action triggers)
 document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
-      event.preventDefault(); // Prevent default Enter key behavior
+      event.preventDefault(); 
   
-      // Debugging: Check what the active element is
       console.log("Active Element ID: ", document.activeElement.id);
-  
-      // Trigger respective button click based on active element
+
       if (document.activeElement.id === "get-domain-suggestions-btn") {
         console.log("Get Domain Suggestions clicked...");
         document.getElementById("get-domain-suggestions-btn").click();
@@ -590,19 +537,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // Arrow key navigation (to handle focusing buttons)
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       const buttons = Array.from(document.querySelectorAll("#domain-options button"));
       let currentIndex = buttons.findIndex((el) => el === document.activeElement);
 
       if (event.key === "ArrowDown") {
-        currentIndex = (currentIndex + 1) % buttons.length; // Go down
+        currentIndex = (currentIndex + 1) % buttons.length;
       } else if (event.key === "ArrowUp") {
-        currentIndex = (currentIndex - 1 + buttons.length) % buttons.length; // Go up
+        currentIndex = (currentIndex - 1 + buttons.length) % buttons.length; 
       }
 
-      console.log("Focusing element: ", buttons[currentIndex].id);  // Debugging focus navigation
-      buttons[currentIndex].focus();  // Move focus to next/prev button
+      console.log("Focusing element: ", buttons[currentIndex].id); 
+      buttons[currentIndex].focus();  
     }
   });
 });

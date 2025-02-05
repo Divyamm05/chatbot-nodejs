@@ -28,7 +28,7 @@ body {
   transform: translateY(100%);
   opacity: 0;
   overflow: hidden;
-  justify-content: flex-start; /* Align content from the top */
+  justify-content: flex-start; 
 }
 
 #chatbox.visible {
@@ -54,9 +54,8 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 20px 20px 0 0;
-  position: relative; /* Ensures proper positioning */
+  position: relative; 
 }
-
 
 /* Close button style */
 .close-btn {
@@ -192,12 +191,12 @@ body {
 }
 
 .chat-input button:nth-child(3):hover {
-  background-color: #bd1401; /* Change background on hover */
+  background-color: #bd1401; 
 }
 
-/* Back Button Styling (Full width) */
+/* Back Button Styling */
 #back-to-domain-section {
-  width: 100%; /* Full width */
+  width: 100%; 
   margin-top: 10px;
   padding: 12px;
   background-color: #e74c3c;
@@ -381,7 +380,6 @@ body {
   background-color: #16a085;
 }
 
-/* Ensure buttons are wrapped directly by #domain-options-next and not any other container */
 #domain-options-next .button-container {
   display: flex;
   flex-direction: column;
@@ -431,39 +429,38 @@ body {
   background-color: #16a085;
 }
 
-/* When More Options is Visible */
 #more-options.visible {
   display: flex;
   height: auto;
 }
 
 #more-options-buttons button:nth-child(3) {
-  background-color: #16a085; /* Change background color */
-  color: #ffffff; /* Change text color */
-  border-radius: 20px; /* Adjust border radius */
-  font-size: 14px; /* Change font size */
-  font-weight: bold; /* Make the font bold */
-  width: 100%; /* Make the button span the full width */
-  padding: 10px 0; /* Adjust padding */
-  cursor: pointer; /* Make the cursor pointer */
+  background-color: #16a085; 
+  color: #ffffff; 
+  border-radius: 20px; 
+  font-size: 14px; 
+  font-weight: bold; 
+  width: 100%; 
+  padding: 10px 0; 
+  cursor: pointer; 
   transition: background-color 0.3s ease;
 }
 
 #more-options-buttons button:nth-child(3):hover {
-  background-color: #bd1401; /* Change background on hover */
+  background-color: #bd1401; 
 }
 
 /* Domain Query Section */
 #domain-query-section {
   display: flex;
-  flex-direction: column; /* Stack children vertically */
+  flex-direction: column; 
   align-items: center;
   justify-content: flex-start;
-  height: auto; /* Adjust to content height */
+  height: auto; 
   background-color: #34495e;
   border-radius: 0 0 20px 20px;
   box-sizing: border-box;
-  padding: 20px; /* Add some space around */
+  padding: 20px; 
 }
 
 /* Wrapper for Input & Submit Button */
@@ -472,7 +469,7 @@ body {
   width: 100%;
   gap: 10px;
   justify-content: center;
-  margin-bottom: 15px; /* Adds space between input and back button */
+  margin-bottom: 15px; 
 }
 
 /* Input Field Styling */
@@ -522,9 +519,9 @@ body {
   cursor: not-allowed;
 }
 
-/* Back Button Styling (Full width) */
+/* Back Button Styling */
 #back-to-domain-section {
-  width: 100%; /* Make sure it takes full width */
+  width: 100%; 
   padding: 12px;
   background-color: #e74c3c;
   color: white;
@@ -534,7 +531,7 @@ body {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin-top: 10px; /* Space from input section */
+  margin-top: 10px; 
 }
 
 #back-to-domain-section:hover {
@@ -552,7 +549,7 @@ body {
 }
 
 #domain-query-text {
-  flex: 1; /* Takes up most of the row */
+  flex: 1; 
   border-radius: 30px;
   border: 1px solid #1abc9c;
   background-color: #2c3e50;
@@ -570,7 +567,7 @@ body {
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
-  width: 100%; /* Adjust width to take up most of the space */
+  width: 100%; 
   font-size: 14px;
   margin-bottom: 10px;
   box-sizing: border-box;
@@ -595,7 +592,7 @@ body {
 
 /* Full-width Back Button */
 #back-to-domain-section {
-  width: 100%; /* Make the back button span the full width */
+  width: 100%; 
   padding: 12px 18px;
   background-color: #1abc9c;
   color: #ffffff;
@@ -611,25 +608,23 @@ body {
   background-color: #bd1401;
 }
 
-/* Full-width button inside domain-query-section */
 #domain-query-section .full-width-button {
   display: block;
-  width: 100%; /* Makes the button span the full width */
-  margin-top: 10px; /* Space above the button */
-  background-color: #f1c40f; /* Button background color */
-  color: #ffffff; /* Text color */
-  border-radius: 5px; /* Rounded corners */
-  font-size: 14px; /* Font size */
-  font-weight: bold; /* Bold text */
-  padding: 10px 0; /* Adjust the padding */
-  cursor: pointer; /* Pointer cursor */
+  width: 100%; 
+  margin-top: 10px; 
+  background-color: #f1c40f; 
+  color: #ffffff;
+  border-radius: 5px; 
+  font-size: 14px; 
+  font-weight: bold; 
+  padding: 10px 0;
+  cursor: pointer; 
   transition: background-color 0.3s ease;
 }
 
 #domain-query-section .full-width-button:hover {
-  background-color: #bd1401; /* Background color on hover */
+  background-color: #bd1401;
 }
-
 
 /* Domain Section */
 #domain-section {
@@ -673,7 +668,7 @@ body {
 
 #domain-availability-check-section {
   display: flex;
-  flex-direction: column; /* Stack children vertically */
+  flex-direction: column; 
   align-items: center;
   height: auto;
   padding: 1px;
@@ -693,7 +688,7 @@ body {
 }
 
 #domain-name-availability {
-  flex: 1; /* Takes up most of the row */
+  flex: 1; 
   padding: 12px;
   border-radius: 30px;
   margin-left : 5px;
@@ -712,7 +707,7 @@ body {
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
-  width: 100%; /* Adjust width to take up most of the space */
+  width: 100%;
   font-size: 14px;
   margin-bottom: 10px;
   box-sizing: border-box;
@@ -734,9 +729,8 @@ body {
   background-color: #16a085;
 }
 
-/* Full-width Back button */
 #back-to-domain-section {
-  width: 100%; /* Make the back button span the full width */
+  width: 100%; 
   padding: 12px 18px;
   background-color: #1abc9c;
   color: #ffffff;
@@ -753,24 +747,23 @@ body {
 }
 
 #domain-availability-check-section .full-width-button {
-  display: block; /* This ensures the button moves to the next line */
-  width: 100%; /* Makes the button span the full width */
-  margin-top: 10px; /* Optional, for some space above the button */
-  background-color: #f1c40f; /* Change background color */
-  color: #ffffff; /* Text color */
-  border-radius: 5px; /* Border radius */
-  font-size: 14px; /* Font size */
-  font-weight: bold; /* Font weight */
-  padding: 10px 0; /* Adjust padding */
-  cursor: pointer; /* Pointer cursor */
+  display: block; 
+  width: 100%; 
+  margin-top: 10px; 
+  background-color: #f1c40f; 
+  color: #ffffff; 
+  border-radius: 5px;
+  font-size: 14px; 
+  font-weight: bold; 
+  padding: 10px 0; 
+  cursor: pointer; 
   transition: background-color 0.3s ease;
 }
 
 #domain-availability-check-section .full-width-button:hover {
-  background-color: #bd1401; /* Background color on hover */
+  background-color: #bd1401; 
 }
 
-/* Wrapper for input field and suggest button (new) */
 #domain-suggestions-wrapper {
   display: flex;
   width: 100%;
@@ -778,9 +771,8 @@ body {
   justify-content: center;
 }
 
-/* Input field for domain name suggestions */
 #domain-name-suggestions {
-  flex: 1; /* Takes up most of the row */
+  flex: 1; 
   padding: 12px;
   border-radius: 30px;
   margin-left: 5px;
@@ -812,7 +804,7 @@ body {
 
 /* Back button below the wrapper */
 #back-to-previous-section {
-  width: 100%; /* Make the back button span the full width */
+  width: 100%; 
   padding: 12px 18px;
   background-color: #1abc9c;
   color: #ffffff;
@@ -832,9 +824,9 @@ body {
 
 /* Assistant Logo */
 #assistant-logo {
-  position: absolute; /* Changed from fixed to absolute */
-  bottom: 10px; /* Adjust position inside the chatbox */
-  right: 10px; /* Adjust position inside the chatbox */
+  position: absolute; 
+  bottom: 10px; 
+  right: 10px; 
   background-color: #f1c40f;
   color: #fff;
   border-radius: 50%;
@@ -873,8 +865,8 @@ body {
   }
 
   .header {
-    font-size: 16px; /* Adjust font size for smaller screens */
-    padding: 10px; /* Slightly reduce padding */
+    font-size: 16px; 
+    padding: 10px;
   }
 
   .chat-log {
@@ -934,8 +926,8 @@ body {
   }
 
   .header {
-    font-size: 12px; /* Further reduce font size */
-    padding: 6px; /* Further reduce padding */
+    font-size: 12px; 
+    padding: 6px; 
   }
   .chat-log {
     font-size: 14px;
@@ -973,7 +965,7 @@ body {
   }
 }
 
-/* For screens 375px (iPhone SE size and smaller) */
+/* For screens 375px */
 @media (max-width: 375px) {
   #chatbox {
     width: 90vw;
@@ -992,8 +984,8 @@ body {
     padding: 10px;
   }
   .header {
-    font-size: 11px; /* Further reduce font size */
-    padding: 5px; /* Further reduce padding */
+    font-size: 11px; 
+    padding: 5px;
   }
 
   .chat-log {
