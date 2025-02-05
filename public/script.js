@@ -36,7 +36,7 @@
     const newMessage = document.createElement('div');
     newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
 
-    // Check if the message is "Generating domain names..." and add a spinner
+    // Check if the message is "Generating domain names..." and add a spinner next to it
     if (message === "Generating domain names...") {
         newMessage.innerHTML = `<span>${message}</span> <div class="loading-spinner"></div>`;
     } else {
@@ -44,25 +44,21 @@
     }
 
     chatLog.appendChild(newMessage);
-
-    // Scroll to the start of the bot's answer instead of bottom
-    if (sender === 'bot' && message.startsWith("Answer:")) {
-        scrollToAnswer(newMessage);
-    }
+    scrollToBottom();
 }
 
 const loadingContainer = document.getElementById('loading-container');
 if (loadingContainer) {
     loadingContainer.style.display = 'none';  // Hide the global spinner
 }
-
-// 🔹 New Function: Scroll to Start of Answer Instead of Bottom
-function scrollToAnswer(answerElement) {
-    setTimeout(() => {
-        answerElement.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100); // Small delay to ensure rendering
-}
-
+  
+  // Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
+  function scrollToBottom() {
+    const chatLog = document.querySelector('.chat-log');
+    if (chatLog) {
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+  }
   
 
   // Function to show the button press in the chat log
