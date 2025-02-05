@@ -230,7 +230,6 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
   }
 });
 
-s
 // Function to check availability of multiple domains
 const checkDomainsAvailability = async (suggestions) => {
   const availabilityChecks = suggestions.map((domain) =>
