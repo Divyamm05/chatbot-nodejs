@@ -412,7 +412,7 @@ app.post('/api/domain-queries', async (req, res) => {
       'https://api.cohere.ai/v1/generate',
       {
         model: 'command',
-        prompt: `Provide a detailed and comprehensive answer to this domain-related query: "${query}". Include step-by-step instructions, examples, and explanations if applicable. Make sure the response is complete before the tokens finish off.`,
+        prompt: `Provide a detailed and comprehensive answer to this domain-related query: "${query}". Include step-by-step instructions, examples, and explanations if applicable. Make sure the response is complete before the tokens finish off. Just answer what is being asked and dont provide extra suggestions`,
         max_tokens: 1000,
         temperature: 0.3,
       },
