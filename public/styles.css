@@ -398,7 +398,7 @@ body {
   flex-direction: column;
   padding: 15px 20px;
   gap: 6px;
-  max-width: 350px;
+  max-width: 650px;
   max-height: 120px;
   overflow: hidden;
 }

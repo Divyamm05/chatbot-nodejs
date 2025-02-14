@@ -10,6 +10,7 @@ const whois = require('whois');
 const whois2 = require('whois-json');
 const Fuse = require('fuse.js');
 const admin = require('firebase-admin');
+const { info } = require('console');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -377,7 +378,52 @@ app.post('/api/domain-queries', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Query is required.' });
   }
 
+  const extractDomainName = (text) => {
+    if (!text) return null;
+
+    // Regular expression to match a domain name
+    const domainRegex = /\b((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})\b/;
+
+    const match = text.match(domainRegex);
+    return match ? match[1] : null;
+};
+
+const domainName = extractDomainName(query);
+if (!domainName) {
+  return res.status(400).json({ success: false, message: 'No valid domain name found in the query.' });
+}
+console.log('Extracted Domain:', domainName);
+
   const lowerQuery = query.toLowerCase().trim();
+
+  if (lowerQuery.includes("view auth code for") && domainName) {
+    return res.json({
+      success: true,
+      answer: "Auth codes (EPP codes) are not publicly available due to security reasons. You must request the auth code from your domain registrar via their dashboard or support team."
+    });
+  }
+
+  if ((lowerQuery.includes("what are the name servers for") || lowerQuery.includes("name servers for")) && domainName) {
+    try {
+      const whoisData = await whois(domainName);
+      const nameServers = whoisData.nameServers || 'No name servers found';
+      return res.json({ success: true, answer: `Name servers for ${domainName}: ${nameServers}` });
+    } catch (error) {
+      console.error('WHOIS lookup failed:', error);
+      return res.status(500).json({ success: false, message: 'Error retrieving name servers.' });
+    }
+  }
+
+  if ((lowerQuery.includes("when was this domain name registered") || lowerQuery.includes("registration date")) && domainName) {
+    try {
+      const whoisData = await whois(domainName);
+      const creationDate = whoisData.creationDate || 'No registration date found';
+      return res.json({ success: true, answer: `The domain ${domainName} was registered on: ${creationDate}` });
+    } catch (error) {
+      console.error('WHOIS lookup failed:', error);
+      return res.status(500).json({ success: false, message: 'Error retrieving registration date.' });
+    }
+  }
 
   // Predefined response for chatbot capabilities
   if (lowerQuery.includes("what actions can i do here on chatbot") || 
@@ -385,6 +431,28 @@ app.post('/api/domain-queries', async (req, res) => {
     return res.json({
       success: true,
       answer: "This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries."
+    });
+  }
+
+  if (lowerQuery.includes("How to Enable/Disable Privacy protection") || 
+      lowerQuery.includes("How to Enable Privacy protection") || 
+      lowerQuery.includes("How to Disable Privacy protection")) {
+    return res.json({
+      success: true,
+      answer: 'Privacy protection (also called WHOIS Privacy, Domain Privacy, or ID Protection) hides your personal contact details (name, email, phone, address) from the public WHOIS database. Without privacy protection, your details are visible to everyone, making you vulnerable to spam, phishing attacks, and identity theft. Method 1: Through Your Domain Registrar’s DashboardLog in to your domain registrar account (e.g., GoDaddy, Namecheap, Google Domains, Cloudflare, ConnectReseller, etc.).Find your domain: Go to Domain Management or My Domains. Look for Privacy Protection: There should be an option like:"WHOIS Privacy""Domain Privacy""ID Protection". Enable or Disable it: If enabled, your personal details will be hidden.  If disabled, your details will be public in the WHOIS database. Save changes, if required.'
+    });
+  }
+    const infor = `Theft Protection (also called Domain Lock or Transfer Lock) prevents unauthorized domain transfers to another registrar. Enabling it ensures your domain stays secure from hijacking. 
+  To enable or disable Theft Protection, log in to your domain registrar account, navigate to Domain Management, select your domain, and toggle the Theft Protection option. 
+  If you cannot find this option, contact your registrar's support team. Some registrars provide this feature for free, while others may charge a fee. 
+  Disabling theft protection is required before transferring your domain to another registrar. Certain domains (like .IN, .UK, and .EU) may have different rules for theft protection.`;
+  
+  if (lowerQuery.includes("How to Enable/Disable Theft Protection") || 
+      lowerQuery.includes("How to Enable Theft Protection") || 
+      lowerQuery.includes("How to Disable Theft Protection")) {
+    return res.json({
+      success: true,
+      message: infor
     });
   }
 
