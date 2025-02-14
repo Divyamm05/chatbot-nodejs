@@ -413,7 +413,7 @@ app.post('/api/domain-queries', async (req, res) => {
       {
         model: 'command',
         prompt: `Provide a detailed and comprehensive answer to this domain-related query: "${query}". Include step-by-step instructions, examples, and explanations if applicable.`,
-        max_tokens: 1000,
+        max_tokens: 500,
         temperature: 0.3,
       },
       {
