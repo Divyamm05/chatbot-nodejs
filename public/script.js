@@ -168,6 +168,36 @@ if (loadingContainer) {
     }
   }
 
+  function showInfo() {
+    // Check if info box already exists
+    let existingInfoBox = document.getElementById("info-box");
+    if (existingInfoBox) {
+      existingInfoBox.remove(); // Remove existing info box if clicked again
+      return;
+    }
+  
+  // Create info box
+  let infoBox = document.createElement("div");
+  infoBox.id = "info-box";
+  infoBox.innerHTML = `
+    <p>This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries.</p>
+    <button onclick="closeInfo()">OK</button>
+  `;
+
+  // Position the box near the info button
+  let header = document.querySelector(".header");
+  header.appendChild(infoBox);
+}
+  
+  // Function to close info box
+  function closeInfo() {
+    let infoBox = document.getElementById("info-box");
+    if (infoBox) {
+      infoBox.remove();
+    }
+  }
+  
+
   // Show domain section for domain input
   function showDomainSection() {
     document.getElementById('domain-options').style.display = 'none'; 
