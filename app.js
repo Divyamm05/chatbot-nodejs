@@ -373,15 +373,103 @@ app.post('/api/domain-queries', async (req, res) => {
     'domain name registration', 'buy a domain', 'domain name process', 'domain transfer',
     'how do domains work', 'domain pricing', 'best domain registrars',
     'how to buy a domain', 'difference between domain and hosting', 'domain expiration',
-    'renew a domain', 'free domain services', 'custom domain for website'
-  ];
+    'renew a domain', 'free domain services', 'custom domain for website',
+    'register a domain', 'renew a domain', 'how to transfer IN/OUT domains',
+    'where can I register domains', 'list of domain registrars', 'where can I view domain information',
+    'list of high-value domain TLDs', 'suggest TLDs for selected category',
+    'what actions can I do here on chatbot', 'how to lock/unlock a domain',
+    'how to enable/disable privacy protection', 'how to enable/disable theft protection',
+    'I want to view auth code for domain name', 'what are the name servers for this domain name',
+    'when was this domain name registered', 'what is my current balance in my account',
+    'check available funds', 'I want to update name server for domain name',
+    'I want API documentation', 'I need API for action name',
+    'need transaction report of selected month', 'which domains are getting expired',
+    'which domains are getting deleted on selected date/month',
+    'which domain was registered on selected date/month', 'how can I contact support',
+    'what ongoing offers are available', 'types of SSL', 'where can I sign up',
+    'I want to download WHMCS module', 'export list name', 'how to suspend/unsuspend any domain',
+    'suspend/unsuspend the domain name', 'how can I move a domain', 'how to add child nameserver',
+    'how to pull domain', 'what type of reports can I get'
+];
 
-  const fuse = new Fuse(allowedTopics, { includeScore: true, threshold: 0.5 });
+const synonyms = {
+  "domain": ["domain name", "web address", "site address"],
+  "website": ["web page", "site", "web platform"],
+  "hosting": ["web hosting", "server space", "hosting service"],
+  "DNS": ["domain name system", "name resolution"],
+  "SSL": ["secure socket layer", "TLS", "HTTPS security"],
+  "WHOIS": ["domain lookup", "domain ownership details"],
+  "web development": ["website building", "site creation"],
+  "domain registration": ["registering a domain", "domain signup"],
+  "SEO": ["search engine optimization", "website ranking"],
+  "online presence": ["web visibility", "digital presence"],
+  "how to register a domain name": ["domain name signup", "getting a domain"],
+  "domain name registration": ["register domain", "purchase domain name"],
+  "buy a domain": ["purchase domain", "get a domain"],
+  "domain name process": ["domain acquisition steps", "domain setup"],
+  "domain transfer": ["move domain", "change domain provider"],
+  "how do domains work": ["domain functionality", "domain system explanation"],
+  "domain pricing": ["cost of domains", "domain fees"],
+  "best domain registrars": ["top domain providers", "recommended registrars"],
+  "how to buy a domain": ["where to purchase a domain", "buying a web address"],
+  "difference between domain and hosting": ["domain vs hosting", "hosting vs domain"],
+  "domain expiration": ["domain expiry", "when does domain expire"],
+  "renew a domain": ["extend domain", "re-register domain"],
+  "free domain services": ["complimentary domains", "no-cost domain services"],
+  "custom domain for website": ["personalized web address", "branded domain"],
+  "register a domain": ["sign up for a domain", "get a domain name"],
+  "renew a domain": ["domain extension", "domain renewal"],
+  "how to transfer IN/OUT domains": ["move domain in/out", "domain migration"],
+  "where can I register domains": ["domain providers", "buying domains online"],
+  "list of domain registrars": ["domain providers list", "best registrars"],
+  "where can I view domain information": ["check domain details", "lookup domain info"],
+  "list of high-value domain TLDs": ["premium domain extensions", "expensive TLDs"],
+  "suggest TLDs for selected category": ["best TLDs for niche", "recommended extensions"],
+  "what actions can I do here on chatbot": ["chatbot commands", "chatbot capabilities"],
+  "how to lock/unlock a domain": ["domain security lock", "enable/disable domain lock"],
+  "how to enable/disable privacy protection": ["turn on/off domain privacy", "whois privacy settings"],
+  "how to enable/disable theft protection": ["turn on/off domain protection", "prevent domain theft"],
+  "I want to view auth code for domain name": ["get EPP code", "view transfer key"],
+  "what are the name servers for this domain name": ["domain DNS details", "current name servers"],
+  "when was this domain name registered": ["domain registration date", "domain creation time"],
+  "what is my current balance in my account": ["account funds", "check wallet balance"],
+  "check available funds": ["wallet balance", "remaining credits"],
+  "I want to update name server for domain name": ["change DNS settings", "modify name servers"],
+  "I want API documentation": ["API docs", "developer API reference"],
+  "I need API for action name": ["API for specific task", "API endpoint details"],
+  "need transaction report of selected month": ["monthly transaction summary", "billing history"],
+  "which domains are getting expired": ["expiring domains list", "upcoming domain expirations"],
+  "which domains are getting deleted on selected date/month": ["domains scheduled for deletion", "pending domain removals"],
+  "which domain was registered on selected date/month": ["domains registered on date", "newly registered domains"],
+  "how can I contact support": ["customer help", "reach technical support"],
+  "what ongoing offers are available": ["current promotions", "discounted services"],
+  "types of SSL": ["SSL certificate options", "different SSL types"],
+  "where can I sign up": ["create an account", "join platform"],
+  "I want to download WHMCS module": ["get WHMCS plugin", "download WHMCS integration"],
+  "export list name": ["download domain list", "export domain data"],
+  "how to suspend/unsuspend any domain": ["disable/enable domain", "freeze/unfreeze domain"],
+  "suspend/unsuspend the domain name": ["pause/unpause domain", "block/unblock domain"],
+  "how can I move a domain": ["transfer domain ownership", "switch domain provider"],
+  "how to add child nameserver": ["create custom nameserver", "set up child NS"],
+  "how to pull domain": ["retrieve domain info", "get domain details"],
+  "what type of reports can I get": ["available reports", "reporting options"]
+};
+
+
+  const fuse = new Fuse(allowedTopics, { includeScore: true, threshold: 0.3 });
 
   const queryParts = query.toLowerCase()
-    .split(/[\.\?\!\,\;]+|\band\b|\bor\b|\balso\b|\bthen\b|\bafter that\b|\bwhile\b/)
-    .map(part => part.trim())
-    .filter(Boolean);
+  .split(/[\.\?\!\,\;]+|\band\b|\bor\b|\balso\b|\bthen\b|\bafter that\b|\bwhile\b/)
+  .map(part => {
+    // Replace synonyms with main topic
+    for (const [main, syns] of Object.entries(synonyms)) {
+      if (syns.includes(part)) {
+        return main;
+      }
+    }
+    return part;
+  })
+  .filter(Boolean);
 
   console.log("🧐 Query Parts:", queryParts);
 
