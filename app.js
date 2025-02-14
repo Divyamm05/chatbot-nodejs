@@ -97,35 +97,41 @@ app.post('/api/check-email', async (req, res) => {
     return res.status(400).json({ success: false, message: "Email is required." });
   }
 
-  req.session.email = email;
+  req.session.email = email.trim().toLowerCase(); // ✅ Always store email in lowercase
+
+  // ✅ Tester Bypass Logic
+  if (req.session.email === "tester@abc.com") {
+    req.session.otpVerified = true; // ✅ Skip OTP for tester
+    return res.json({ success: true, message: "Tester login - OTP bypassed." });
+  }
 
   try {
     const usersRef = db.collection('users');
-    const query = await usersRef.where('email', '==', email).get(); 
+    const query = await usersRef.where('email', '==', req.session.email).get();
 
     if (query.empty) {
       return res.status(404).json({ 
         success: false, 
         message: `Email not found in our records.  
 <a href="https://india.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the India panel.  
-<a href="https://global.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the Global panel.` 
+<a href="https://global.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the Global panel.
+Or enter your registered email id to continue. ` 
       });
     }
 
-    const userDoc = query.docs[0]; 
+    const userDoc = query.docs[0];
 
+    // ✅ Generate OTP (skipped for tester)
     const otp = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 60000); 
+    const expiresAt = new Date(Date.now() + 60000);
 
-    const otpRef = db.collection('otp_records').doc(email);
-    await otpRef.set({
-      otp,
-      expires_at: expiresAt,
-    }, { merge: true });
+    const otpRef = db.collection('otp_records').doc(req.session.email);
+    await otpRef.set({ otp, expires_at: expiresAt }, { merge: true });
 
+    // ✅ Send OTP Email
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: email,
+      to: req.session.email,
       subject: 'Your OTP Code',
       text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
     };
@@ -369,6 +375,17 @@ app.post('/api/domain-queries', async (req, res) => {
 
   if (!query) {
     return res.status(400).json({ success: false, message: 'Query is required.' });
+  }
+
+  const lowerQuery = query.toLowerCase().trim();
+
+  // Predefined response for chatbot capabilities
+  if (lowerQuery.includes("what actions can i do here on chatbot") || 
+      lowerQuery.includes("what can this chatbot do")) {
+    return res.json({
+      success: true,
+      answer: "This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries."
+    });
   }
 
   // 🔹 Allowed domain-related topics
