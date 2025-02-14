@@ -104,7 +104,12 @@ app.post('/api/check-email', async (req, res) => {
     const query = await usersRef.where('email', '==', email).get(); 
 
     if (query.empty) {
-      return res.status(404).json({ success: false, message: "Email not found in our records." });
+      return res.status(404).json({ 
+        success: false, 
+        message: `Email not found in our records.  
+<a href="https://india.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the India panel.  
+<a href="https://global.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the Global panel.` 
+      });
     }
 
     const userDoc = query.docs[0]; 
