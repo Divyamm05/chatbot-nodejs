@@ -480,6 +480,7 @@ async function submitDomainQuery() {
         if (answerElement) {
           answerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        queryInput.value = "";
       }
 
     } else {
