@@ -118,7 +118,7 @@ const startQuestions = {
   
   "Are there any discounts or offers for new users?": "Yes, we offer discounts for new users. Check our website for more information.",
   "Do you have any deals for new users?": "Yes, we offer discounts for new users. Check our website for more information.",
-  "Is there a sign-up bonus or discount available?": "Yes, we offer discounts for new users. Check our website for more information."
+  "Is there a sign-up bonus or discount available?": "Yes, we offer discounts for new users. Check our website for more information.",
 
   "Can I transfer my existing domains to this platform?": "Yes, you can transfer your domains to our platform.",
   "How do I create an account?": '<a href="https://india.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to create an account for the India panel or <a href="https://global.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to create an account for the Global panel.',
