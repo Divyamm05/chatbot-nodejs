@@ -18,14 +18,22 @@
       <span class="close-btn" onclick="closeChatbox()">×</span> 
     </div>
     <div class="chat-log" id="chat-log">
-      <div class="message bot-message">Hello! Please enter your email address to get started.</div>
+      <div class="message bot-message">Hello! How may I assist you today?</div>
     </div>
 
-    <!-- Email Section -->
-    <div class="chat-input" id="email-section">
-      <input type="email" id="user-email" placeholder="Enter your email" autofocus>
-      <button id="submit-email" onclick="requestOTP()">Submit</button>
-    </div>
+    <!-- User Input Section -->
+<div class="chat-input" id="user-input-section">
+  <input type="text" id="user-question" placeholder="Ask a question..." autofocus>
+  <button id="submit-question" onclick="processUserQuestion()">Ask</button>
+  <button id="signin" onclick="taketosigninsection()">Sign In</button>
+</div>
+
+<!-- Email Section (Initially Hidden) -->
+<div class="chat-input" id="email-section" style="display: none;">
+  <input type="email" id="user-email" placeholder="Enter your email" autofocus>
+  <button id="submit-email" onclick="requestOTP()">Submit</button>
+  <button id="back-to-userinput-section" onclick="goBackTouserinputsection()">Back</button>
+</div>
 
     <!-- OTP Section -->
     <div class="chat-input" style="display:none" id="otp-section">

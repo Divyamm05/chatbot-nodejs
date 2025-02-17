@@ -69,6 +69,110 @@ function checkSession(req, res, next) {
   next();
 }
 
+const startQuestions = {
+  "What features does this platform offer?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What are the features of this platform?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What are the key features of this platform?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What does this platform offer?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What features can I use on this platform?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+
+  "What can this chatbot do?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What all can this chatbot do?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What is this chatbot capable of?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can I do with this chatbot?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can the chatbot do for me?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+
+  "Can I use this platform for domain registration and management?": "Yes, you can register and manage domain names on this platform.",
+  "Is domain registration possible on this platform?": "Yes, you can register and manage domain names on this platform.",
+  "Can I register a domain on this platform?": "Yes, you can register and manage domain names on this platform.",
+  "Can I buy and manage domains on this site?": "Yes, you can register and manage domain names on this platform.",
+  "Can I use this platform to register and manage domains?": "Yes, you can register and manage domain names on this platform.",
+  
+  "What is the process for signing up?": "You can sign up by providing your email and setting up an account with a password.",
+  "How do I sign up for this platform?": "You can sign up by providing your email and setting up an account with a password.",
+  "How can I create an account?": "You can sign up by providing your email and setting up an account with a password.",
+  "What do I need to do to register for an account?": "You can sign up by providing your email and setting up an account with a password.",
+  "What is the sign-up process for this platform?": "You can sign up by providing your email and setting up an account with a password.",
+
+  "Do I need an account to access all the features?": "Yes, an account is required for some advanced features.",
+  "Is an account necessary to use all the features?": "Yes, an account is required for some advanced features.",
+  "Can I use all the features without signing up?": "Yes, an account is required for some advanced features.",
+  "Are all the features available without an account?": "Yes, an account is required for some advanced features.",
+  "Do I have to create an account to use this platform?": "Yes, an account is required for some advanced features.",
+  
+  "How can I search for a domain name?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
+  "Where can I check for domain availability?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
+  "How to check if a domain is available?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
+  "How do I find a good domain name for my website?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
+  
+  "What details are required to register a domain?": "To register a domain, you need to provide the desired domain name, create an account with a domain registrar, and submit your personal or business details, including your name, address, email, and phone number. You’ll also need a valid payment method to pay for the domain registration and may choose to set up DNS settings if you’re linking to a website or email. Additionally, some registrars offer domain privacy protection to keep your information private in the WHOIS database. After registration, you'll need to manage renewals to maintain ownership.",
+  "What information is needed to buy a domain?": "To register a domain, you need to provide the desired domain name, create an account with a domain registrar, and submit your personal or business details, including your name, address, email, and phone number. You’ll also need a valid payment method to pay for the domain registration and may choose to set up DNS settings if you’re linking to a website or email. Additionally, some registrars offer domain privacy protection to keep your information private in the WHOIS database. After registration, you'll need to manage renewals to maintain ownership.",
+  
+  "Do you support premium domain registration?": "Yes, we support the registration of premium domains.",
+  "Can I buy premium domains on this platform?": "Yes, we support the registration of premium domains.",
+  "Does this platform offer premium domain purchases?": "Yes, we support the registration of premium domains.",
+  
+  "What payment methods are supported?": "We accept credit/debit cards and other popular payment methods.",
+  "What are the available payment options?": "We accept credit/debit cards and other popular payment methods.",
+  "How can I make a payment?": "We accept credit/debit cards and other popular payment methods.",
+  
+  "Are there any discounts or offers for new users?": "Yes, we offer discounts for new users. Check our website for more information.",
+  "Do you have any deals for new users?": "Yes, we offer discounts for new users. Check our website for more information.",
+  "Is there a sign-up bonus or discount available?": "Yes, we offer discounts for new users. Check our website for more information."
+};
+
+
+// Helper function to normalize user input
+function normalizeText(text) {
+  return text.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+}
+// Normalize predefined questions
+const normalizedStartQuestions = Object.keys(startQuestions).reduce((acc, key) => {
+  acc[normalizeText(key)] = startQuestions[key];
+  return acc;
+}, {});
+
+// Route to handle the question
+app.post('/ask-question', (req, res) => {
+  const userQuestion = req.body.question;
+  
+  if (!userQuestion) {
+    return res.status(400).json({ answer: "Invalid question. Please try again." });
+  }
+
+  const normalizedUserQuestion = normalizeText(userQuestion);
+
+  // Prioritize exact matches first
+  if (normalizedStartQuestions[normalizedUserQuestion]) {
+    return res.json({ answer: normalizedStartQuestions[normalizedUserQuestion] });
+  }
+
+  // Now check for common keyword categories
+  const signupKeywords = ["sign up", "signup", "sign-in", "sign in", "register", "create account"];
+  if (signupKeywords.some(keyword => normalizedUserQuestion.includes(keyword))) {
+    return res.json({
+      answer: "You can sign up by providing your email and setting up an account with a password."
+    });
+  }
+
+  const domainKeywords = ["domain", "register", "dns", "transfer", "premium"];
+  if (domainKeywords.some(keyword => normalizedUserQuestion.includes(keyword))) {
+    return res.json({
+      answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!"
+    });
+  }
+
+  const pricingKeywords = ["pricing", "cost", "fee", "price"];
+  if (pricingKeywords.some(keyword => normalizedUserQuestion.includes(keyword))) {
+    return res.json({
+      answer: "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!"
+    });
+  }
+
+  // Default response if no match
+  return res.json({ answer: "Please sign in to access all the features." });
+});
+
 // Tester login without checking Firebase
 app.post('/api/tester-login', logSession, (req, res) => {
   const { email } = req.body;
@@ -472,6 +576,11 @@ app.post('/api/domain-queries', async (req, res) => {
   }
 
   // Step 3: Use Cohere API for Allowed Topics
+  const isDomainRelated = queryParts.some(part => fuse2.search(part).length > 0);
+
+  if (!isDomainRelated) {
+    return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
+  }
   const queryParts = lowerQuery.split(/[^a-zA-Z0-9]+/).filter(Boolean);
   const validParts = queryParts.filter(part => fuse2.search(part).length > 0);
 
@@ -497,6 +606,7 @@ app.post('/api/domain-queries', async (req, res) => {
 
   return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
 });
+
 const dns = require('dns').promises;
 
 app.post('/api/check-domain-availability', async (req, res) => {
