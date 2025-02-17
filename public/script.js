@@ -41,6 +41,78 @@
     scrollToBottom();
 }
 
+function taketosigninsection() {
+  const emailSection = document.getElementById('email-section');
+  const userinputSection = document.getElementById('user-input-section');
+  // Toggle the visibility of the email section
+  if (emailSection.style.display === 'none' || emailSection.style.display === '') {
+    emailSection.style.display = 'flex';
+    userinputSection.style.display = 'none';
+      // Show the email section
+  } else {
+    emailSection.style.display = 'none';  // Hide the email section
+  }
+}
+
+function updateChatLog(message, sender) {
+  console.log("updateChatLog called:", message);
+  const chatLog = document.querySelector('.chat-log');
+
+  const newMessage = document.createElement('div');
+  newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
+
+  if (message === "Generating domain names...") {
+      newMessage.innerHTML = `<span>${message}</span> <div class="loading-spinner"></div>`;
+  } else {
+      newMessage.innerHTML = message.replace(/\n/g, "<br>");
+  }
+
+  chatLog.appendChild(newMessage);
+  scrollToBottom();
+}
+
+function processUserQuestion() {
+  const userQuestion = document.getElementById("user-question").value.trim();
+
+  if (userQuestion) {
+    // Display user question in the chat log
+    const chatLog = document.getElementById("chat-log");
+
+    const userMessage = document.createElement('div');
+    userMessage.className = 'message user-message';
+    userMessage.innerHTML = `<span>${userQuestion}</span>`;
+    chatLog.appendChild(userMessage);
+
+    // Optionally, clear the input field
+    document.getElementById("user-question").value = "";
+
+    // Call the function to handle the bot's response or action
+    handleBotResponse(userQuestion);
+  }
+}
+
+async function handleBotResponse(userQuestion) {
+  try {
+    const response = await fetch('/ask-question', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ question: userQuestion })
+    });
+
+    const data = await response.json();
+
+    if (data.answer) {
+      updateChatLog(data.answer, 'bot');
+    } else {
+      updateChatLog("Sorry, I don't have an answer for that question.", 'bot');
+    }
+  } catch (error) {
+    console.error("Error sending question to backend:", error);
+    updateChatLog("There was an error processing your question. Please try again.", 'bot');
+  }
+}
 const loadingContainer = document.getElementById('loading-container');
 if (loadingContainer) {
     loadingContainer.style.display = 'none';  
@@ -262,6 +334,12 @@ function goBackToPreviousSection() {
     document.getElementById('domain-section').style.display = 'none';
 
     document.getElementById('domain-options').style.display = 'flex'; 
+}
+
+function goBackTouserinputsection() {
+  document.getElementById('email-section').style.display = 'none';
+
+  document.getElementById('user-input-section').style.display = 'flex'; 
 }
 
   function getMoreSuggestions() {
