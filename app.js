@@ -396,16 +396,16 @@ console.log('Extracted Domain:', domainName);
 
   const lowerQuery = query.toLowerCase().trim();
 
-  if (lowerQuery.includes("view auth code for") && domainName) {
+  if (lowerQuery.includes("auth code for") && domainName) {
     return res.json({
       success: true,
       answer: "Auth codes (EPP codes) are not publicly available due to security reasons. You must request the auth code from your domain registrar via their dashboard or support team."
     });
   }
 
-  if ((lowerQuery.includes("what are the name servers for") || lowerQuery.includes("name servers for")) && domainName) {
+  if ((lowerQuery.includes("what are the name servers for") || lowerQuery.includes("name servers")) && domainName) {
     try {
-      const whoisData = await whois(domainName);
+      const whoisData = await whois2(domainName);
       const nameServers = whoisData.nameServers || 'No name servers found';
       return res.json({ success: true, answer: `Name servers for ${domainName}: ${nameServers}` });
     } catch (error) {
@@ -414,17 +414,20 @@ console.log('Extracted Domain:', domainName);
     }
   }
 
-  if ((lowerQuery.includes("when was this domain name registered") || lowerQuery.includes("registration date")) && domainName) {
-    try {
-      const whoisData = await whois(domainName);
-      const creationDate = whoisData.creationDate || 'No registration date found';
-      return res.json({ success: true, answer: `The domain ${domainName} was registered on: ${creationDate}` });
-    } catch (error) {
-      console.error('WHOIS lookup failed:', error);
-      return res.status(500).json({ success: false, message: 'Error retrieving registration date.' });
+    if ((lowerQuery.includes("when was") && lowerQuery.includes("registered") || lowerQuery.includes("registration date")) && domainName) {
+      try {
+        const whoisData = await whois2(domainName);
+        const creationDate = whoisData.creationDate || 'No registration date found';
+        return res.json({ success: true, answer: `The domain ${domainName} was registered on: ${creationDate}` });
+      } catch (error) {
+        console.error('WHOIS lookup failed:', error);
+        return res.status(500).json({ success: false, message: 'Error retrieving registration date.' });
+      }
     }
-  }
-
+    if (!domainName && !lowerQuery.includes("what actions can i do here on chatbot") && !lowerQuery.includes("what can this chatbot do")) {
+      return res.status(400).json({ success: false, message: 'No valid domain name found in the query.' });
+    }
+    
   // Predefined response for chatbot capabilities
   if (lowerQuery.includes("what actions can i do here on chatbot") || 
       lowerQuery.includes("what can this chatbot do")) {
@@ -466,7 +469,7 @@ console.log('Extracted Domain:', domainName);
     'renew a domain', 'free domain services', 'custom domain for website',
     'register a domain', 'renew a domain', 'how to transfer IN/OUT domains',
     'where can I register domains', 'list of domain registrars', 'where can I view domain information',
-    'list of high-value domain TLDs', 'suggest TLDs for selected category',
+    'list of high-value domain TLDs', 'suggest TLDs for', 'suggest TLD for',
     'what actions can I do here on chatbot', 'how to lock/unlock a domain',
     'how to enable/disable privacy protection', 'how to enable/disable theft protection',
     'I want to view auth code for domain name', 'what are the name servers for this domain name',
@@ -579,7 +582,7 @@ const synonyms = {
     console.log("❌ Query contains non-domain topics. Rejecting.");
     return res.status(400).json({
       success: false,
-      message: 'Please ask only domain-related questions. Separate non-domain queries.'
+      message: 'Please ask only domain-related questions.'
     });
   }
 
