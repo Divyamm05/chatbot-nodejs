@@ -369,258 +369,134 @@ app.post('/api/domain-suggestions', async (req, res) => {
   }
 });
 
-// Domain Name Related Queries
-app.post('/api/domain-queries', async (req, res) => {
-  const { query } = req.body;
-  console.log('Received query:', query);
-
-  if (!query) {
-    return res.status(400).json({ success: false, message: 'Query is required.' });
-  }
-
-  const extractDomainName = (text) => {
-    if (!text) return null;
-
-    // Regular expression to match a domain name
-    const domainRegex = /\b((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})\b/;
-
-    const match = text.match(domainRegex);
-    return match ? match[1] : null;
-};
-
-const domainName = extractDomainName(query);
-if (!domainName) {
-  return res.status(400).json({ success: false, message: 'No valid domain name found in the query.' });
-}
-console.log('Extracted Domain:', domainName);
-
-  const lowerQuery = query.toLowerCase().trim();
-
-  if (lowerQuery.includes("auth code for") && domainName) {
-    return res.json({
-      success: true,
-      answer: "Auth codes (EPP codes) are not publicly available due to security reasons. You must request the auth code from your domain registrar via their dashboard or support team."
-    });
-  }
-
-  if ((lowerQuery.includes("what are the name servers for") || lowerQuery.includes("name servers")) && domainName) {
-    try {
-      const whoisData = await whois2(domainName);
-      const nameServers = whoisData.nameServers || 'No name servers found';
-      return res.json({ success: true, answer: `Name servers for ${domainName}: ${nameServers}` });
-    } catch (error) {
-      console.error('WHOIS lookup failed:', error);
-      return res.status(500).json({ success: false, message: 'Error retrieving name servers.' });
-    }
-  }
-
-    if ((lowerQuery.includes("when was") && lowerQuery.includes("registered") || lowerQuery.includes("registration date")) && domainName) {
-      try {
-        const whoisData = await whois2(domainName);
-        const creationDate = whoisData.creationDate || 'No registration date found';
-        return res.json({ success: true, answer: `The domain ${domainName} was registered on: ${creationDate}` });
-      } catch (error) {
-        console.error('WHOIS lookup failed:', error);
-        return res.status(500).json({ success: false, message: 'Error retrieving registration date.' });
-      }
-    }
-    if (!domainName && !lowerQuery.includes("what actions can i do here on chatbot") && !lowerQuery.includes("what can this chatbot do")) {
-      return res.status(400).json({ success: false, message: 'No valid domain name found in the query.' });
-    }
-    
-  // Predefined response for chatbot capabilities
-  if (lowerQuery.includes("what actions can i do here on chatbot") || 
-      lowerQuery.includes("what can this chatbot do")) {
-    return res.json({
-      success: true,
-      answer: "This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries."
-    });
-  }
-
-  if (lowerQuery.includes("How to Enable/Disable Privacy protection") || 
-      lowerQuery.includes("How to Enable Privacy protection") || 
-      lowerQuery.includes("How to Disable Privacy protection")) {
-    return res.json({
-      success: true,
-      answer: 'Privacy protection (also called WHOIS Privacy, Domain Privacy, or ID Protection) hides your personal contact details (name, email, phone, address) from the public WHOIS database. Without privacy protection, your details are visible to everyone, making you vulnerable to spam, phishing attacks, and identity theft. Method 1: Through Your Domain Registrar’s DashboardLog in to your domain registrar account (e.g., GoDaddy, Namecheap, Google Domains, Cloudflare, ConnectReseller, etc.).Find your domain: Go to Domain Management or My Domains. Look for Privacy Protection: There should be an option like:"WHOIS Privacy""Domain Privacy""ID Protection". Enable or Disable it: If enabled, your personal details will be hidden.  If disabled, your details will be public in the WHOIS database. Save changes, if required.'
-    });
-  }
-    const infor = `Theft Protection (also called Domain Lock or Transfer Lock) prevents unauthorized domain transfers to another registrar. Enabling it ensures your domain stays secure from hijacking. 
-  To enable or disable Theft Protection, log in to your domain registrar account, navigate to Domain Management, select your domain, and toggle the Theft Protection option. 
-  If you cannot find this option, contact your registrar's support team. Some registrars provide this feature for free, while others may charge a fee. 
-  Disabling theft protection is required before transferring your domain to another registrar. Certain domains (like .IN, .UK, and .EU) may have different rules for theft protection.`;
-  
-  if (lowerQuery.includes("How to Enable/Disable Theft Protection") || 
-      lowerQuery.includes("How to Enable Theft Protection") || 
-      lowerQuery.includes("How to Disable Theft Protection")) {
-    return res.json({
-      success: true,
-      message: infor
-    });
-  }
-
-  // 🔹 Allowed domain-related topics
-  const allowedTopics = [
-    'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development', 
-    'domain registration', 'SEO', 'online presence', 'how to register a domain name', 
-    'domain name registration', 'buy a domain', 'domain name process', 'domain transfer',
-    'how do domains work', 'domain pricing', 'best domain registrars',
-    'how to buy a domain', 'difference between domain and hosting', 'domain expiration',
-    'renew a domain', 'free domain services', 'custom domain for website',
-    'register a domain', 'renew a domain', 'how to transfer IN/OUT domains',
-    'where can I register domains', 'list of domain registrars', 'where can I view domain information',
-    'list of high-value domain TLDs', 'suggest TLDs for', 'suggest TLD for',
-    'what actions can I do here on chatbot', 'how to lock/unlock a domain',
-    'how to enable/disable privacy protection', 'how to enable/disable theft protection',
-    'I want to view auth code for domain name', 'what are the name servers for this domain name',
-    'when was this domain name registered', 'what is my current balance in my account',
-    'check available funds', 'I want to update name server for domain name',
-    'I want API documentation', 'I need API for action name',
-    'need transaction report of selected month', 'which domains are getting expired',
-    'which domains are getting deleted on selected date/month',
-    'which domain was registered on selected date/month', 'how can I contact support',
-    'what ongoing offers are available', 'types of SSL', 'where can I sign up',
-    'I want to download WHMCS module', 'export list name', 'how to suspend/unsuspend any domain',
-    'suspend/unsuspend the domain name', 'how can I move a domain', 'how to add child nameserver',
-    'how to pull domain', 'what type of reports can I get'
+// Define allowedTopics before initializing Fuse
+const allowedTopics = [
+  'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
+  'domain registration', 'SEO', 'online presence', 'how to register a domain name',
+  'domain name registration', 'buy a domain', 'domain name process', 'domain transfer',
+  'domain pricing', 'best domain registrars', 'domain expiration', 'renew a domain',
+  'custom domain for website', 'how to enable/disable privacy protection',
+  'how to enable/disable theft protection', 'what are the name servers for',
+  'when was this domain registered'
 ];
 
-const synonyms = {
-  "domain": ["domain name", "web address", "site address"],
-  "website": ["web page", "site", "web platform"],
-  "hosting": ["web hosting", "server space", "hosting service"],
-  "DNS": ["domain name system", "name resolution"],
-  "SSL": ["secure socket layer", "TLS", "HTTPS security"],
-  "WHOIS": ["domain lookup", "domain ownership details"],
-  "web development": ["website building", "site creation"],
-  "domain registration": ["registering a domain", "domain signup"],
-  "SEO": ["search engine optimization", "website ranking"],
-  "online presence": ["web visibility", "digital presence"],
-  "how to register a domain name": ["domain name signup", "getting a domain"],
-  "domain name registration": ["register domain", "purchase domain name"],
-  "buy a domain": ["purchase domain", "get a domain"],
-  "domain name process": ["domain acquisition steps", "domain setup"],
-  "domain transfer": ["move domain", "change domain provider"],
-  "how do domains work": ["domain functionality", "domain system explanation"],
-  "domain pricing": ["cost of domains", "domain fees"],
-  "best domain registrars": ["top domain providers", "recommended registrars"],
-  "how to buy a domain": ["where to purchase a domain", "buying a web address"],
-  "difference between domain and hosting": ["domain vs hosting", "hosting vs domain"],
-  "domain expiration": ["domain expiry", "when does domain expire"],
-  "renew a domain": ["extend domain", "re-register domain"],
-  "free domain services": ["complimentary domains", "no-cost domain services"],
-  "custom domain for website": ["personalized web address", "branded domain"],
-  "register a domain": ["sign up for a domain", "get a domain name"],
-  "renew a domain": ["domain extension", "domain renewal"],
-  "how to transfer IN/OUT domains": ["move domain in/out", "domain migration"],
-  "where can I register domains": ["domain providers", "buying domains online"],
-  "list of domain registrars": ["domain providers list", "best registrars"],
-  "where can I view domain information": ["check domain details", "lookup domain info"],
-  "list of high-value domain TLDs": ["premium domain extensions", "expensive TLDs"],
-  "suggest TLDs for selected category": ["best TLDs for niche", "recommended extensions"],
-  "what actions can I do here on chatbot": ["chatbot commands", "chatbot capabilities"],
-  "how to lock/unlock a domain": ["domain security lock", "enable/disable domain lock"],
-  "how to enable/disable privacy protection": ["turn on/off domain privacy", "whois privacy settings"],
-  "how to enable/disable theft protection": ["turn on/off domain protection", "prevent domain theft"],
-  "I want to view auth code for domain name": ["get EPP code", "view transfer key"],
-  "what are the name servers for this domain name": ["domain DNS details", "current name servers"],
-  "when was this domain name registered": ["domain registration date", "domain creation time"],
-  "what is my current balance in my account": ["account funds", "check wallet balance"],
-  "check available funds": ["wallet balance", "remaining credits"],
-  "I want to update name server for domain name": ["change DNS settings", "modify name servers"],
-  "I want API documentation": ["API docs", "developer API reference"],
-  "I need API for action name": ["API for specific task", "API endpoint details"],
-  "need transaction report of selected month": ["monthly transaction summary", "billing history"],
-  "which domains are getting expired": ["expiring domains list", "upcoming domain expirations"],
-  "which domains are getting deleted on selected date/month": ["domains scheduled for deletion", "pending domain removals"],
-  "which domain was registered on selected date/month": ["domains registered on date", "newly registered domains"],
-  "how can I contact support": ["customer help", "reach technical support"],
-  "what ongoing offers are available": ["current promotions", "discounted services"],
-  "types of SSL": ["SSL certificate options", "different SSL types"],
-  "where can I sign up": ["create an account", "join platform"],
-  "I want to download WHMCS module": ["get WHMCS plugin", "download WHMCS integration"],
-  "export list name": ["download domain list", "export domain data"],
-  "how to suspend/unsuspend any domain": ["disable/enable domain", "freeze/unfreeze domain"],
-  "suspend/unsuspend the domain name": ["pause/unpause domain", "block/unblock domain"],
-  "how can I move a domain": ["transfer domain ownership", "switch domain provider"],
-  "how to add child nameserver": ["create custom nameserver", "set up child NS"],
-  "how to pull domain": ["retrieve domain info", "get domain details"],
-  "what type of reports can I get": ["available reports", "reporting options"]
+// Predefined answers
+const predefinedAnswers = {
+  "how to enable/disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
+  "how to disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
+  "how to enable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
+  "steps to enable/disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
+  "steps to enable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
+  "steps to disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
+  "how to enable/disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
+  "how to disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
+  "how to enable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
+  "steps to enable/disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
+  "steps to disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
+  "steps to enable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
+  "what actions can i do here on chatbot" :"This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries.",
+  "what can this chatbot do":"This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries."
+};
+
+// Convert predefined questions into an array
+const predefinedQuestions = Object.keys(predefinedAnswers);
+
+const normalizeQuery = (query) => {
+  return query
+    .toLowerCase()
+    .replace(/\b(all|can|this|do)\b/g, '')  // Remove common words or phrases that could vary
+    .trim();
+};
+
+// Initialize Fuse.js once (outside of the API function) for predefined questions
+const fuse1 = new Fuse(predefinedQuestions, {
+  includeScore: true,
+  threshold: 0.4 // Adjust threshold for flexibility
+});
+
+// Initialize second Fuse instance for allowed topics
+const fuse2 = new Fuse(allowedTopics, {
+  includeScore: true,
+  threshold: 0.4
+});
+
+// Function to extract domain name from the query
+const extractDomain = (text) => {
+  const domainRegex = /\b((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})\b/;
+  const match = text.match(domainRegex);
+  return match ? match[1] : null;
+};
+
+// Example of how to use fuse1 (predefinedAnswers) and fuse2 (allowedTopics)
+
+// Search function for predefined answers
+const searchPredefinedAnswer = (query) => {
+  const result = fuse1.search(query);
+  return result.length > 0 ? predefinedAnswers[result[0].item] : null;
+};
+
+// Search function for allowed topics
+const searchAllowedTopics = (query) => {
+  const result = fuse2.search(query);
+  return result.length > 0 ? result[0].item : null;
 };
 
 
-  const fuse = new Fuse(allowedTopics, { includeScore: true, threshold: 0.3 });
+app.post('/api/domain-queries', async (req, res) => {
+  const { query } = req.body;
+  if (!query) return res.status(400).json({ success: false, message: 'Query is required.' });
+  
+  console.log('Received query:', query);
+  const lowerQuery = normalizeQuery(query);
+  const domainName = extractDomain(query);
 
-  const queryParts = query.toLowerCase()
-  .split(/[\.\?\!\,\;]+|\band\b|\bor\b|\balso\b|\bthen\b|\bafter that\b|\bwhile\b/)
-  .map(part => {
-    // Replace synonyms with main topic
-    for (const [main, syns] of Object.entries(synonyms)) {
-      if (syns.includes(part)) {
-        return main;
-      }
-    }
-    return part;
-  })
-  .filter(Boolean);
-
-  console.log("🧐 Query Parts:", queryParts);
-
-  let validParts = 0;
-  let invalidParts = 0;
-
-  queryParts.forEach(part => {
-    const results = fuse.search(part);
-    if (results.length > 0) {
-      validParts++;
-    } else {
-      invalidParts++;
-    }
-  });
-
-  if (validParts === 0 || invalidParts > 0) {
-    console.log("❌ Query contains non-domain topics. Rejecting.");
-    return res.status(400).json({
-      success: false,
-      message: 'Please ask only domain-related questions.'
-    });
+  
+  // Step 1: Check Predefined Answers
+  if (predefinedAnswers[lowerQuery]) {
+    return res.json({ success: true, answer: predefinedAnswers[lowerQuery] });
   }
 
-  try {
-    console.log('✅ Querying Cohere API with:', query);
+  // Step 2: Check for WHOIS-related Queries
+  if (domainName) {
+    try {
+      const whoisData = await whois(domainName);
+      if (lowerQuery.includes('name servers')) {
+        return res.json({ success: true, answer: `Name servers for ${domainName}: ${whoisData.nameServers || 'Not available'}` });
+      }
+      if (lowerQuery.includes('registration date')) {
+        return res.json({ success: true, answer: `Domain ${domainName} was registered on: ${whoisData.creationDate || 'Not available'}` });
+      }
+    } catch (error) {
+      console.error('WHOIS lookup failed:', error);
+    }
+  }
 
-    const cohereResponse = await axios.post(
-      'https://api.cohere.ai/v1/generate',
-      {
-        model: 'command',
-        prompt: `Provide a detailed and comprehensive answer to this domain-related query: "${query}". Include step-by-step instructions, examples, and explanations if applicable.`,
-        max_tokens: 1500,
-        temperature: 0.3,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.COHERE_API_KEY}`,
-          'Content-Type': 'application/json'
+  // Step 3: Use Cohere API for Allowed Topics
+  const queryParts = lowerQuery.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+  const validParts = queryParts.filter(part => fuse2.search(part).length > 0);
+
+  if (validParts.length > 0) {
+    try {
+      const cohereResponse = await axios.post(
+        'https://api.cohere.ai/v1/generate',
+        {
+          model: 'command',
+          prompt: `Provide a detailed answer for this domain-related query: "${query}"`,
+          max_tokens: 1000,
+          temperature: 0.3,
         },
-        timeout: 60000
-      }
-    );
-
-    console.log('✅ Cohere API Response:', JSON.stringify(cohereResponse.data, null, 2));
-
-    const generatedAnswer = cohereResponse.data.generations?.[0]?.text || 'Sorry, I could not generate an answer at this time.';
-
-    res.json({
-      success: true,
-      answer: generatedAnswer
-    });
-
-  } catch (error) {
-    console.error('❌ Error generating response from Cohere:', error);
-    res.status(500).json({ success: false, message: 'Error generating response. Please try again later.' });
+        {
+          headers: { Authorization: `Bearer ${process.env.COHERE_API_KEY}` }
+        }
+      );
+      return res.json({ success: true, answer: cohereResponse.data.generations[0]?.text || 'No response' });
+    } catch (error) {
+      console.error('Cohere API error:', error);
+    }
   }
-});
 
+  return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
+});
 const dns = require('dns').promises;
 
 app.post('/api/check-domain-availability', async (req, res) => {
