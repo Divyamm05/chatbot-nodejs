@@ -119,6 +119,21 @@ const startQuestions = {
   "Are there any discounts or offers for new users?": "Yes, we offer discounts for new users. Check our website for more information.",
   "Do you have any deals for new users?": "Yes, we offer discounts for new users. Check our website for more information.",
   "Is there a sign-up bonus or discount available?": "Yes, we offer discounts for new users. Check our website for more information."
+
+  "Can I transfer my existing domains to this platform?": "Yes, you can transfer your domains to our platform.",
+  "How do I create an account?": '<a href="https://india.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to create an account for the India panel or <a href="https://global.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to create an account for the Global panel.',
+  "What information is needed to sign up?": "You need to provide your name and your email address.",
+  "Is there a fee for signing up?": "No, signing up is free of charge.",
+  "How secure is my information?": "We follow industry-standard security practices to protect your data.",
+  "Does your platform provide an API for domain management?": "Yes, we offer a comprehensive API for domain management.",
+  "What integrations are supported?": "We support integrations with various third-party services for domain management.",
+  "How can I get more details about the API?": "You can find more details about the API in our documentation section.",
+  "How can I contact support?": '<a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to contact us.',
+  "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
+  "Is there a guide for new users?": "Yes, we have a comprehensive guide for new users available on our website.",
+  "What payment methods are supported?": "We accept credit/debit cards, and other popular payment methods.",
+  "How do I pay for services after signing up?": "After signing up, you can pay for services directly through the platform's payment portal.",
+  "Are there any discounts or offers for new users?": "Yes, we offer discounts for new users. Check our website for more information."
 };
 
 
