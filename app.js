@@ -500,21 +500,80 @@ const allowedTopics = [
 ];
 
 // Predefined answers
-const predefinedAnswers = {
-  "how to enable/disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
-  "how to disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
-  "how to enable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
-  "steps to enable/disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
-  "steps to enable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
-  "steps to disable privacy protection": "Privacy protection hides your contact details from WHOIS. Log in to your registrar, go to Domain Management, and enable/disable the WHOIS Privacy setting.",
-  "how to enable/disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
-  "how to disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
-  "how to enable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
-  "steps to enable/disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
-  "steps to disable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
-  "steps to enable theft protection": "Theft protection prevents unauthorized transfers. Log in to your registrar, go to Domain Management, find the Theft Protection setting, and enable/disable it.",
-  "what actions can i do here on chatbot" :"This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries.",
-  "what can this chatbot do":"This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries."
+const predefinedAnswers  = {
+  "How do I register a domain?": "You can register a domain by searching for an available name on our platform, selecting the desired TLD, and completing the registration process by providing your details and making a payment.",
+  
+  "How can I renew a domain?": "To renew your domain, log in to your account, navigate to the domain management section, select the domain, and choose the renewal option. Ensure sufficient funds in your account for renewal.",
+  
+  "How to transfer IN/OUT domains?": "To transfer a domain in, you need to unlock it at the current registrar and obtain the EPP code. For outgoing transfers, ensure your domain is unlocked and retrieve the authorization code.",
+  
+  "Where can I register domains?": "You can register domains directly on our platform or use domain registrars like GoDaddy, Namecheap, or Google Domains.",
+  
+  "List of domain registrars?": "Popular domain registrars include GoDaddy, Namecheap, Google Domains, Dynadot, and NameSilo.",
+  
+  "Where can I view the domain information?": "You can view domain information in your account's domain management section or use a WHOIS lookup tool.",
+  
+  "List of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
+  
+  "Suggest TLDs for 'selected category'?": "Popular TLDs vary by category. For tech, use .tech or .ai. For businesses, use .biz or .company. For personal use, try .me or .name.",
+  
+  "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions and ask domain related queries.",
+  
+  "How to lock/unlock a domain?": "Go to your domain management panel, find the lock settings, and toggle between lock and unlock.",
+  
+  "How to enable/disable privacy protection?": "Navigate to your domain settings and toggle the privacy protection option as needed.",
+  
+  "How to enable/disable theft protection?": "You can enable or disable theft protection from your domain management panel under security settings.",
+  
+  "I want to view the auth code for 'Domain Name'?": "You can find the auth code in your domain management panel under transfer settings.",
+  
+  "What are the name servers for this 'Domain Name'?": "The name servers for your domain can be viewed in your domain management dashboard under DNS settings.",
+  
+  "When was this 'Domain Name' registered?": "Domain registration details, including the registration date, can be found in the domain management section or a WHOIS lookup tool.",
+  
+  "What is my current balance in my account?": "You can check your balance in the billing section of your account.",
+  
+  "Check available funds": "Log in to your account and navigate to the billing section to check your available funds.",
+  
+  "I want to update the name servers for 'Domain Name'?": "Go to your domain management panel, find DNS settings, and update the name servers accordingly.",
+  
+  "I want API documentation?": "You can find API documentation in the developer section of our website.",
+  
+  "I need API for 'Action Name'": "Our API supports various domain management actions. Refer to the API documentation for specific endpoints.",
+  
+  "Need transaction report of 'Selected Month'": "You can generate and download transaction reports from the billing or reports section of your account.",
+  
+  "Which domains are getting expired?": "You can check expiring domains in the domain management section under the expiration tab.",
+  
+  "Which domains are getting deleted on this 'Selected Date/Month'?": "You can view scheduled deletions in the domain management section under the deletion schedule.",
+  
+  "Which domains were registered on this platform?": "You can find a list of registered domains in your account under domain management.",
+  
+  "Which domain was registered on 'Selected Date/Month'?": "Check your domain registration history in the account panel or request a report for a specific date range.",
+  
+  "How can I contact support?": "You can contact support through our support page or email us at support@domainplatform.com.",
+  
+  "What ongoing offers are available?": "Check the promotions or offers section on our website for the latest discounts and deals.",
+  
+  "Types of SSL?": "We offer various SSL certificates, including Domain Validation (DV), Organization Validation (OV), and Extended Validation (EV) SSL.",
+  
+  "From where can I sign up?": "You can sign up at our registration page: <a href='https://example.com/signup'>CLICK HERE</a>.",
+  
+  "I want to download the WHMCS module": "You can download the WHMCS module from our developer tools section.",
+  
+  "Export 'List Name'": "You can export domain-related lists from your account dashboard under the reports or export section.",
+  
+  "How to suspend/unsuspend any domain?": "You can suspend or unsuspend a domain from the domain management section by selecting the suspension settings.",
+  
+  "Suspend/Unsuspend the 'Domain Name'": "Go to your domain settings and toggle the suspension status as needed.",
+  
+  "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process.",
+  
+  "How to add a child nameserver?": "Navigate to your DNS settings and add a child nameserver by specifying the IP address and hostname.",
+  
+  "How to pull a domain?": "A domain pull can be initiated from your registrar account under the transfer or migration section.",
+  
+  "What type of reports can I get?": "You can generate transaction reports, domain registration reports, expiration reports, and more from your account dashboard."
 };
 
 // Convert predefined questions into an array
@@ -530,13 +589,13 @@ const normalizeQuery = (query) => {
 // Initialize Fuse.js once (outside of the API function) for predefined questions
 const fuse1 = new Fuse(predefinedQuestions, {
   includeScore: true,
-  threshold: 0.4 // Adjust threshold for flexibility
+  threshold: 0.5 // Adjust threshold for flexibility
 });
 
 // Initialize second Fuse instance for allowed topics
 const fuse2 = new Fuse(allowedTopics, {
   includeScore: true,
-  threshold: 0.4
+  threshold: 0.5
 });
 
 // Function to extract domain name from the query
@@ -564,18 +623,18 @@ const searchAllowedTopics = (query) => {
 app.post('/api/domain-queries', async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ success: false, message: 'Query is required.' });
-  
+
   console.log('Received query:', query);
   const lowerQuery = normalizeQuery(query);
   const domainName = extractDomain(query);
 
-  
-  // Step 1: Check Predefined Answers
-  if (predefinedAnswers[lowerQuery]) {
-    return res.json({ success: true, answer: predefinedAnswers[lowerQuery] });
+  // Step 1: Check Predefined Answers with Fuse.js
+  const predefinedResult = searchPredefinedAnswer(query);
+  if (predefinedResult) {
+    return res.json({ success: true, answer: predefinedResult });
   }
 
-  // Step 2: Check for WHOIS-related Queries
+  // Step 2: Check WHOIS-related Queries if No Predefined Answer
   if (domainName) {
     try {
       const whoisData = await whois(domainName);
@@ -590,37 +649,35 @@ app.post('/api/domain-queries', async (req, res) => {
     }
   }
 
-  // Step 3: Use Cohere API for Allowed Topics
-  const isDomainRelated = queryParts.some(part => fuse2.search(part).length > 0);
+  // Step 3: Check if the query is domain-related using Fuse.js
+  const isDomainRelated = fuse2.search(query).length > 0;
 
   if (!isDomainRelated) {
     return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
   }
-  const queryParts = lowerQuery.split(/[^a-zA-Z0-9]+/).filter(Boolean);
-  const validParts = queryParts.filter(part => fuse2.search(part).length > 0);
 
-  if (validParts.length > 0) {
-    try {
-      const cohereResponse = await axios.post(
-        'https://api.cohere.ai/v1/generate',
-        {
-          model: 'command',
-          prompt: `Provide a detailed answer for this domain-related query: "${query}"`,
-          max_tokens: 1000,
-          temperature: 0.3,
-        },
-        {
-          headers: { Authorization: `Bearer ${process.env.COHERE_API_KEY}` }
-        }
-      );
-      return res.json({ success: true, answer: cohereResponse.data.generations[0]?.text || 'No response' });
-    } catch (error) {
-      console.error('Cohere API error:', error);
-    }
+  // Step 4: Use Cohere API for AI-Generated Responses (if no predefined match)
+  try {
+    const cohereResponse = await axios.post(
+      'https://api.cohere.ai/v1/generate',
+      {
+        model: 'command',
+        prompt: `Provide a detailed answer for this domain-related query: "${query}"`,
+        max_tokens: 1000,
+        temperature: 0.3,
+      },
+      {
+        headers: { Authorization: `Bearer ${process.env.COHERE_API_KEY}` }
+      }
+    );
+    return res.json({ success: true, answer: cohereResponse.data.generations[0]?.text || 'No response' });
+  } catch (error) {
+    console.error('Cohere API error:', error);
   }
 
-  return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
+  return res.status(400).json({ success: false, message: 'Unable to process your request.' });
 });
+
 
 const dns = require('dns').promises;
 
