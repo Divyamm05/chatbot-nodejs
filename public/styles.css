@@ -169,6 +169,64 @@ body {
   align-self: flex-end;
   margin-right: 20px;
 }
+
+/* Container for Authentication Buttons */
+#auth-buttons-container {
+  display: none; /* Initially hidden (it will show when the condition is met) */
+  justify-content: center;
+  text-align: center;
+  margin-left: 15px;
+  margin-top: 10px;
+  position: relative;
+  bottom: 0; /* Ensure the buttons stay at the bottom */
+  z-index: 1000; /* Make sure buttons are above other content if needed */
+}
+
+/* Signup and Login Buttons */
+.signup-button, .login-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  color: white;
+  border-radius: 20px; /* Matches button radius in chat-input section */
+  background-color: #f1c40f; /* Matches button color */
+  transition: background-color 0.3s ease;
+  margin: 5px; /* Ensure some space between buttons */
+}
+
+/* Hover effects */
+.signup-button:hover {
+  background-color: #45a049; /* Green when hovering */
+}
+
+.login-button:hover {
+  background-color: #007B9E; /* Blue when hovering */
+}
+
+#suggest-buttons-container {
+  display: flex; /* Initially hidden (it will show when the condition is met) */
+  text-align: center;
+  margin-left: 15px;
+}
+
+.suggest-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  color: white;
+  border-radius: 20px; /* Matches button radius in chat-input section */
+  background-color: #f1c40f; /* Matches button color */
+  transition: background-color 0.3s ease;
+  margin: 5px; /* Ensure some space between buttons */
+}
+
+/* Hover effects */
+.suggest-button:hover {
+  background-color: #45a049;
+}
+
 .chat-input {
   padding: 15px;
   background-color: #34495e;
@@ -177,6 +235,7 @@ body {
   border-radius: 0 0 20px 20px;
   box-sizing: border-box;
   bottom: 0%;
+  gap: 10px;
 }
 
 .chat-input.hidden {
@@ -194,6 +253,7 @@ body {
   font-size: 14px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+  
 }
 
 .chat-input input::placeholder {
@@ -548,7 +608,6 @@ body {
   border-radius: 20px;
   font-size: 14px;
   font-weight: bold;
-  cursor: pointer;
   height: 40px;
   transition: background-color 0.3s ease;
 }
@@ -560,6 +619,74 @@ body {
 
 /* Disabled Button */
 .domain-query-wrapper button:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+/* Domain Query Section */
+login-chat-section {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: flex-start;
+  height: auto; 
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  box-sizing: border-box;
+}
+
+/* Wrapper for Input & Submit Button */
+login-chat-wrapper {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px; 
+}
+
+/* Input Field Styling */
+login-chat-wrapper input {
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 14px;
+  flex-grow: 1;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+login-chat-wrapper input::placeholder {
+  color: #95a5a6;
+}
+
+.login-chat-wrapper input:focus {
+  border-color: #f1c40f;
+}
+
+/* Submit Button Styling */
+login-chat-wrapper button {
+  padding: 12px 18px;
+  background-color: #f1c40f;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  height: 40px;
+  transition: background-color 0.3s ease;
+}
+
+/* Button Hover effect */
+.login-chat-wrapper button:hover {
+  background-color: #16a085;
+}
+
+/* Disabled Button */
+login-chat-wrapper button:disabled {
   background-color: #7f8c8d;
   cursor: not-allowed;
 }
@@ -614,7 +741,6 @@ body {
   outline: none;
   width: 100%; 
   font-size: 14px;
-  margin-bottom: 10px;
   box-sizing: border-box;
 }
 

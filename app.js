@@ -162,14 +162,6 @@ app.post('/ask-question', (req, res) => {
     return res.json({ answer: normalizedStartQuestions[normalizedUserQuestion] });
   }
 
-  // Now check for common keyword categories
-  const signupKeywords = ["sign up", "signup", "sign-in", "sign in", "register", "create account"];
-  if (signupKeywords.some(keyword => normalizedUserQuestion.includes(keyword))) {
-    return res.json({
-      answer: "You can sign up by providing your email and setting up an account with a password."
-    });
-  }
-
   const domainKeywords = ["domain", "register", "dns", "transfer", "premium"];
   if (domainKeywords.some(keyword => normalizedUserQuestion.includes(keyword))) {
     return res.json({
@@ -186,6 +178,47 @@ app.post('/ask-question', (req, res) => {
 
   // Default response if no match
   return res.json({ answer: "Please sign in to access all the features." });
+});
+
+const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
+const API_URL = "https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder";
+
+// Route to register a domain
+app.post('/api/register-domain', async (req, res) => {
+  const { domainName, duration, isWhoisProtection, ns1, ns2, ns3, ns4, customerId, isEnablePremium, lang } = req.body;
+  
+  if (!domainName || !duration || !ns1 || !ns2 || !customerId) {
+      return res.status(400).json({ success: false, message: "Missing required parameters." });
+  }
+
+  try {
+      const response = await axios.get(API_URL, {
+          params: {
+              APIKey: API_KEY,
+              ProductType: 1,
+              Websitename: domainName,
+              Duration: duration,
+              IsWhoisProtection: isWhoisProtection,
+              ns1: ns1,
+              ns2: ns2,
+              ns3: ns3 || "",
+              ns4: ns4 || "",
+              Id: customerId,
+              isEnablePremium: isEnablePremium || 0,
+              lang: lang || ""
+          }
+      });
+
+      const data = response.data;
+      if (data.statusCode === 200) {
+          return res.json({ success: true, message: "Domain registered successfully", data });
+      } else {
+          return res.status(400).json({ success: false, message: data.message });
+      }
+  } catch (error) {
+      console.error("Error registering domain:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
 });
 
 // Tester login without checking Firebase
@@ -349,7 +382,7 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
 
       res.json({
           success: true,
-          message: 'OTP verified successfully. Please choose one of the following options:',
+          message: 'OTP verified successfully. Let me know how can I help! 😊',
           options: [
               { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
               { text: 'More Options', action: 'askMoreOptions' },
@@ -589,13 +622,13 @@ const normalizeQuery = (query) => {
 // Initialize Fuse.js once (outside of the API function) for predefined questions
 const fuse1 = new Fuse(predefinedQuestions, {
   includeScore: true,
-  threshold: 0.5 // Adjust threshold for flexibility
+  threshold: 0.4 // Adjust threshold for flexibility
 });
 
 // Initialize second Fuse instance for allowed topics
 const fuse2 = new Fuse(allowedTopics, {
   includeScore: true,
-  threshold: 0.5
+  threshold: 0.4
 });
 
 // Function to extract domain name from the query
@@ -633,6 +666,16 @@ app.post('/api/domain-queries', async (req, res) => {
   if (predefinedResult) {
     return res.json({ success: true, answer: predefinedResult });
   }
+  const isDomainSuggestionQuery = lowerQuery.includes('suggest') && (lowerQuery.includes('domain') || lowerQuery.includes('suggestions'));
+
+  if (isDomainSuggestionQuery) {
+    // Return response to trigger domain suggestion section in the frontend
+    return res.json({
+      success: true,
+      triggerDomainSection: true,
+      answer: 'I can help you with domain suggestions! Please click domain name suggestions button.',
+    });
+  }
 
   // Step 2: Check WHOIS-related Queries if No Predefined Answer
   if (domainName) {
@@ -651,6 +694,8 @@ app.post('/api/domain-queries', async (req, res) => {
 
   // Step 3: Check if the query is domain-related using Fuse.js
   const isDomainRelated = fuse2.search(query).length > 0;
+
+  // Detect if the query is asking for domain suggestions
 
   if (!isDomainRelated) {
     return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
