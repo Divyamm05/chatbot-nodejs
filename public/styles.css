@@ -249,6 +249,88 @@ body {
 .available-button:hover {
   background-color: #45a049;
 }
+/* FAQ Sidebar - Default (Desktop View) */
+#faq-sidebar {
+  position: fixed;
+  right: -280px;
+  top: 50px;
+  width: 250px; /* Default width for desktops */
+  max-width: 90%; /* Prevents it from getting too large on wider screens */
+  height: 455px;
+  max-height: 80vh; /* Limits height to avoid overflowing */
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  background: #252726;
+  box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2);
+  transition: right 0.3s ease-in-out;
+  padding: 10px;
+  border-radius: 5px 0 0 5px;
+}
+
+/* Expanded Sidebar */
+#faq-sidebar.faq-expanded {
+  right: 0;
+}
+
+/* Sidebar Header */
+.faq-header {
+  background: #007bff;
+  color: white;
+  position: absolute;
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* FAQ List with Scroll */
+.faq-list {
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+/* Scrollbar Customization */
+.faq-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.faq-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.faq-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* FAQ Items */
+.faq-list li {
+  padding: 8px;
+  background: #16a085;
+  margin: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: white;
+}
+
+.faq-list li:hover {
+  background: #e9ecef;
+  color: black;
+}
+
+
+
 
 .chat-input {
   padding: 15px;
@@ -1095,6 +1177,39 @@ login-chat-wrapper button:disabled {
     border: 2px solid #ccc;
     padding: 8px;
     text-align: center;
+  }
+}
+
+/* 📱 Mobile Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  #faq-sidebar {
+    width: 80%; /* Sidebar takes 80% width on smaller screens */
+    right: -100%; /* Fully hides sidebar when collapsed */
+    height: 80vh; /* Adjust height dynamically */
+    max-height: 85vh;
+  }
+
+  /* When Expanded on Mobile */
+  #faq-sidebar.faq-expanded {
+    right: 0;
+  }
+
+  /* Increase the touch area for easier interaction */
+  .faq-header {
+    width: 40px;
+    height: 60px;
+    font-size: 20px;
+  }
+
+  /* Adjust FAQ List */
+  .faq-list {
+    max-height: 70vh; /* Allows more space for FAQ items */
+  }
+
+  /* Make FAQ items larger for touchscreens */
+  .faq-list li {
+    font-size: 16px;
+    padding: 12px;
   }
 }
 
