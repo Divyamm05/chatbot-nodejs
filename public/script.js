@@ -84,25 +84,27 @@ function updateChatLog(message, sender) {
 
   // Show auth buttons if the bot response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
-      chatLog.appendChild(authButtonsContainer); // Append after last message
+      chatLog.appendChild(authButtonsContainer);
       authButtonsContainer.style.display = 'flex';
-      scrollToBottom(); // Ensure chat scrolls to bottom
+      scrollToBottom();
   } else {
       authButtonsContainer.style.display = 'none';
   }
 
   // Show suggest buttons if the bot response matches domain suggestion triggers
   if (sender === 'bot' && checkDomainSuggestions(message)) {
-      chatLog.appendChild(suggestButtonsContainer); // Append after last message
+      chatLog.appendChild(suggestButtonsContainer);
       suggestButtonsContainer.style.display = 'flex';
-      scrollToBottom(); // Ensure chat scrolls to bottom
+      scrollToBottom();
   } else {
       suggestButtonsContainer.style.display = 'none';
   }
 
-
-  
+  scrollToBottom();
 }
+
+const registerButtonsContainer = document.getElementById('register-buttons-container');
+
 
   const chatLog = document.getElementById('chat-log');
 const authButtonsContainer = document.getElementById('auth-buttons-container');
@@ -128,9 +130,15 @@ function checkBotResponse(response) {
   return botMessages.includes(response);
 }
 
+function checkDomainRegistrationResponse(response) {
+  const expectedResponse = "I can assist you with domain registration. Please visit the register domain name section to proceed.";
+
+  return botMessages.includes(response);
+}
+
 const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
 
-const domainAvailabilitySection = document.getElementById('domain-availability-section');
+
 
 // Check if MutationObserver is already initialized
 if (!window.observer) {
@@ -164,6 +172,8 @@ function checkDomainSuggestions(response) {
   return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
 }
 
+const domainAvailabilitySection = document.getElementById('domain-availability-section');
+
 function checkDomainAvailability(response) {
 
   const botMessages = [
@@ -176,13 +186,6 @@ function checkDomainAvailability(response) {
   // Check if bot response includes the trigger message
   return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
 }
-
-function scrollToBottomm() {
-  chatLog.scrollTop = chatLog.scrollHeight;
-  const chatLog = document.getElementById('chat-log');
-  chatLog.scrollTop = chatLog.scrollHeight; // Scroll to the bottom of the chat log
-}
-
 
   function processUserQuestion() {
     const userQuestion = document.getElementById("user-question").value.trim();

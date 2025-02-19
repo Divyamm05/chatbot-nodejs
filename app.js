@@ -666,10 +666,11 @@ app.post('/api/domain-queries', async (req, res) => {
   if (predefinedResult) {
     return res.json({ success: true, answer: predefinedResult });
   }
+
+  // Check for Domain Name Suggestions
   const isDomainSuggestionQuery = lowerQuery.includes('suggest') && (lowerQuery.includes('domain') || lowerQuery.includes('suggestions'));
 
   if (isDomainSuggestionQuery) {
-    // Return response to trigger domain suggestion section in the frontend
     return res.json({
       success: true,
       triggerDomainSection: true,
@@ -677,14 +678,25 @@ app.post('/api/domain-queries', async (req, res) => {
     });
   }
 
-  const isAvailable = lowerQuery.includes('availability') && (lowerQuery.includes('available'));
+  // Check for Domain Availability
+  const isAvailable = lowerQuery.includes('availability') || lowerQuery.includes('available');
 
   if (isAvailable) {
-    // Return response to trigger domain suggestion section in the frontend
     return res.json({
       success: true,
       triggerDomainSection: true,
       answer: 'I can help you with checking domain availability! Please click check domain availability button.',
+    });
+  }
+
+  // ✅ New Condition: Check for Domain Registration
+  const isRegisterQuery = lowerQuery.includes('register') || lowerQuery.includes('domain registration');
+
+  if (isRegisterQuery) {
+    return res.json({
+      success: true,
+      triggerDomainSection: true,
+      answer: 'I can assist you with domain registration. Please visit the register domain name section to proceed.',
     });
   }
 
@@ -705,8 +717,6 @@ app.post('/api/domain-queries', async (req, res) => {
 
   // Step 3: Check if the query is domain-related using Fuse.js
   const isDomainRelated = fuse2.search(query).length > 0;
-
-  // Detect if the query is asking for domain suggestions
 
   if (!isDomainRelated) {
     return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
