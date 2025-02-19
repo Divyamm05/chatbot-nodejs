@@ -84,27 +84,26 @@ function updateChatLog(message, sender) {
 
   // Show auth buttons if the bot response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
-      chatLog.appendChild(authButtonsContainer);
+      chatLog.appendChild(authButtonsContainer); // Append after last message
       authButtonsContainer.style.display = 'flex';
-      scrollToBottom();
+      scrollToBottom(); // Ensure chat scrolls to bottom
   } else {
       authButtonsContainer.style.display = 'none';
   }
 
   // Show suggest buttons if the bot response matches domain suggestion triggers
   if (sender === 'bot' && checkDomainSuggestions(message)) {
-      chatLog.appendChild(suggestButtonsContainer);
+      chatLog.appendChild(suggestButtonsContainer); // Append after last message
       suggestButtonsContainer.style.display = 'flex';
-      scrollToBottom();
+      scrollToBottom(); // Ensure chat scrolls to bottom
   } else {
       suggestButtonsContainer.style.display = 'none';
   }
 
   scrollToBottom();
+
+  
 }
-
-const registerButtonsContainer = document.getElementById('register-buttons-container');
-
 
   const chatLog = document.getElementById('chat-log');
 const authButtonsContainer = document.getElementById('auth-buttons-container');
@@ -138,6 +137,27 @@ function checkDomainRegistrationResponse(response) {
 
 const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
 
+// Toggle FAQ Sidebar with Arrow Animation
+function toggleFAQSidebar() {
+  const faqSidebar = document.getElementById("faq-sidebar");
+  const faqArrow = document.getElementById("faq-arrow");
+
+  faqSidebar.classList.toggle("faq-expanded");
+
+  // Change Arrow Direction
+  if (faqSidebar.classList.contains("faq-expanded")) {
+    faqArrow.innerHTML = "›"; // side arrow
+  } else {
+    faqArrow.innerHTML = "‹"; // Side arrow
+  }
+}
+
+// Fill Chat Input with FAQ Question
+function fillChatInput(question) {
+  const userInput = document.getElementById("user-question");
+  userInput.value = question;
+  userInput.focus();
+}
 
 
 // Check if MutationObserver is already initialized
@@ -192,6 +212,8 @@ function checkDomainAvailability(response) {
   
     if (userQuestion) {
       // Display user question in the chat log
+      document.getElementById("faq-sidebar").classList.remove("faq-expanded");
+
       const chatLog = document.getElementById("chat-log");
   
       const userMessage = document.createElement('div');
@@ -206,6 +228,8 @@ function checkDomainAvailability(response) {
       handleBotResponse(userQuestion);
     }
   }
+
+  
 
   async function handleBotResponse(userQuestion) {
     try {
