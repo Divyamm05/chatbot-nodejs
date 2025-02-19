@@ -66,23 +66,43 @@
     }
 }
 
+function updateChatLog(message, sender) {
+  console.log("updateChatLog called:", message);
+  const chatLog = document.querySelector('.chat-log');
 
-  function updateChatLog(message, sender) {
-    console.log("updateChatLog called:", message);
-    const chatLog = document.querySelector('.chat-log');
+  const newMessage = document.createElement('div');
+  newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
 
-    const newMessage = document.createElement('div');
-    newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
-
-    if (message === "Generating domain names...") {
-        newMessage.innerHTML = `<span>${message}</span> <div class="loading-spinner"></div>`;
-    } else {
-        newMessage.innerHTML = message.replace(/\n/g, "<br>");
-    }
-
-    chatLog.appendChild(newMessage);
-    scrollToBottom();
+  if (message === "Generating domain names...") {
+      newMessage.innerHTML = `<span>${message}</span> <div class="loading-spinner"></div>`;
+  } else {
+      newMessage.innerHTML = message.replace(/\n/g, "<br>");
   }
+
+  chatLog.appendChild(newMessage);
+  scrollToBottom();
+
+  // Show auth buttons if the bot response matches predefined responses
+  if (sender === 'bot' && checkBotResponse(message)) {
+      chatLog.appendChild(authButtonsContainer); // Append after last message
+      authButtonsContainer.style.display = 'flex';
+      scrollToBottom(); // Ensure chat scrolls to bottom
+  } else {
+      authButtonsContainer.style.display = 'none';
+  }
+
+  // Show suggest buttons if the bot response matches domain suggestion triggers
+  if (sender === 'bot' && checkDomainSuggestions(message)) {
+      chatLog.appendChild(suggestButtonsContainer); // Append after last message
+      suggestButtonsContainer.style.display = 'flex';
+      scrollToBottom(); // Ensure chat scrolls to bottom
+  } else {
+      suggestButtonsContainer.style.display = 'none';
+  }
+
+
+  
+}
 
   const chatLog = document.getElementById('chat-log');
 const authButtonsContainer = document.getElementById('auth-buttons-container');
@@ -99,26 +119,18 @@ observer.observe(chatLog, { childList: true });
 
 function checkBotResponse(response) {
   const botMessages = [
-    "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
-    "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up.Once registered, you’ll have instant access to all pricing details and exclusive offers!",
-    "Please sign in to access all the features.",
-    "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!"
+      "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
+      "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
+      "Please login/signup to access all the features.",
+      "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!"
   ];
 
-  // Check if the response matches one of the predefined messages
-  if (botMessages.includes(response)) {
-    authButtonsContainer.style.display = 'flex'; // Show buttons
-  } else {
-    authButtonsContainer.style.display = 'none'; // Hide buttons if the response doesn't match
-  }
-
-  // Scroll to the bottom after appending the response or buttons
-  scrollToBottomm();
+  return botMessages.includes(response);
 }
 
-
-
 const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
+
+const domainAvailabilitySection = document.getElementById('domain-availability-section');
 
 // Check if MutationObserver is already initialized
 if (!window.observer) {
@@ -133,34 +145,37 @@ if (!window.observer) {
   window.observer.observe(chatLog, { childList: true });
 }
 
-function checkdomainsuggestions(response) {
-  console.log("📩 checkdomainsuggestions() called with:", response); // Debug log
+function checkDomainSuggestions(response) {
+  console.log("📩 checkDomainSuggestions() called with:", response); // Debug log
 
   const botMessages = [
-    "I can help you with domain suggestions! Please click domain name suggestions button."
+      "I can help you with domain suggestions! Please click domain name suggestions button."
   ];
 
   if (!suggestButtonsContainer) {
-    console.error("❌ Element with ID 'suggest-buttons-container' not found.");
-    return;
+      console.error("❌ Element with ID 'suggest-buttons-container' not found.");
+      return false;
   }
 
   // Normalize response
   const responseText = response ? response.toString().toLowerCase().trim().replace(/\s+/g, " ") : "";
 
   // Check if bot response includes the trigger message
-  if (botMessages.some(msg => responseText.includes(msg.toLowerCase()))) {
-    suggestButtonsContainer.style.display = 'flex'; // Show buttons
-    console.log("✅ Suggest buttons container is now visible.");
-  } else {
-    suggestButtonsContainer.style.display = 'none'; // Hide buttons
-    console.log("❌ Suggest buttons container is hidden.");
-  }
-
-  // Scroll to bottom
-  scrollToBottomm();
+  return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
 }
 
+function checkDomainAvailability(response) {
+
+  const botMessages = [
+      "I can help you with checking domain availability! Please click check domain availability button."
+  ];
+
+  // Normalize response
+  const responseText = response ? response.toString().toLowerCase().trim().replace(/\s+/g, " ") : "";
+
+  // Check if bot response includes the trigger message
+  return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
+}
 
 function scrollToBottomm() {
   chatLog.scrollTop = chatLog.scrollHeight;
@@ -371,6 +386,7 @@ function scrollToBottomm() {
     // Show domain section for domain input
     function showDomainSection() {
       document.getElementById('domain-options').style.display = 'none'; 
+      document.getElementById('login-chat-section').style.display = 'none';
       document.getElementById('domain-section').style.display = 'flex';
       document.getElementById('domain-options-next').style.display = 'none'; 
       document.getElementById('more-options').style.display = 'none'; 
@@ -379,46 +395,53 @@ function scrollToBottomm() {
 
     // Get domain suggestions from the API
     async function getDomainSuggestions() {
-      const email = document.getElementById('user-email').value.trim();
-      const domain = document.getElementById('domain-name-suggestions').value.trim();
+    const email = document.getElementById('user-email').value.trim();
+    const domain = document.getElementById('domain-name-suggestions').value.trim();
 
-      if (!domain) {
-          updateChatLog('Please enter a domain name.', 'bot');
-          return;
-      }
+    if (!domain) {
+        updateChatLog('Please enter a domain name.', 'bot');
+        return;
+    }
 
-      updateChatLog(`Domain entered: ${domain}`, 'user');
-      updateChatLog('Generating domain names...', 'bot'); 
+    updateChatLog(`Domain entered: ${domain}`, 'user');
+    updateChatLog('Generating domain names...', 'bot'); 
 
-      try {
-          const response = await fetch('/api/domain-suggestions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, domain }),
-          });
-          const data = await response.json();
+    try {
+        const response = await fetch('/api/domain-suggestions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, domain }),
+        });
+        const data = await response.json();
 
-          const chatLog = document.querySelector('.chat-log');
-          const lastMessage = chatLog.lastElementChild;
-          if (lastMessage && lastMessage.textContent.includes("Generating domain names...")) {
-              chatLog.removeChild(lastMessage);
-          }
+        const chatLog = document.querySelector('.chat-log');
+        const lastMessage = chatLog.lastElementChild;
+        if (lastMessage && lastMessage.textContent.includes("Generating domain names...")) {
+            chatLog.removeChild(lastMessage);
+        }
 
-          if (!data.success) {
-              updateChatLog(data.message || 'An error occurred while fetching domain suggestions. Please try again.', 'bot');
-              return;
-          }
+        if (!data.success) {
+            updateChatLog(data.message || 'An error occurred while fetching domain suggestions. Please try again.', 'bot');
+            return;
+        }
 
-          updateChatLog(data.domains, 'bot');
+        updateChatLog(data.domains, 'bot');
 
-          document.getElementById('domain-section').style.display = 'none';
-          document.getElementById('domain-options-next').style.display = 'flex';
+        // Hide domain input section
+        document.getElementById('domain-section').style.display = 'none';
 
-          scrollToBottom();
-      } catch (error) {
-          updateChatLog('An error occurred while fetching domain suggestions. Please try again.', 'bot');
-      }
-  }
+        // Append domain options next section to chat log
+        const domainOptions = document.getElementById('domain-options-next');
+        domainOptions.style.display = 'flex'; // Make it visible
+        document.getElementById('login-chat-section').style.display = 'flex'; 
+        chatLog.appendChild(domainOptions); // Add to chat log
+
+        scrollToBottom();
+    } catch (error) {
+        updateChatLog('An error occurred while fetching domain suggestions. Please try again.', 'bot');
+    }
+}
+
 
   // Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
   function scrollToBottom() {
@@ -452,6 +475,7 @@ function scrollToBottomm() {
       document.getElementById('domain-name-suggestions').value = ''; 
       document.getElementById('domain-section').style.display = 'flex'; 
       document.getElementById('domain-options-next').style.display = 'none';
+      document.getElementById('login-chat-section').style.display = 'none'; 
       updateChatLog('Please enter a new domain name for suggestions.', 'bot');
     }
 

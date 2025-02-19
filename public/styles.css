@@ -227,6 +227,29 @@ body {
   background-color: #45a049;
 }
 
+#domain-availability-section {
+  display: flex; /* Initially hidden (it will show when the condition is met) */
+  text-align: center;
+  margin-left: 15px;
+}
+
+.available-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  color: white;
+  border-radius: 20px; /* Matches button radius in chat-input section */
+  background-color: #f1c40f; /* Matches button color */
+  transition: background-color 0.3s ease;
+  margin: 5px; /* Ensure some space between buttons */
+}
+
+/* Hover effects */
+.available-button:hover {
+  background-color: #45a049;
+}
+
 .chat-input {
   padding: 15px;
   background-color: #34495e;
@@ -460,7 +483,6 @@ body {
   gap: 6px;
   max-width: 650px;
   max-height: 120px;
-  overflow: hidden;
 }
 
 #domain-options-next.visible {
@@ -488,7 +510,7 @@ body {
 
 #domain-options-next .button-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
 }
 
@@ -802,7 +824,7 @@ login-chat-wrapper button:disabled {
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
   padding: 15px;
   width: 100%;
   box-sizing: border-box;

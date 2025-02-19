@@ -50,12 +50,11 @@
         <input type="text" id="domain-query-text" placeholder="Enter your query...">
         <button onclick="submitDomainQuery()">Submit</button>
       <div id="loading-container" style="display:none;">
-        <div class="loading-spinner"></div>
       </div>   
     </div>
     
     <div id="suggest-buttons-container" style="display: none;">
-      <button class="suggest-button" onclick="taketosigninsection()">Suggest</button>
+      <button class="suggest-button" onclick="showDomainSection()">Get domain name suggestions</button>
     </div>
     
     <!-- Domain Section for Suggestions -->
@@ -65,9 +64,12 @@
         <button id="submit-domain" onclick="getDomainSuggestions()">Suggest</button>
       </div>
       <div id="loading-container">
-        <div class="loading-spinner"></div>
       </div>      
       <button id="back-to-previous-section" onclick="goBackToPreviousSection()">Back</button>
+    </div>
+
+    <div id="domain-availability-section" style="display: none;">
+      <button class="available-button" onclick="showDomainSection()">Check domain name availability</button>
     </div>
 
     <!-- Domain Availability Section -->
@@ -109,7 +111,6 @@
       <div class="button-container">
         <button onclick="getMoreSuggestions()">More Suggestions for this Domain</button>
         <button onclick="getNewDomainSuggestions()">Suggestions for a Different Domain</button>
-        <button onclick="askMoreOptions()">More Options</button>
       </div>
     </div>
 

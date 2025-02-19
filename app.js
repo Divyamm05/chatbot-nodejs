@@ -177,7 +177,7 @@ app.post('/ask-question', (req, res) => {
   }
 
   // Default response if no match
-  return res.json({ answer: "Please sign in to access all the features." });
+  return res.json({ answer: "Please login/signup to access all the features." });
 });
 
 const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
@@ -674,6 +674,17 @@ app.post('/api/domain-queries', async (req, res) => {
       success: true,
       triggerDomainSection: true,
       answer: 'I can help you with domain suggestions! Please click domain name suggestions button.',
+    });
+  }
+
+  const isAvailable = lowerQuery.includes('availability') && (lowerQuery.includes('available'));
+
+  if (isAvailable) {
+    // Return response to trigger domain suggestion section in the frontend
+    return res.json({
+      success: true,
+      triggerDomainSection: true,
+      answer: 'I can help you with checking domain availability! Please click check domain availability button.',
     });
   }
 
