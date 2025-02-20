@@ -104,7 +104,7 @@
       </div>
       <div id="loading-container">
       </div>      
-      <button id="back-to-previous-section" onclick="goBackToPreviousSection()">Back</button>
+      <button id="back-to-previous-section" onclick="goBackToQuerySection()">Back</button>
     </div>
 
     <div id="domain-availability-section" style="display: none;">
@@ -121,7 +121,7 @@
         <div id="loading-container" style="display:none;">
           <div class="loading-spinner"></div>
         </div>   
-        <button id="back-to-domain-section" onclick="goBackToDomainSection()">Back</button>
+        <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
       </div>
     </div>
 
@@ -134,7 +134,7 @@
       <div id="loading-container" style="display:none;">
         <div class="loading-spinner"></div>
       </div>   
-      <button id="back-to-domain-section" onclick="goBackToDomainSection()">Back</button>
+      <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
     </div>
 
     <!-- Domain Options Section after OTP verification -->
@@ -158,7 +158,7 @@
       <div id="more-options-buttons">
         <button onclick="submitDomainCheck()">Domain Name Availability Check</button>
         <button onclick="showDomainQueries()">Domain Name Related Queries</button>
-        <button onclick="closeMoreOptions()">Back</button>
+        <button onclick="goBackToQuerySection()">Back</button>
       </div>
     </div>
   </div>

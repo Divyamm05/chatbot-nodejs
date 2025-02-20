@@ -529,6 +529,27 @@ function processUserQuestion() {
     }
 }
 
+function goBackToQuerySection() {
+  console.log("Navigating back to query section...");
+
+  // Show the query section
+  document.getElementById('login-chat-section').style.display = 'flex';
+  console.log("login-chat-section is now visible");
+
+  // Hide the other sections
+  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next'];
+
+  sectionsToHide.forEach(sectionId => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.style.display = 'none';
+      console.log(`Hid section: ${sectionId}`);
+    } else {
+      console.log(`Element not found: ${sectionId}`);
+    }
+  });
+}
+
 
   // Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
   function scrollToBottom() {
