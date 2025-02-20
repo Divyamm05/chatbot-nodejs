@@ -118,6 +118,48 @@ function updateChatLog(message, sender) {
 
   chatLog.appendChild(newMessage);
 
+  if (!document.getElementById('register-domain-css')) {
+    const style = document.createElement('style');
+    style.id = 'register-domain-css';
+    style.innerHTML = `
+      .register-button {
+        padding: 10px 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        color: white;
+        border-radius: 20px; /* Matches button radius in chat-input section */
+        background-color: #f1c40f; /* Matches button color */
+        transition: background-color 0.3s ease;
+        margin-top: 12px;/* Ensure some space between buttons */
+        margin-left: 0;
+      }
+      .register-button:hover {
+        background-color: #d4ac0d;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Add register button when applicable
+  if (sender === 'bot' && message.includes("register a domain")) {
+    const registerButton = document.createElement('button');
+    registerButton.textContent = "Register a Domain";
+    registerButton.classList.add('register-button');
+    
+    // Show the domain registration section on button click
+    registerButton.onclick = () => {
+        const registrationSection = document.getElementById('domain-registration-section');
+        const loginchatsection = document.getElementById('login-chat-section');
+        if (registrationSection) {
+            registrationSection.style.display = "block"; // Show section
+            loginchatsection.style.display = "none"; // Show section
+        }
+    };
+
+    newMessage.appendChild(registerButton);
+}
+
   // Show auth buttons if response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
       if (typeof authButtonsContainer !== 'undefined' && authButtonsContainer) {
@@ -145,6 +187,20 @@ function updateChatLog(message, sender) {
   // Call scrollToBottom only once
   scrollToBottom();
 }
+
+function getBotResponse(userInput) {
+  const response = predefinedAnswers[userInput];
+
+  if (typeof response === "object" && response !== null) {
+      // Extract message and button details properly
+      return `${response.message} <br><button class="chat-button" onclick="window.location.href='${response.button.link}'">${response.button.text}</button>`;
+  } else if (typeof response === "string") {
+      return response; // Return plain string responses
+  } else {
+      return "I'm sorry, I don't have an answer for that.";
+  }
+}
+
 
   const chatLog = document.getElementById('chat-log');
 const authButtonsContainer = document.getElementById('auth-buttons-container');
@@ -548,7 +604,7 @@ function goBackToQuerySection() {
   console.log("login-chat-section is now visible");
 
   // Hide the other sections
-  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next'];
+  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section'];
 
   sectionsToHide.forEach(sectionId => {
     const element = document.getElementById(sectionId);

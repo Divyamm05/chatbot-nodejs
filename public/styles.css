@@ -13,7 +13,7 @@ body {
 #chat-container {
   display: none;  /* Flexbox ensures sidebar & chatbox stay together */
   width: 800px;
-  height: 80vh;
+  height: 85vh;
   background: #ecf0f1;
   border-radius: 20px;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
@@ -220,7 +220,7 @@ body {
   visibility: visible;
   animation: fadeIn 0.5s forwards;
   border-bottom: 2px solid #1abc9c;
-  height: 70%;
+  height: 65%;
 }
 
 #chat-log.sidebar-open {
@@ -391,7 +391,7 @@ body {
   margin: 0;
   padding-top: 5px;
   overflow-y: auto;
-  height: 230px;
+  height: 270px;
   padding-bottom: 310px;
   padding-right: 10px;
   padding-left: 0px;
@@ -834,6 +834,117 @@ body {
   cursor: not-allowed;
 }
 
+/* Domain Registration Section */
+#domain-registration-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  padding: 8px;
+  box-sizing: border-box;
+  color: #ecf0f1;
+  width: 100%;
+}
+
+/* Wrapper for input fields */
+.domain-registration-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 10px;
+}
+
+/* Input Fields & Select Box - Five in a Row */
+.domain-registration-wrapper .input-group {
+  width: calc(20% - 10px); /* Five inputs per row */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input & Select Styling */
+.domain-registration-wrapper input,
+.domain-registration-wrapper select {
+  width: 100%;
+  padding: 12px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 12px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.domain-registration-wrapper input::placeholder {
+  color: #95a5a6;
+}
+
+.domain-registration-wrapper input:focus,
+.domain-registration-wrapper select:focus {
+  border-color: #f1c40f;
+}
+
+/* Dropdown & Button Row - Five in a Row */
+.checkbox-button-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Full-width elements */
+#domain-registration-section button,
+#domain-registration-section select {
+  width: 100%;
+  height: 32px;
+  font-size: 12px;
+}
+
+/* Dropdowns for Yes/No options */
+.input-group select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+}
+
+/* Button Styling */
+#domain-registration-section button {
+  padding: 12px;
+  background-color: #f1c40f;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 260px;
+}
+
+/* Button Hover Effect */
+#domain-registration-section button:hover {
+  background-color: #16a085;
+}
+
+/* Disabled Button */
+#domain-registration-section button:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
 /* Domain Query Section */
 login-chat-section {
   display: flex;
