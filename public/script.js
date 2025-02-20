@@ -209,7 +209,9 @@ function toggleSidebar() {
 // Fill Chat Input with FAQ Question
 function fillChatInput(question) {
   const userInput = document.getElementById("user-question");
+  const userInput2 = document.getElementById("domain-query-text");
   userInput.value = question;
+  userInput2.value = question;
   userInput.focus();
 }
 
@@ -365,7 +367,9 @@ function processUserQuestion() {
           if (email === 'tester@abc.com') {
             updateChatLog('Logged in as tester. No OTP required.', 'bot');
             document.getElementById('email-section').style.display = 'none';
-            document.getElementById('login-chat-section').style.display = 'flex'; 
+            document.getElementById('login-chat-section').style.display = 'flex';
+            document.getElementById('sidebar-content').style.display = 'none';
+            document.getElementById('faq-post-login').style.display = 'flex'; 
           } else {
             document.getElementById('email-section').style.display = 'none';
             document.getElementById('otp-section').style.display = 'flex'; 
@@ -413,32 +417,39 @@ function processUserQuestion() {
     async function verifyOTP() {
       const email = document.getElementById('user-email').value.trim();
       const otp = document.getElementById('otp-code').value.trim();
-
+  
       if (!otp) {
-        updateChatLog('Please enter the OTP to proceed.', 'bot');
-        return;
+          updateChatLog('Please enter the OTP to proceed.', 'bot');
+          return;
       }
-
+  
       try {
-        const response = await fetch('/api/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp }),
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          updateChatLog(data.message || 'OTP verified successfully!', 'bot');
-          document.getElementById('otp-section').style.display = 'none';
-          document.getElementById('login-chat-section').style.display = 'flex'; 
-        } else {
-          updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
-        }
+          const response = await fetch('/api/verify-otp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, otp }),
+          });
+  
+          const data = await response.json();
+  
+          if (data.success) {
+              updateChatLog(data.message || 'OTP verified successfully!', 'bot');
+  
+              // Hide OTP section and show chat section
+              document.getElementById('otp-section').style.display = 'none';
+              document.getElementById('login-chat-section').style.display = 'flex';
+  
+              // Show post-verification FAQs and hide pre-verification FAQs
+              document.getElementById('sidebar-content').style.display = 'none';
+              document.getElementById('faq-post-login').style.display = 'flex';
+          } else {
+              updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
+          }
       } catch (error) {
-        updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
+          updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
       }
-    }
+  }
+  
 
     function showInfo() {
       // Check if info box already exists
@@ -753,8 +764,8 @@ function goBackToQuerySection() {
       return;
     }
 
-    updateChatLog(`Your question: ${queryText}`, 'user');
-    updateChatLog('Searching for domain-related information...', 'bot');
+    updateChatLog(`${queryText}`, 'user');
+  
 
     try {
       console.log('Sending query to backend:', queryText);
