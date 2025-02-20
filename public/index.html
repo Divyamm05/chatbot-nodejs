@@ -7,12 +7,47 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  
   <!-- Assistant Icon -->
   <div id="assistant-logo" onclick="toggleChatbox()">💬</div>
-
+  
+  <div id="chat-container">
+    <div id="sidebar">
+      <button id="toggle-sidebar" onclick="toggleSidebar()">
+        <span class="menu-icon">☰</span>
+        <span class="faqs-text">FAQs</span>
+      </button>         
+      <div id="sidebar-content">
+        <ul class="faq-list">
+          <li onclick="fillChatInput('What features does this platform offer?')">What features does this platform offer?</li>
+          <li onclick="fillChatInput('Can I use this platform for domain registration and management?')">Can I use this platform for domain registration and management?</li>
+          <li onclick="fillChatInput('What is the process for signing up?')">What is the process for signing up?</li>
+          <li onclick="fillChatInput('Do I need an account to access all features?')">Do I need an account to access all features?</li>
+          <li onclick="fillChatInput('How can I search for a domain name?')">How can I search for a domain name?</li>
+          <li onclick="fillChatInput('What details are required to register a domain?')">What details are required to register a domain?</li>
+          <li onclick="fillChatInput('Do you support premium domain registration?')">Do you support premium domain registration?</li>
+          <li onclick="fillChatInput('Can I transfer my existing domains to this platform?')">Can I transfer my existing domains to this platform?</li>
+          <li onclick="fillChatInput('How do I create an account?')">How do I create an account?</li>
+          <li onclick="fillChatInput('What information is needed to sign up?')">What information is needed to sign up?</li>
+          <li onclick="fillChatInput('Is there a fee for signing up?')">Is there a fee for signing up?</li>
+          <li onclick="fillChatInput('How secure is my information?')">How secure is my information?</li>
+          <li onclick="fillChatInput('Does your platform provide an API for domain management?')">Does your platform provide an API for domain management?</li>
+          <li onclick="fillChatInput('What integrations are supported?')">What integrations are supported?</li>
+          <li onclick="fillChatInput('How can I get more details about the API?')">How can I get more details about the API?</li>
+          <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
+          <li onclick="fillChatInput('Can I get a demo of the platform?')">Can I get a demo of the platform?</li>
+          <li onclick="fillChatInput('Is there a guide for new users?')">Is there a guide for new users?</li>
+          <li onclick="fillChatInput('What payment methods are supported?')">What payment methods are supported?</li>
+          <li onclick="fillChatInput('How do I pay for services after signing up?')">How do I pay for services after signing up?</li>
+          <li onclick="fillChatInput('Are there any discounts or offers for new users?')">Are there any discounts or offers for new users?</li>
+        </ul>
+      </div>
+    </div>
   <!-- Chatbox -->
   <div id="chatbox" class="minimized">
+
     <div class="header">
+      <span id="header-menu-icon" onclick="toggleSidebar()">☰</span>
       Welcome!!
       <span class="info-btn" onclick="showInfo()">ℹ️</span>
       <span class="close-btn" onclick="closeChatbox()">×</span>
@@ -34,36 +69,6 @@
 <div class="chat-input" id="user-input-section">
   <input type="text" id="user-question" placeholder="Ask a question..." autofocus>
   <button id="submit-question" onclick="processUserQuestion()">Ask</button>
-</div>
-
-<!-- FAQ Sidebar -->
-<div id="faq-sidebar" class="faq-expanded">
-  <div class="faq-header" onclick="toggleFAQSidebar()">
-    <span id="faq-arrow" >›</span>
-  </div>
-  <ul class="faq-list">
-    <li onclick="fillChatInput('What features does this platform offer?')">What features does this platform offer?</li>
-    <li onclick="fillChatInput('Can I use this platform for domain registration and management?')">Can I use this platform for domain registration and management?</li>
-    <li onclick="fillChatInput('What is the process for signing up?')">What is the process for signing up?</li>
-    <li onclick="fillChatInput('Do I need an account to access all features?')">Do I need an account to access all features?</li>
-    <li onclick="fillChatInput('How can I search for a domain name?')">How can I search for a domain name?</li>
-    <li onclick="fillChatInput('What details are required to register a domain?')">What details are required to register a domain?</li>
-    <li onclick="fillChatInput('Do you support premium domain registration?')">Do you support premium domain registration?</li>
-    <li onclick="fillChatInput('Can I transfer my existing domains to this platform?')">Can I transfer my existing domains to this platform?</li>
-    <li onclick="fillChatInput('How do I create an account?')">How do I create an account?</li>
-    <li onclick="fillChatInput('What information is needed to sign up?')">What information is needed to sign up?</li>
-    <li onclick="fillChatInput('Is there a fee for signing up?')">Is there a fee for signing up?</li>
-    <li onclick="fillChatInput('How secure is my information?')">How secure is my information?</li>
-    <li onclick="fillChatInput('Does your platform provide an API for domain management?')">Does your platform provide an API for domain management?</li>
-    <li onclick="fillChatInput('What integrations are supported?')">What integrations are supported?</li>
-    <li onclick="fillChatInput('How can I get more details about the API?')">How can I get more details about the API?</li>
-    <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
-    <li onclick="fillChatInput('Can I get a demo of the platform?')">Can I get a demo of the platform?</li>
-    <li onclick="fillChatInput('Is there a guide for new users?')">Is there a guide for new users?</li>
-    <li onclick="fillChatInput('What payment methods are supported?')">What payment methods are supported?</li>
-    <li onclick="fillChatInput('How do I pay for services after signing up?')">How do I pay for services after signing up?</li>
-    <li onclick="fillChatInput('Are there any discounts or offers for new users?')">Are there any discounts or offers for new users?</li>
-  </ul>
 </div>
 
 <!-- Email Section (Initially Hidden) -->
@@ -157,7 +162,7 @@
       </div>
     </div>
   </div>
-
+</div>
   <!-- JavaScript -->
   <script src="script.js"></script>
 </body>

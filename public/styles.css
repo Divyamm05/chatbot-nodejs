@@ -10,38 +10,110 @@ body {
   height: 100vh;
   overflow: hidden;
 }
-
-/* Chatbox Styles */
-#chatbox {
-  width: 650px;
+#chat-container {
+  display: none;  /* Flexbox ensures sidebar & chatbox stay together */
+  width: 800px;
   height: 80vh;
-  max-height: 80vh;
-  background-color: #34495e;
+  background: #ecf0f1;
   border-radius: 20px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+  overflow: hidden;
+  position: fixed;
+  bottom: 90px;
+  right: 15px;
+}
+
+#sidebar {
+  width: 200px;
+  background: #3b3b3b;
+  color: white;
+  transition: width 0.3s ease;
+  padding: 20px 10px 10px 20px;;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  bottom: 40px;
-  right: 20px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.5s ease, opacity 0.5s ease;
-  transform: translateY(100%);
-  opacity: 0;
   overflow: hidden;
-  justify-content: flex-start; 
 }
 
-#chatbox.visible {
-  transform: translateY(-10%);
+#sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#toggle-sidebar {
+  cursor: pointer;
+  background: #1abc9c;
+  color: white;
+  padding: 10px;
+  font-weight: 600;
+  border: none;
+  width: 92%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Styling the menu icon */
+#toggle-sidebar .menu-icon {
+  position: absolute;
+  left: 30px; /* Keep the three lines on the left */
+  font-size: 15px;
+}
+
+#toggle-sidebar .faqs-text {
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  margin-left: 60px;
+}
+
+/* Hide "FAQs" when sidebar is collapsed */
+#sidebar.collapsed .faqs-text {
+  display: none;
+}
+
+#sidebar.collapsed .toggle-sidebar {
+  display: none;
+}
+
+#sidebar.collapsed #sidebar-content {
+  display: none;
+}
+
+#toggle-sidebar span {
+  flex: 2; /* Pushes ℹ️ to the right */
+  text-align: left;
+}
+
+#toggle-sidebar .info-icon {
   opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
-#chatbox.minimized {
-  transform: translateY(100%);
-  opacity: 0;
-  pointer-events: none;
+#sidebar.collapsed #toggle-sidebar .info-icon {
+  opacity: 0; /* Hide ℹ️ when collapsed */
 }
 
+/* Hide sidebar content when collapsed */
+#sidebar.collapsed #sidebar-content {
+  display: none;
+}
+
+
+#chatbox {
+  flex: 1; /* Chatbox takes remaining space */
+  height: 100%;
+  background-color: #34495e;
+  border-radius: 0 20px 20px 0; /* Rounded corners only on right side */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, opacity 0.5s ease;
+  opacity: 1;
+  overflow: hidden;
+}
 .header {
   font-size: 18px;
   font-weight: 600;
@@ -53,15 +125,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20px 20px 0 0;
-  position: relative; 
+  position: relative;
 }
+
+/* Hamburger icon in header */
+#header-menu-icon {
+  font-size: 18px;
+  cursor: pointer;
+  display: none; /* Hidden by default */
+  position: absolute;
+  left: 10px; /* Moves it to the leftmost side */
+}
+
+/* Show hamburger icon in header when sidebar is collapsed */
+#sidebar.collapsed + #chatbox .header #header-menu-icon {
+  display: inline-block;
+}
+
 
 .info-btn {
   cursor: pointer;
   position: absolute;
-  left: 13px;
-  font-size: 16px;
+  left: 450px;
+  font-size: 15px;
   color: #007bff; /* Blue color */
   display: inline-block;
 }
@@ -136,6 +222,11 @@ body {
   animation: fadeIn 0.5s forwards;
   border-bottom: 2px solid #1abc9c;
   height: 70%;
+}
+
+#chat-log.sidebar-open {
+  width: 650px;
+  right: 220px; /* Moves left by 200px */
 }
 
 /* Loading Spinner */
@@ -250,53 +341,67 @@ body {
   background-color: #45a049;
 }
 /* FAQ Sidebar - Default (Desktop View) */
+/* FAQ Sidebar */
 #faq-sidebar {
   position: fixed;
-  right: -280px;
-  top: 50px;
-  width: 250px; /* Default width for desktops */
-  max-width: 90%; /* Prevents it from getting too large on wider screens */
-  height: 455px;
-  max-height: 80vh; /* Limits height to avoid overflowing */
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  background: #252726;
-  box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2);
-  transition: right 0.3s ease-in-out;
-  padding: 10px;
-  border-radius: 5px 0 0 5px;
+  top: 0;
+  right: -200px; /* Start hidden off-screen */
+  width: 200px;
+  height: 80vh;
+  background: #f8f8f8;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, right 0.3s ease;
+  z-index: 50; /* Increased to ensure it is above the chatbox */
+  overflow-y: auto;
+}
+
+/* Collapsed Sidebar */
+#faq-sidebar.faq-collapsed {
+  transform: translateX(0); /* Remains hidden */
 }
 
 /* Expanded Sidebar */
 #faq-sidebar.faq-expanded {
-  right: 0;
+  left: 0; /* Fully visible */
+  transform: translateX(0); /* Reset transform */
 }
 
-/* Sidebar Header */
+/* Sidebar Toggle Button */
 .faq-header {
-  background: #007bff;
-  color: white;
   position: absolute;
-  left: -30px;
+  left: -30px; /* Sticks out from the sidebar */
   top: 50%;
   transform: translateY(-50%);
   width: 30px;
   height: 50px;
+  background: #007bff;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 5px 0 0 5px;
+  z-index: 60; /* Ensure button is always visible */
 }
 
-/* FAQ List with Scroll */
+
+/* FAQ List */
 .faq-list {
   list-style: none;
-  padding: 10px;
   margin: 0;
-  max-height: 420px;
+  padding-top: 5px;
   overflow-y: auto;
+  height: 230px;
+  padding-bottom: 310px;
+  padding-right: 10px;
+  padding-left: 0px;
+  font-size: 13px;
+}
+
+.faq-list li:hover {
+  background: #1abc9c;
+  color: white;
 }
 
 /* Scrollbar Customization */
@@ -316,19 +421,22 @@ body {
 /* FAQ Items */
 .faq-list li {
   padding: 8px;
-  background: #16a085;
+  background: #f1c40f;
   margin: 5px 0;
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.2s;
-  color: white;
-}
-
-.faq-list li:hover {
-  background: #e9ecef;
   color: black;
 }
 
+
+/* Chatbox when Sidebar is Open */
+#chatbox.sidebar-open {
+  max-width: calc(100% - 200px); /* Adjust chatbox width */
+  transform: translateX(-200px); /* Shift chatbox to the left */
+  transition: transform 0.3s ease;
+  z-index: 20; /* Ensure chatbox is below the sidebar */
+}
 
 
 
@@ -1097,10 +1205,11 @@ login-chat-wrapper button:disabled {
 
 
 /* Assistant Logo */
+/* Assistant Logo */
 #assistant-logo {
-  position: absolute; 
-  bottom: 10px; 
-  right: 10px; 
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
   background-color: #f1c40f;
   color: #fff;
   border-radius: 50%;
@@ -1109,20 +1218,37 @@ login-chat-wrapper button:disabled {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   font-size: 26px;
   z-index: 1000;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
 }
 
+/* Hover Effect */
 #assistant-logo:hover {
   transform: scale(1.1);
 }
 
+/* Hidden State */
+#assistant-logo.hidden {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none; /* Prevents interaction when hidden */
+}
+
+
 /* Responsive Adjustments */
 
 @media (max-width: 1024px) {
+
+  #chat-container {
+    width: 90vw;
+    height: 70vh;
+  }
+
+
   #chatbox {
     width: 90vw;
-    height: 65vh;
-    max-height: 65vh;
+    height: 100%;
+    max-height: 100%;
     bottom: 10px;
     right: 10px;
     overflow-y: auto;
@@ -1181,37 +1307,35 @@ login-chat-wrapper button:disabled {
 }
 
 /* 📱 Mobile Responsive Adjustments */
+/* 📱 Mobile Responsive Adjustments */
 @media screen and (max-width: 768px) {
-  #faq-sidebar {
-    width: 80%; /* Sidebar takes 80% width on smaller screens */
-    right: -100%; /* Fully hides sidebar when collapsed */
-    height: 80vh; /* Adjust height dynamically */
-    max-height: 85vh;
+  #chat-container {
+    width: 95vw;
+    height: 65vh;
+    flex-direction: column; /* Stack elements */
+    border-radius: 15px;
+    display: flex !important; /* Ensure it's visible */
+    overflow: hidden;
   }
 
-  /* When Expanded on Mobile */
-  #faq-sidebar.faq-expanded {
-    right: 0;
+  #sidebar {
+    width: 100%; /* Sidebar takes full width */
+    height: auto;
+    padding: 10px;
+    text-align: center;
   }
 
-  /* Increase the touch area for easier interaction */
-  .faq-header {
-    width: 40px;
-    height: 60px;
-    font-size: 20px;
-  }
-
-  /* Adjust FAQ List */
-  .faq-list {
-    max-height: 70vh; /* Allows more space for FAQ items */
-  }
-
-  /* Make FAQ items larger for touchscreens */
-  .faq-list li {
-    font-size: 16px;
-    padding: 12px;
+  #chatbox {
+    flex-grow: 1; /* Take remaining space */
+    width: 100%;
+    max-height: 100%;
+    display: flex !important; /* Ensure it's displayed */
+    flex-direction: column;
+    overflow-y: auto;
+    background-color: #34495e; /* Ensure background is visible */
   }
 }
+
 
 /* For screens 600px and below */
 @media (max-width: 600px) {
@@ -1274,6 +1398,11 @@ login-chat-wrapper button:disabled {
 
 /* For screens 375px */
 @media (max-width: 375px) {
+  #chat-container {
+    width: 98vw;
+    height: 70vh;
+  }
+
   #chatbox {
     width: 90vw;
     height: 75vh;
