@@ -146,7 +146,7 @@ body {
 .info-btn {
   cursor: pointer;
   position: absolute;
-  left: 450px;
+  left: 59%;
   font-size: 15px;
   color: #007bff; /* Blue color */
   display: inline-block;

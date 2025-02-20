@@ -10,23 +10,29 @@ function toggleAssistantLogo(show) {
 
 // Function to toggle the chatbox visibility
 function toggleChatbox() {
-  const chatbox = document.getElementById('chatbox');
   const chatContainer = document.getElementById('chat-container');
 
-  if (chatbox.classList.contains('minimized')) {
-    chatbox.classList.remove('minimized');
-    chatbox.classList.add('visible');
-    chatContainer.style.display = "flex"; // Show container smoothly
-  } else if (chatbox.classList.contains('visible')) {
-    chatbox.classList.remove('visible');
-    chatbox.classList.add('minimized');
+  if (chatContainer.style.opacity === "0" || chatContainer.style.opacity === "") {
+    // Show chatbox with transition
+    chatContainer.style.display = "flex"; // Ensure it's visible before transition
+    requestAnimationFrame(() => {
+      chatContainer.style.transition = "opacity 0.3s ease-in-out, transform 0.4s ease-in-out";
+      chatContainer.style.opacity = "1";
+      chatContainer.style.transform = "scale(1)";
+    });
+  } else {
+    // Hide chatbox smoothly
+    chatContainer.style.transition = "opacity 0.3s ease-in-out, transform 0.4s ease-in-out";
+    chatContainer.style.opacity = "0";
+    chatContainer.style.transform = "scale(0.9)";
 
-    // Wait for animation to complete before hiding the container
+    // Wait for transition to complete before hiding
     setTimeout(() => {
       chatContainer.style.display = "none";
     }, 400); // Match transition time
   }
 }
+
 
 
 // Function to close the chatbox
@@ -64,7 +70,7 @@ function closeChatbox() {
       }
 
       chatLog.appendChild(newMessage);
-      scrollToBottom();
+
   }
 
   function taketosigninsection() {
@@ -94,7 +100,12 @@ function closeChatbox() {
 
 function updateChatLog(message, sender) {
   console.log("updateChatLog called:", message);
+  
   const chatLog = document.querySelector('.chat-log');
+  if (!chatLog) {
+      console.error("Chat log element not found.");
+      return;
+  }
 
   const newMessage = document.createElement('div');
   newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
@@ -106,29 +117,33 @@ function updateChatLog(message, sender) {
   }
 
   chatLog.appendChild(newMessage);
-  scrollToBottom();
 
-  // Show auth buttons if the bot response matches predefined responses
+  // Show auth buttons if response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
-      chatLog.appendChild(authButtonsContainer); // Append after last message
-      authButtonsContainer.style.display = 'flex';
-      scrollToBottom(); // Ensure chat scrolls to bottom
-  } else {
+      if (typeof authButtonsContainer !== 'undefined' && authButtonsContainer) {
+          chatLog.appendChild(authButtonsContainer);
+          authButtonsContainer.style.display = 'flex';
+      } else {
+          console.warn("authButtonsContainer is undefined");
+      }
+  } else if (authButtonsContainer) {
       authButtonsContainer.style.display = 'none';
   }
 
-  // Show suggest buttons if the bot response matches domain suggestion triggers
+  // Show suggest buttons if response matches domain suggestions
   if (sender === 'bot' && checkDomainSuggestions(message)) {
-      chatLog.appendChild(suggestButtonsContainer); // Append after last message
-      suggestButtonsContainer.style.display = 'flex';
-      scrollToBottom(); // Ensure chat scrolls to bottom
-  } else {
+      if (typeof suggestButtonsContainer !== 'undefined' && suggestButtonsContainer) {
+          chatLog.appendChild(suggestButtonsContainer);
+          suggestButtonsContainer.style.display = 'flex';
+      } else {
+          console.warn("suggestButtonsContainer is undefined");
+      }
+  } else if (suggestButtonsContainer) {
       suggestButtonsContainer.style.display = 'none';
   }
 
+  // Call scrollToBottom only once
   scrollToBottom();
-
-  
 }
 
   const chatLog = document.getElementById('chat-log');
@@ -174,7 +189,7 @@ function toggleFAQSidebar() {
         
         // Reset chatbox to full width and original position
         chatbox.style.maxWidth = '850px';
-        chatbox.style.transform = 'translateX(0)';
+
     } else {
         // Expand the sidebar
         faqSidebar.classList.add('faq-expanded');
@@ -301,12 +316,14 @@ function processUserQuestion() {
       loadingContainer.style.display = 'none';  
   }
 
-    function scrollToBottom() {
-      const chatLog = document.querySelector('.chat-log');
-      if (chatLog) {
+  function scrollToBottom() {
+    const chatLog = document.querySelector('.chat-log');
+    if (chatLog) {
         chatLog.scrollTop = chatLog.scrollHeight;
-      }
+    } else {
+        console.error("Chat log element not found.");
     }
+}
     
     // Function to show the button press in the chat log
     function logButtonPress(buttonName) {
