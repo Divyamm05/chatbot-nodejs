@@ -1,18 +1,44 @@
-    // Function to toggle the chatbox visibility
-    function toggleChatbox() {
-      if (chatbox.classList.contains('minimized')) {
-        chatbox.classList.remove('minimized');
-        chatbox.classList.add('visible');
-      } else if (chatbox.classList.contains('visible')) {
-        chatbox.classList.remove('visible');
-        chatbox.classList.add('minimized');
-      }
-    }
+function toggleAssistantLogo(show) {
+  const assistantLogo = document.getElementById("assistant-logo");
+  
+  if (show) {
+    assistantLogo.classList.remove("hidden");
+  } else {
+    assistantLogo.classList.add("hidden");
+  }
+}
 
-    function closeChatbox() {
-      const chatbox = document.getElementById('chatbox');
-      chatbox.classList.toggle('minimized');
-    }
+// Function to toggle the chatbox visibility
+function toggleChatbox() {
+  const chatbox = document.getElementById('chatbox');
+  const chatContainer = document.getElementById('chat-container');
+
+  if (chatbox.classList.contains('minimized')) {
+    chatbox.classList.remove('minimized');
+    chatbox.classList.add('visible');
+    chatContainer.style.display = "flex"; // Show container smoothly
+  } else if (chatbox.classList.contains('visible')) {
+    chatbox.classList.remove('visible');
+    chatbox.classList.add('minimized');
+
+    // Wait for animation to complete before hiding the container
+    setTimeout(() => {
+      chatContainer.style.display = "none";
+    }, 400); // Match transition time
+  }
+}
+
+
+// Function to close the chatbox
+function closeChatbox() {
+  const chatbox = document.getElementById('chatbox');
+  const chatContainer = document.getElementById('chat-container');
+
+  chatbox.classList.add('minimized');
+  chatbox.classList.remove('visible');
+
+}
+
 
     window.addEventListener('load', () => {
       const emailVerified = localStorage.getItem('emailVerified');
@@ -137,19 +163,32 @@ function checkDomainRegistrationResponse(response) {
 
 const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
 
-// Toggle FAQ Sidebar with Arrow Animation
 function toggleFAQSidebar() {
-  const faqSidebar = document.getElementById("faq-sidebar");
-  const faqArrow = document.getElementById("faq-arrow");
+    const faqSidebar = document.getElementById('faq-sidebar');
+    const chatbox = document.getElementById('chatbox');
 
-  faqSidebar.classList.toggle("faq-expanded");
+    if (faqSidebar.classList.contains('faq-expanded')) {
+        // Collapse the sidebar
+        faqSidebar.classList.remove('faq-expanded');
+        faqSidebar.classList.add('faq-collapsed');
+        
+        // Reset chatbox to full width and original position
+        chatbox.style.maxWidth = '850px';
+        chatbox.style.transform = 'translateX(0)';
+    } else {
+        // Expand the sidebar
+        faqSidebar.classList.add('faq-expanded');
+        faqSidebar.classList.remove('faq-collapsed');
+        
+        // Narrow chatbox and shift it left to make room for sidebar
+        chatbox.style.maxWidth = '650px';
+        chatbox.style.transform = 'translateX(-200px)';
+    }
+}
 
-  // Change Arrow Direction
-  if (faqSidebar.classList.contains("faq-expanded")) {
-    faqArrow.innerHTML = "›"; // side arrow
-  } else {
-    faqArrow.innerHTML = "‹"; // Side arrow
-  }
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("collapsed");
 }
 
 // Fill Chat Input with FAQ Question
@@ -207,27 +246,31 @@ function checkDomainAvailability(response) {
   return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
 }
 
-  function processUserQuestion() {
-    const userQuestion = document.getElementById("user-question").value.trim();
-  
-    if (userQuestion) {
-      // Display user question in the chat log
-      document.getElementById("faq-sidebar").classList.remove("faq-expanded");
+function processUserQuestion() {
+  const userQuestion = document.getElementById("user-question").value.trim();
+
+  if (userQuestion) {
+      // ✅ REMOVED: No more `faq-sidebar` in HTML, so this line is gone
 
       const chatLog = document.getElementById("chat-log");
-  
+
       const userMessage = document.createElement('div');
       userMessage.className = 'message user-message';
       userMessage.innerHTML = `<span>${userQuestion}</span>`;
       chatLog.appendChild(userMessage);
-  
-      // Optionally, clear the input field
+
+      // Clear input field
       document.getElementById("user-question").value = "";
-  
-      // Call the function to handle the bot's response or action
-      handleBotResponse(userQuestion);
-    }
+
+      // Call bot response function (make sure it exists)
+      if (typeof handleBotResponse === "function") {
+          handleBotResponse(userQuestion);
+      } else {
+          console.warn("handleBotResponse is not defined.");
+      }
   }
+}
+
 
   
 
