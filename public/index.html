@@ -187,11 +187,80 @@
       </div>
     </div>
 
+    <div id="domain-registration-section" class="chat-input" style="display: none;">
+    
+      <div class="domain-registration-wrapper">
+        <div class="input-group">
+          <input type="text" id="domain-name" placeholder="Domain Name">
+        </div>
+      
+        <div class="input-group">
+          <select id="duration">
+            <option value="">Select Duration</option>
+            <option value="1">1 Year</option>
+            <option value="2">2 Years</option>
+            <option value="3">3 Years</option>
+            <option value="5">5 Years</option>
+            <option value="10">10 Years</option>
+          </select>
+        </div>
+      
+        <div class="input-group">
+          <input type="text" id="ns1" placeholder="Name Server 1">
+        </div>
+      
+        <div class="input-group">
+          <input type="text" id="ns2" placeholder="Name Server 2">
+        </div>
+      
+        <div class="input-group">
+          <input type="text" id="ns3" placeholder="Name Server 3 (Optional)">
+        </div>
+      
+        <div class="input-group">
+          <input type="text" id="ns4" placeholder="Name Server 4 (Optional)">
+        </div>
+      
+        <div class="input-group">
+          <input type="text" id="customer-id" placeholder="Customer ID">
+        </div>
+      
+        <div class="input-group">
+          <select id="language">
+            <option value="">Select Language (Optional)</option>
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+          </select>
+        </div>
+      
+        <div class="input-group">
+          <select id="enable-premium">
+            <option value="">Enable Premium</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      
+        <div class="input-group">
+          <select id="whois-protection">
+            <option value="">Enable Whois Protection</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+    
+        <button onclick="registerDomain()">Register Domain</button>
+        <button onclick="goBackToQuerySection()">Back</button>
+      </div>
+
     <!-- Domain Suggestions Section -->
     <div id="domain-options-next" style="display:none;">
       <div class="button-container">
         <button onclick="getMoreSuggestions()">More Suggestions for this Domain</button>
-        <button onclick="getNewDomainSuggestions()">Suggestions for a Different Domain</button>
+        <button onclick="goBackToQuerySection()">Suggestions for a Different Domain</button>
       </div>
     </div>
 

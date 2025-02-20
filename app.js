@@ -678,6 +678,14 @@ app.post('/api/domain-queries', async (req, res) => {
     });
   }
 
+  if (predefinedResult) {
+    return res.json({
+      success: true,
+      answer: predefinedResult.message,
+      button: predefinedResult.button || null  // Send button if available
+    });
+  }
+
   // Check for Domain Availability
   const isAvailable = lowerQuery.includes('availability') || lowerQuery.includes('available');
 
