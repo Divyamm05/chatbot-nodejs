@@ -70,17 +70,17 @@ function checkSession(req, res, next) {
 }
 
 const startQuestions = {
-  "What features does this platform offer?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What are the features of this platform?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What are the key features of this platform?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What does this platform offer?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What features can I use on this platform?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What features does this platform offer?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What are the features of this platform?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What are the key features of this platform?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What does this platform offer?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What features can I use on this platform?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
 
-  "What can this chatbot do?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What all can this chatbot do?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What is this chatbot capable of?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What can I do with this chatbot?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
-  "What can the chatbot do for me?": "This platform offers domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can this chatbot do?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What all can this chatbot do?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What is this chatbot capable of?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can I do with this chatbot?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can the chatbot do for me?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
 
   "Can I use this platform for domain registration and management?": "Yes, you can register and manage domain names on this platform.",
   "Is domain registration possible on this platform?": "Yes, you can register and manage domain names on this platform.",
@@ -185,29 +185,43 @@ const API_URL = "https://api.connectreseller.com/ConnectReseller/ESHOP/domainord
 
 // Route to register a domain
 app.post('/api/register-domain', async (req, res) => {
-  const { domainName, duration, isWhoisProtection, ns1, ns2, ns3, ns4, customerId, isEnablePremium, lang } = req.body;
-  
+  const { 
+      domainName, duration, isWhoisProtection, ns1, ns2, ns3, ns4, 
+      customerId, isEnablePremium, lang, appPurpose, nexusCategory 
+  } = req.body;
+
   if (!domainName || !duration || !ns1 || !ns2 || !customerId) {
       return res.status(400).json({ success: false, message: "Missing required parameters." });
   }
 
+  const isUsDomain = domainName.endsWith(".us");
+  if (isUsDomain && (!appPurpose || !nexusCategory)) {
+      return res.status(400).json({ success: false, message: ".us domains require appPurpose and nexusCategory." });
+  }
+
   try {
-      const response = await axios.get(API_URL, {
-          params: {
-              APIKey: API_KEY,
-              ProductType: 1,
-              Websitename: domainName,
-              Duration: duration,
-              IsWhoisProtection: isWhoisProtection,
-              ns1: ns1,
-              ns2: ns2,
-              ns3: ns3 || "",
-              ns4: ns4 || "",
-              Id: customerId,
-              isEnablePremium: isEnablePremium || 0,
-              lang: lang || ""
-          }
-      });
+      const params = {
+          APIKey: API_KEY,
+          ProductType: 1,
+          WebsiteName: domainName,
+          Duration: duration,
+          IsWhoisProtection: isWhoisProtection ? "true" : "false",
+          ns1,
+          ns2,
+          ns3: ns3 || "",
+          ns4: ns4 || "",
+          Id: customerId,
+          isEnablePremium: isEnablePremium === 1 ? 1 : 0, // ✅ FIXED
+          lang: lang || ""
+      };
+
+      if (isUsDomain) {
+          params.isUs = 1;
+          params.appPurpose = appPurpose;
+          params.nexusCategory = nexusCategory;
+      }
+
+      const response = await axios.post(API_URL, params);  // ✅ Use POST instead of GET
 
       const data = response.data;
       if (data.statusCode === 200) {
@@ -216,7 +230,11 @@ app.post('/api/register-domain', async (req, res) => {
           return res.status(400).json({ success: false, message: data.message });
       }
   } catch (error) {
-      console.error("Error registering domain:", error);
+      if (axios.isAxiosError(error)) {
+          console.error("Axios error:", error.response?.data || error.message);
+      } else {
+          console.error("Unexpected error:", error);
+      }
       return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });

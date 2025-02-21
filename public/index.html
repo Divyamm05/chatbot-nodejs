@@ -47,11 +47,11 @@
             <li onclick="fillChatInput('How do I register domain?')">How do I register domain?</li>
             <li onclick="fillChatInput('How can I renew domain?')">How can I renew domain?</li>
             <li onclick="fillChatInput('How to transfer IN/OUT domains?')">How to transfer IN/OUT domains?</li>
-            <li onclick="fillChatInput('Where can I register domains')">Where can I register domains</li>
+            <li onclick="fillChatInput('Where can I register domains')">Where can I register domains?</li>
             <li onclick="fillChatInput('List of domain registrar?')">List of domain registrar?</li>
             <li onclick="fillChatInput('Where can I view the domain information?')">Where can I view the domain information?</li>
             <li onclick="fillChatInput('List of high-value domain TLDs?')">List of high-value domain TLDs?</li>
-            <li onclick="fillChatInput('Suggest TLDs for a particular category?')">Suggest TLDs for a particular category"?</li>
+            <li onclick="fillChatInput('Suggest TLDs for a particular category?')">Suggest TLDs for a particular category?</li>
             <li onclick="fillChatInput('What actions can I do here on this chatbot?')">What actions can I do here on this chatbot?</li>
             <li onclick="fillChatInput('How to lock/unlock a domain?')">How to lock/unlock a domain?</li>
             <li onclick="fillChatInput('How to enable/disable privacy protection?')">How to enable/disable privacy protection?</li>
@@ -191,7 +191,7 @@
     
       <div class="domain-registration-wrapper">
         <div class="input-group">
-          <input type="text" id="domain-name" placeholder="Domain Name">
+          <input type="text" id="domain-name" placeholder="Domain Name*">
         </div>
       
         <div class="input-group">
@@ -206,11 +206,11 @@
         </div>
       
         <div class="input-group">
-          <input type="text" id="ns1" placeholder="Name Server 1">
+          <input type="text" id="ns1" placeholder="Name Server 1*">
         </div>
       
         <div class="input-group">
-          <input type="text" id="ns2" placeholder="Name Server 2">
+          <input type="text" id="ns2" placeholder="Name Server 2*">
         </div>
       
         <div class="input-group">
@@ -222,22 +222,31 @@
         </div>
       
         <div class="input-group">
-          <input type="text" id="customer-id" placeholder="Customer ID">
+          <input type="text" id="customer-id" placeholder="Customer ID*">
         </div>
       
         <div class="input-group">
           <select id="language">
             <option value="">Select Language (Optional)</option>
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
+            <option value="AZE">Azerbaijani</option>
+            <option value="BEL">Belarusian</option>
+            <option value="BUL">Bulgarian</option>
+            <option value="CHI">Chinese</option>
+            <option value="GRE">Greek</option>
+            <option value="JPN">Japanese</option>
+            <option value="KOR">Korean</option>
+            <option value="KUR">Kurdish</option>
+            <option value="MAC">Macedonian</option>
+            <option value="MOL">Moldavian</option>
+            <option value="POL">Polish</option>
+            <option value="RUS">Russian</option>
+            <option value="UKR">Ukrainian</option>
           </select>
         </div>
       
         <div class="input-group">
           <select id="enable-premium">
-            <option value="">Enable Premium</option>
+            <option value="">Enable Premium*</option>
             <option value="no">No</option>
             <option value="yes">Yes</option>
           </select>
@@ -245,15 +254,39 @@
       
         <div class="input-group">
           <select id="whois-protection">
-            <option value="">Enable Whois Protection</option>
+            <option value="">Enable Whois Protection*</option>
             <option value="no">No</option>
             <option value="yes">Yes</option>
           </select>
         </div>
-      </div>
+
+        <div class="input-group us-domain-fields" style="display: none;">
+          <label>.us Domain Registration Details:</label>
+          <div class="us-domain-wrapper">
+            <select id="us-app-purpose">
+              <option value="">Select Purpose*</option>
+              <option value="P1">Business for Profit</option>
+              <option value="P2">Non-Profit</option>
+              <option value="P3">Personal</option>
+              <option value="P4">Educational</option>
+              <option value="P5">Governmental</option>
+            </select>
+        
+            <select id="us-nexus-category">
+              <option value="">Select Nexus Category*</option>
+              <option value="C11">US Citizen</option>
+              <option value="C12">Permanent Resident</option>
+              <option value="C21">US Organization</option>
+              <option value="C31/CC">Foreign Org doing business in US</option>
+              <option value="C32/CC">Foreign Org with US Office</option>
+            </select>
+          </div>
+        </div>        
     
-        <button onclick="registerDomain()">Register Domain</button>
-        <button onclick="goBackToQuerySection()">Back</button>
+        <div class="button-group">
+          <button onclick="registerDomain()">Register Domain</button>
+          <button onclick="goBackToQuerySection()">Back</button>
+        </div>
       </div>
 
     <!-- Domain Suggestions Section -->

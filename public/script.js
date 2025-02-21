@@ -220,8 +220,11 @@ function checkBotResponse(response) {
       "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
       "Please login/signup to access all the features.",
-      "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!"
+      "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
+      "You can sign up by providing your email and setting up an account with a password."
   ];
+
+  scrollToBottom();
 
   return botMessages.includes(response);
 }
@@ -344,8 +347,96 @@ function processUserQuestion() {
   }
 }
 
+document.getElementById("domain-name").addEventListener("input", function () {
+  const domain = this.value.toLowerCase();
+  const usFields = document.querySelector(".us-domain-fields");
+  const chatLog = document.querySelector(".chat-log");
 
-  
+  if (domain.endsWith(".us")) {
+      usFields.style.display = "block"; // Show .us-specific fields
+      chatLog.style.height = "50%"; // Reduce chat log height
+  } else {
+      usFields.style.display = "none"; // Hide .us-specific fields for other TLDs
+      chatLog.style.height = "65%"; // Reset chat log height
+  }
+});
+
+
+async function registerDomain() {
+  const domainName = document.getElementById("domain-name").value.trim();
+  const duration = document.getElementById("duration").value;
+  const ns1 = document.getElementById("ns1").value.trim();
+  const ns2 = document.getElementById("ns2").value.trim();
+  const ns3 = document.getElementById("ns3").value.trim();
+  const ns4 = document.getElementById("ns4").value.trim();
+  const customerId = document.getElementById("customer-id").value.trim();
+  const isWhoisProtection = document.getElementById("whois-protection").value === "yes";
+  const isEnablePremium = document.getElementById("enable-premium").value === "yes" ? 1 : 0;
+  const lang = document.getElementById("language").value;
+
+  let appPurpose = "";
+  let nexusCategory = "";
+  if (domainName.endsWith(".us")) {
+      appPurpose = document.getElementById("us-app-purpose").value;
+      nexusCategory = document.getElementById("us-nexus-category").value;
+
+      if (!appPurpose || !nexusCategory) {
+          alert("For .us domains, you must select App Purpose and Nexus Category.");
+          return;
+      }
+  }
+
+  if (!domainName || !duration || !ns1 || !ns2 || !customerId) {
+      alert("Please fill in all required fields.");
+      return;
+  }
+
+  const requestData = {
+      domainName,
+      duration,
+      ns1,
+      ns2,
+      ns3: ns3 || null,
+      ns4: ns4 || null,
+      customerId,
+      isWhoisProtection,
+      isEnablePremium,
+      lang: lang || null,
+      ...(domainName.endsWith(".us") && { appPurpose, nexusCategory })
+  };
+
+  const registerButton = document.querySelector("button[onclick='registerDomain()']");
+  registerButton.disabled = true;  // Disable button during request
+
+  try {
+      const response = await fetch("/api/register-domain", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestData)
+      });
+
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+          alert("Domain registered successfully!");
+          console.log("Success:", result);
+      } else {
+          alert("Error: " + result.message);
+          console.error("Error:", result);
+      }
+  } catch (error) {
+      console.error("Request failed:", error);
+      alert("An error occurred. Please try again.");
+  } finally {
+      registerButton.disabled = false;  // Re-enable button
+  }
+}
 
   async function handleBotResponse(userQuestion) {
     try {
@@ -376,6 +467,10 @@ function processUserQuestion() {
 
   function scrollToBottom() {
     const chatLog = document.querySelector('.chat-log');
+    const container = document.getElementById("auth-buttons-container");
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
     if (chatLog) {
         chatLog.scrollTop = chatLog.scrollHeight;
     } else {
