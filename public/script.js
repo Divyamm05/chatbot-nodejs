@@ -118,46 +118,82 @@ function updateChatLog(message, sender) {
 
   chatLog.appendChild(newMessage);
 
+  // Ensure CSS for buttons is added only once
   if (!document.getElementById('register-domain-css')) {
-    const style = document.createElement('style');
-    style.id = 'register-domain-css';
-    style.innerHTML = `
-      .register-button {
-        padding: 10px 10px;
-        font-size: 16px;
-        cursor: pointer;
-        border: none;
-        color: white;
-        border-radius: 20px; /* Matches button radius in chat-input section */
-        background-color: #f1c40f; /* Matches button color */
-        transition: background-color 0.3s ease;
-        margin-top: 12px;/* Ensure some space between buttons */
-        margin-left: 0;
-      }
-      .register-button:hover {
-        background-color: #d4ac0d;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  // Add register button when applicable
-  if (sender === 'bot' && message.includes("register a domain")) {
-    const registerButton = document.createElement('button');
-    registerButton.textContent = "Register a Domain";
-    registerButton.classList.add('register-button');
-    
-    // Show the domain registration section on button click
-    registerButton.onclick = () => {
-        const registrationSection = document.getElementById('domain-registration-section');
-        const loginchatsection = document.getElementById('login-chat-section');
-        if (registrationSection) {
-            registrationSection.style.display = "block"; // Show section
-            loginchatsection.style.display = "none"; // Show section
+      const style = document.createElement('style');
+      style.id = 'register-domain-css';
+      style.innerHTML = `
+        .register-button, .transfer-button {
+          padding: 10px 10px;
+          font-family: 'Inter', sans-serif;
+          font-size: 600;
+          font-size: 16px;
+          cursor: pointer;
+          border: none;
+          color: #2c3e50;
+          border-radius: 20px;
+          background-color: #f1c40f;
+          transition: background-color 0.3s ease;
+          margin-top: 12px;
+          display: block;  /* Ensures button is on a new line */
+          width: 100%;  /* Makes button full width */
+          text-align: center;  /* Centers text */
         }
-    };
+        .register-button:hover, .transfer-button:hover {
+          background-color: #d4ac0d;
+        }
+        .button-container {
+          width: 100%;  /* Ensures it takes the full width */
+          display: block;  /* Forces new line */
+          margin-top: 10px; /* Adds spacing */
+        }
+      `;
+      document.head.appendChild(style);
+  }
+  
+  // Check for "register a domain" message
+  if (sender === 'bot' && message.includes("register a domain")) {
+      const registerButton = document.createElement('button');
+      registerButton.textContent = "Register a Domain";
+      registerButton.classList.add('register-button');
+  
+      registerButton.onclick = () => {
+          const registrationSection = document.getElementById('domain-registration-section');
+          const loginchatsection = document.getElementById('login-chat-section');
+          if (registrationSection) {
+              registrationSection.style.display = "block";
+              loginchatsection.style.display = "none";
+          }
+      };
+  
+      // Ensure the button is always on a new line
+      const buttonContainer = document.createElement('div');
+      buttonContainer.classList.add('button-container');
+      buttonContainer.appendChild(registerButton);
+  
+      newMessage.appendChild(buttonContainer);
+  }  
 
-    newMessage.appendChild(registerButton);
+// Check for "transfer a domain" message
+if (
+  sender === 'bot' &&
+  (message.includes("transfer") || message.includes("domain transfer")) &&
+  !message.includes("transferring") // Ensure "transferring" doesn't trigger the button
+) {
+  const transferButton = document.createElement('button');
+  transferButton.textContent = "Transfer a Domain";
+  transferButton.classList.add('transfer-button');
+
+  transferButton.onclick = () => {
+      const transferSection = document.getElementById('domain-transfer-section');
+      const loginchatsection = document.getElementById('login-chat-section');
+      if (transferSection) {
+          transferSection.style.display = "block";
+          loginchatsection.style.display = "none";
+      }
+  };
+
+  newMessage.appendChild(transferButton);
 }
 
   // Show auth buttons if response matches predefined responses
@@ -221,7 +257,9 @@ function checkBotResponse(response) {
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
       "Please login/signup to access all the features.",
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
-      "You can sign up by providing your email and setting up an account with a password."
+      "You can sign up by providing your email and setting up an account with us.",
+      "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
+      "Yes, an account is required for some advanced features."
   ];
 
   scrollToBottom();
@@ -699,7 +737,7 @@ function goBackToQuerySection() {
   console.log("login-chat-section is now visible");
 
   // Hide the other sections
-  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section'];
+  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section'];
 
   sectionsToHide.forEach(sectionId => {
     const element = document.getElementById(sectionId);
