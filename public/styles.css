@@ -877,7 +877,7 @@ body {
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
-  font-size: 12px;
+  font-size: 10px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
 }
@@ -907,6 +907,44 @@ body {
   height: 32px;
   font-size: 12px;
 }
+
+.button-group {
+  display: flex;
+  justify-content: center; /* Centers buttons horizontally */
+  gap: 10px; /* Spacing between buttons */
+  width: 100%;
+}
+
+.button-group button {
+  flex: 1; /* Ensures buttons are of equal width */
+  max-width: 200px; /* Prevents them from being too wide */
+  padding: 10px;
+}
+
+.us-domain-fields {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Adds spacing between selects */
+}
+
+.us-domain-fields label {
+  white-space: nowrap; /* Prevents label from breaking into multiple lines */
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.us-domain-wrapper {
+  display: flex;
+  gap: 10px; /* Adds spacing between dropdowns */
+  align-items: center;
+  width: 100%; /* Ensures full width usage */
+}
+
+.us-domain-wrapper select {
+  flex: 1; /* Makes both selects share equal space */
+  min-width: 150px; /* Ensures they don’t shrink too much */
+}
+
 
 /* Dropdowns for Yes/No options */
 .input-group select {
