@@ -8,6 +8,11 @@ function toggleAssistantLogo(show) {
   }
 }
 
+document.getElementById('toggle-sidebar').addEventListener('click', function () {
+  document.getElementById('sidebar').classList.toggle('active');
+});
+
+
 // Function to toggle the chatbox visibility
 function toggleChatbox() {
   const chatContainer = document.getElementById('chat-container');
@@ -42,6 +47,9 @@ function closeChatbox() {
 
   chatbox.classList.add('minimized');
   chatbox.classList.remove('visible');
+
+  chatContainer.classList.add('minimized');
+  chatContainer.classList.remove('visible');
 
 }
 
@@ -119,7 +127,7 @@ function updateChatLog(message, sender) {
   chatLog.appendChild(newMessage);
 
    // Check if user is signed in
-  const isUserSignedIn = localStorage.getItem('isSignedIn') === 'true';
+   const isUserSignedIn = localStorage.getItem('isSignedIn') === 'true';
 
   // Ensure CSS for buttons is added only once
   if (!document.getElementById('register-domain-css')) {
@@ -129,7 +137,6 @@ function updateChatLog(message, sender) {
         .register-button, .transfer-button {
           padding: 10px 10px;
           font-family: 'Inter', sans-serif;
-          font-size: 600;
           font-size: 16px;
           cursor: pointer;
           border: none;
@@ -180,7 +187,7 @@ function updateChatLog(message, sender) {
 // Check for "transfer a domain" message
 if (
   sender === 'bot' &&
-  (message.includes("transfer") || message.includes("domain transfer")) && isUserSignedIn &&
+  (message.includes("transfer") || message.includes("domain transfer"," I can assist you with domain transfer. Please visit the transfer domain name section to proceed.")) && isUserSignedIn &&
   !message.includes("transferring","Yes, you can transfer your domains to our platform.") // Ensure "transferring" doesn't trigger the button
 ) {
   const transferButton = document.createElement('button');
@@ -226,6 +233,8 @@ if (
   // Call scrollToBottom only once
   scrollToBottom();
 }
+
+window.onload = updateAuthUI;
 
 function getBotResponse(userInput) {
   const response = predefinedAnswers[userInput];
@@ -575,6 +584,7 @@ function showAuthButtons() {
           updateChatLog(data.message, 'bot');
           if (email === 'tester@abc.com') {
             updateChatLog('Logged in as tester. No OTP required.', 'bot');
+            localStorage.setItem('isSignedIn', 'true');
             document.getElementById('email-section').style.display = 'none';
             document.getElementById('login-chat-section').style.display = 'flex';
             document.getElementById('sidebar-content').style.display = 'none';
@@ -623,41 +633,56 @@ function showAuthButtons() {
     
 
     // Verify OTP and proceed to domain section
+    let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; // Ensure it's stored persistently
+
     async function verifyOTP() {
-      const email = document.getElementById('user-email').value.trim();
-      const otp = document.getElementById('otp-code').value.trim();
-  
-      if (!otp) {
-          updateChatLog('Please enter the OTP to proceed.', 'bot');
-          return;
-      }
-  
-      try {
-          const response = await fetch('/api/verify-otp', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, otp }),
-          });
-  
-          const data = await response.json();
-  
-          if (data.success) {
-              updateChatLog(data.message || 'OTP verified successfully!', 'bot');
-  
-              // Hide OTP section and show chat section
-              document.getElementById('otp-section').style.display = 'none';
-              document.getElementById('login-chat-section').style.display = 'flex';
-  
-              // Show post-verification FAQs and hide pre-verification FAQs
-              document.getElementById('sidebar-content').style.display = 'none';
-              document.getElementById('faq-post-login').style.display = 'flex';
-          } else {
-              updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
-          }
-      } catch (error) {
-          updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
-      }
-  }
+        const email = document.getElementById('user-email').value.trim();
+        const otp = document.getElementById('otp-code').value.trim();
+    
+        if (!otp) {
+            updateChatLog('Please enter the OTP to proceed.', 'bot');
+            return;
+        }
+    
+        try {
+            const response = await fetch('/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp }),
+            });
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                isSignedIn = true;
+                localStorage.setItem('isSignedIn', 'true'); // Store persistently
+    
+                updateChatLog(data.message || 'OTP verified successfully!', 'bot');
+    
+                // Hide OTP section and show chat section
+                document.getElementById('otp-section').style.display = 'none';
+                document.getElementById('login-chat-section').style.display = 'flex';
+    
+                // Show post-verification FAQs and hide pre-verification FAQs
+                document.getElementById('sidebar-content').style.display = 'none';
+                document.getElementById('faq-post-login').style.display = 'flex';
+    
+                updateAuthUI(); // Update UI after login
+            } else {
+                updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
+            }
+        } catch (error) {
+            updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
+        }
+    }
+    
+    // Function to update UI after login
+    function updateAuthUI() {
+        const authContainer = document.getElementById('auth-buttons-container');
+        if (isSignedIn && authContainer) {
+            authContainer.style.display = 'none';
+        }
+    }
   
 
     function showInfo() {
@@ -672,7 +697,7 @@ function showAuthButtons() {
     let infoBox = document.createElement("div");
     infoBox.id = "info-box";
     infoBox.innerHTML = `
-      <p>This chatbot helps with domain name suggestions, domain availability checks, and domain-related queries.</p>
+      <p>This chatbot helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.</p>
       <button onclick="closeInfo()">OK</button>
     `;
 

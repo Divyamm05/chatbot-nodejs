@@ -11,7 +11,7 @@
   <!-- Assistant Icon -->
   <div id="assistant-logo" onclick="toggleChatbox()">💬</div>
   
-  <div id="chat-container">
+  <div id="chat-container" style="display: none;">
     <div id="sidebar">
       <button id="toggle-sidebar" onclick="toggleSidebar()">
         <span class="menu-icon">☰</span>
@@ -39,7 +39,6 @@
           <li onclick="fillChatInput('Is there a guide for new users?')">Is there a guide for new users?</li>
           <li onclick="fillChatInput('What payment methods are supported?')">What payment methods are supported?</li>
           <li onclick="fillChatInput('How do I pay for services after signing up?')">How do I pay for services after signing up?</li>
-          <li onclick="fillChatInput('Are there any discounts or offers for new users?')">Are there any discounts or offers for new users?</li>
         </ul>
       </div>
       <div id="faq-post-login" style="display: none;">
@@ -92,7 +91,6 @@
       <span id="header-menu-icon" onclick="toggleSidebar()">☰</span>
       Welcome!!
       <span class="info-btn" onclick="showInfo()">ℹ️</span>
-      <span class="close-btn" onclick="closeChatbox()">×</span>
     </div>
     <div class="chat-log" id="chat-log">
       <div class="message bot-message" id="initial-message">Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊</div>

@@ -125,15 +125,14 @@ const startQuestions = {
   "What information is needed to sign up?": "You need to provide your name and your email address.",
   "Is there a fee for signing up?": "No, signing up is free of charge.",
   "How secure is my information?": "We follow industry-standard security practices to protect your data.",
-  "Does your platform provide an API for domain management?": "Yes, we offer a comprehensive API for domain management. Signup/Login to access all features.",
-  "What integrations are supported?": "We support integrations with various third-party services for domain management.",
-  "How can I get more details about the API?": "You can find more details about the API in our documentation section.",
+  "Does your platform provide an API for domain management?": "Absolutely! Our platform offers a comprehensive API for seamless domain management. You can explore the full API documentation here: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
+  "What integrations are supported?": "Our API supports a wide range of integrations. For detailed information on all available integrations, please refer to our API documentation: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
+  "How can I get more details about the API?": "You can find all the details, including endpoints, integration guidelines, and examples, in our API documentation: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
   "How can I contact support?": '<a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to contact us.',
   "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
-  "Is there a guide for new users?": "Yes, we have a comprehensive guide for new users available on our website.",
+  "Is there a guide for new users?": "Yes! Signing up with us gives you access to a helpful onboarding guide, along with the latest offers on our extensive selection of TLDs.",
   "What payment methods are supported?": "We accept credit/debit cards, and other popular payment methods.",
   "How do I pay for services after signing up?": "After signing up, you can pay for services directly through the platform's payment portal.",
-  "Are there any discounts or offers for new users?": "Yes, we offer discounts for new users. Check our website for more information."
 };
 
 
