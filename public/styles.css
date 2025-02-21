@@ -480,7 +480,7 @@ body {
 .chat-input button {
   padding: 12px 18px;
   background-color: #f1c40f;
-  color: white;
+  color: #2c3e50;
   border: none;
   border-radius: 20px;
   font-size: 14px;
@@ -945,6 +945,95 @@ body {
   min-width: 150px; /* Ensures they don’t shrink too much */
 }
 
+/* Domain Transfer Section */
+#domain-transfer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  padding: 8px;
+  box-sizing: border-box;
+  color: #ecf0f1;
+  width: 100%;
+}
+
+/* Wrapper for input fields */
+.domain-transfer-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 10px;
+}
+
+/* Input Fields & Select Box */
+.domain-transfer-wrapper .input-group {
+  width: calc(50% - 10px); /* Two inputs per row */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input & Select Styling */
+.domain-transfer-wrapper input,
+.domain-transfer-wrapper select {
+  width: 100%;
+  padding: 12px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 10px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.domain-transfer-wrapper input::placeholder {
+  color: #95a5a6;
+}
+
+.domain-transfer-wrapper input:focus,
+.domain-transfer-wrapper select:focus {
+  border-color: #f1c40f;
+}
+
+/* Full-width elements */
+#domain-transfer-section button,
+#domain-transfer-section select {
+  width: 100%;
+  height: 32px;
+  font-size: 12px;
+}
+
+/* Button Group */
+.domain-transfer-wrapper .button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.button-group button {
+  flex: 1;
+  max-width: 200px;
+  padding: 10px;
+  background-color: #f1c40f;
+  border: none;
+  color: #2c3e50;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.button-group button:hover {
+  background-color: #d4ac0d;
+}
 
 /* Dropdowns for Yes/No options */
 .input-group select {

@@ -70,31 +70,31 @@ function checkSession(req, res, next) {
 }
 
 const startQuestions = {
-  "What features does this platform offer?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What are the features of this platform?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What are the key features of this platform?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What does this platform offer?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What features can I use on this platform?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What features does this platform offer?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What are the features of this platform?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What are the key features of this platform?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What does this platform offer?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What features can I use on this platform?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
 
-  "What can this chatbot do?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What all can this chatbot do?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What is this chatbot capable of?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What can I do with this chatbot?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
-  "What can the chatbot do for me?": "This platform helps with domain registration, domain name transfer, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can this chatbot do?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What all can this chatbot do?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What is this chatbot capable of?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can I do with this chatbot?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
+  "What can the chatbot do for me?": "This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.",
 
-  "Can I use this platform for domain registration and management?": "Yes, you can register and manage domain names on this platform.",
-  "Is domain registration possible on this platform?": "Yes, you can register and manage domain names on this platform.",
-  "Can I register a domain on this platform?": "Yes, you can register and manage domain names on this platform.",
-  "Can I buy and manage domains on this site?": "Yes, you can register and manage domain names on this platform.",
-  "Can I use this platform to register and manage domains?": "Yes, you can register and manage domain names on this platform.",
+  "Can I use this platform for domain registration and management?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
+  "Is domain registration possible on this platform?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
+  "Can I register a domain on this platform?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
+  "Can I buy and manage domains on this site?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
+  "Can I use this platform to register and manage domains?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
   
-  "What is the process for signing up?": "You can sign up by providing your email and setting up an account with a password.",
-  "How do I sign up for this platform?": "You can sign up by providing your email and setting up an account with a password.",
-  "How can I create an account?": "You can sign up by providing your email and setting up an account with a password.",
-  "What do I need to do to register for an account?": "You can sign up by providing your email and setting up an account with a password.",
-  "What is the sign-up process for this platform?": "You can sign up by providing your email and setting up an account with a password.",
+  "What is the process for signing up?": "You can sign up by providing your email and setting up an account with us.",
+  "How do I sign up for this platform?": "You can sign up by providing your email and setting up an account with us.",
+  "How can I create an account?": "You can sign up by providing your email and setting up an account with us.",
+  "What do I need to do to register for an account?": "You can sign up by providing your email and setting up an account with us.",
+  "What is the sign-up process for this platform?": "You can sign up by providing your email and setting up an account with us.",
 
-  "Do I need an account to access all the features?": "Yes, an account is required for some advanced features.",
+  "Do I need an account to access all features?": "Yes, an account is required for some advanced features.",
   "Is an account necessary to use all the features?": "Yes, an account is required for some advanced features.",
   "Can I use all the features without signing up?": "Yes, an account is required for some advanced features.",
   "Are all the features available without an account?": "Yes, an account is required for some advanced features.",
@@ -238,6 +238,51 @@ app.post('/api/register-domain', async (req, res) => {
       return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
+
+const API_KEY_TRANSFER = process.env.CONNECT_RESELLER_API_KEY; 
+const API_URL_TRANSFER = 'https://api.connectreseller.com/ConnectReseller/ESHOP/TransferOrder';
+
+app.post('/api/transfer-domain', async (req, res) => {
+  const { domainName, authCode, isWhoisProtection, customerId } = req.body;
+
+  // Validate required parameters
+  if (!domainName || !authCode || !customerId) {
+      return res.status(400).json({ success: false, message: "Missing required parameters." });
+  }
+
+  try {
+      const params = {
+          APIKey: API_KEY_TRANSFER,
+          OrderType: 4, // Required value for transfers
+          WebsiteName: domainName,
+          IsWhoisProtection: Boolean(isWhoisProtection).toString(), // Ensures correct string format
+          AuthCode: authCode,
+          Id: customerId
+      };
+
+      // Make GET request with params
+      const response = await axios.get(API_URL_TRANSFER, { params });
+
+      const data = response.data;
+      if (data.statusCode === 200) {
+          return res.json({ 
+              success: true, 
+              message: "Domain transfer initiated successfully. Waiting for approval from losing registrar.", 
+              data 
+          });
+      } else {
+          return res.status(400).json({ success: false, message: data.message });
+      }
+  } catch (error) {
+      console.error("API Error:", {
+          message: error.message,
+          responseData: error.response?.data,
+          requestConfig: error.config
+      });
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
 
 // Tester login without checking Firebase
 app.post('/api/tester-login', logSession, (req, res) => {
@@ -723,6 +768,16 @@ app.post('/api/domain-queries', async (req, res) => {
       success: true,
       triggerDomainSection: true,
       answer: 'I can assist you with domain registration. Please visit the register domain name section to proceed.',
+    });
+  }
+
+  const isTransferQuery = lowerQuery.includes('transfer') || lowerQuery.includes('domain transfer');
+
+  if (isTransferQuery) {
+    return res.json({
+      success: true,
+      triggerDomainSection: true,
+      answer: 'I can assist you with domain transfer. Please visit the transfer domain name section to proceed.',
     });
   }
 
