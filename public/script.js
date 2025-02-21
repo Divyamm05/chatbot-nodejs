@@ -152,7 +152,7 @@ function updateChatLog(message, sender) {
   }
   
   // Check for "register a domain" message
-  if (sender === 'bot' && message.includes("register a domain")) {
+  if (sender === 'bot' && message.includes("register a domain") && !message.includes("To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.")) {
       const registerButton = document.createElement('button');
       registerButton.textContent = "Register a Domain";
       registerButton.classList.add('register-button');
@@ -178,7 +178,7 @@ function updateChatLog(message, sender) {
 if (
   sender === 'bot' &&
   (message.includes("transfer") || message.includes("domain transfer")) &&
-  !message.includes("transferring") // Ensure "transferring" doesn't trigger the button
+  !message.includes("transferring","Yes, you can transfer your domains to our platform.") // Ensure "transferring" doesn't trigger the button
 ) {
   const transferButton = document.createElement('button');
   transferButton.textContent = "Transfer a Domain";
