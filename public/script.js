@@ -118,6 +118,9 @@ function updateChatLog(message, sender) {
 
   chatLog.appendChild(newMessage);
 
+   // Check if user is signed in
+  const isUserSignedIn = localStorage.getItem('isSignedIn') === 'true';
+
   // Ensure CSS for buttons is added only once
   if (!document.getElementById('register-domain-css')) {
       const style = document.createElement('style');
@@ -152,7 +155,7 @@ function updateChatLog(message, sender) {
   }
   
   // Check for "register a domain" message
-  if (sender === 'bot' && message.includes("register a domain") && !message.includes("To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.")) {
+  if (sender === 'bot' && message.includes("register a domain") && isUserSignedIn && !message.includes("To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.")) {
       const registerButton = document.createElement('button');
       registerButton.textContent = "Register a Domain";
       registerButton.classList.add('register-button');
@@ -177,7 +180,7 @@ function updateChatLog(message, sender) {
 // Check for "transfer a domain" message
 if (
   sender === 'bot' &&
-  (message.includes("transfer") || message.includes("domain transfer")) &&
+  (message.includes("transfer") || message.includes("domain transfer")) && isUserSignedIn &&
   !message.includes("transferring","Yes, you can transfer your domains to our platform.") // Ensure "transferring" doesn't trigger the button
 ) {
   const transferButton = document.createElement('button');
@@ -259,7 +262,9 @@ function checkBotResponse(response) {
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
       "You can sign up by providing your email and setting up an account with us.",
       "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
-      "Yes, an account is required for some advanced features."
+      "Yes, an account is required for some advanced features.",
+      "To create an account, click the Sign Up button and provide your basic details. If you are already registered, simply log in.",
+      "Yes, we offer a comprehensive API for domain management. Signup/Login to access all features."
   ];
 
   scrollToBottom();
@@ -506,15 +511,30 @@ async function registerDomain() {
   function scrollToBottom() {
     const chatLog = document.querySelector('.chat-log');
     const container = document.getElementById("auth-buttons-container");
-  if (container) {
-    container.scrollTop = container.scrollHeight;
-  }
-    if (chatLog) {
-        chatLog.scrollTop = chatLog.scrollHeight;
-    } else {
+
+    if (!chatLog) {
         console.error("Chat log element not found.");
+        return;
+    }
+
+    if (container && window.getComputedStyle(container).display !== "none") {
+        // Small delay to ensure rendering updates
+        setTimeout(() => {
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }, 100);
     }
 }
+
+function showAuthButtons() {
+    const container = document.getElementById("auth-buttons-container");
+
+    if (container) {
+        container.style.display = "block"; // Show the container
+        setTimeout(scrollToBottom, 100); // Ensure chat scrolls after rendering
+    }
+}
+
+// You can call showAuthButtons() when you want to show the auth buttons
     
     // Function to show the button press in the chat log
     function logButtonPress(buttonName) {
@@ -767,8 +787,10 @@ function goBackToQuerySection() {
 
   function goBackTouserinputsection() {
     document.getElementById('email-section').style.display = 'none';
+    
 
-    document.getElementById('user-input-section').style.display = 'flex'; 
+    document.getElementById('user-input-section').style.display = 'flex';
+    document.getElementById('initial-message').style.display = 'flex';  
   }
 
     function getMoreSuggestions() {
