@@ -187,8 +187,8 @@ function updateChatLog(message, sender) {
 // Check for "transfer a domain" message
 if (
   sender === 'bot' &&
-  (message.includes("transfer") || message.includes("domain transfer"," I can assist you with domain transfer. Please visit the transfer domain name section to proceed.")) && isUserSignedIn &&
-  !message.includes("transferring","Yes, you can transfer your domains to our platform.") // Ensure "transferring" doesn't trigger the button
+  (message.includes("transfer") || message.includes("domain transfer") || message.includes(" I can assist you with domain transfer. Please visit the transfer domain name section to proceed.")) && isUserSignedIn &&
+  !message.includes("transferring") && !message.includes("Yes, you can transfer your domains to our platform.") // Ensure "transferring" doesn't trigger the button
 ) {
   const transferButton = document.createElement('button');
   transferButton.textContent = "Transfer a Domain";
@@ -211,6 +211,7 @@ if (
       if (typeof authButtonsContainer !== 'undefined' && authButtonsContainer) {
           chatLog.appendChild(authButtonsContainer);
           authButtonsContainer.style.display = 'flex';
+          scrollToAuthButtons();
       } else {
           console.warn("authButtonsContainer is undefined");
       }
@@ -262,6 +263,13 @@ const observer = new MutationObserver(() => {
 });
 
 observer.observe(chatLog, { childList: true });
+
+function scrollToAuthButtons() {
+  const authButtonsContainer = document.getElementById("auth-buttons-container");
+  if (authButtonsContainer) {
+      authButtonsContainer.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+}
 
 function checkBotResponse(response) {
   const botMessages = [
