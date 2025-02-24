@@ -176,7 +176,7 @@ app.post('/ask-question', (req, res) => {
   }
 
   // Default response if no match
-  return res.json({ answer: "Please login/signup to access all the features." });
+  return res.json({ answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
 const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
