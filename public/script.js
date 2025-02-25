@@ -188,7 +188,7 @@ function updateChatLog(message, sender) {
 if (
   sender === 'bot' &&
   (message.includes("transfer") || message.includes("domain transfer") || message.includes(" I can assist you with domain transfer. Please visit the transfer domain name section to proceed.")) && isUserSignedIn &&
-  !message.includes("transferring") && !message.includes("Yes, you can transfer your domains to our platform.") // Ensure "transferring" doesn't trigger the button
+  !message.includes("transferring") && !message.includes("Yes, you can transfer your domains to our platform.") && !message.includes("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.") // Ensure "transferring" doesn't trigger the button
 ) {
   const transferButton = document.createElement('button');
   transferButton.textContent = "Transfer a Domain";
@@ -627,9 +627,88 @@ async function verifyOtpAndSetCustomerId(otp) {
   }
 }
 
-// Example usage
-// verifyOtpAndSetCustomerId('123456');
+// Function to handle domain transfer
+// Function to handle domain transfer
+async function transferDomain() {
+  const domainName = document.getElementById('transfer-domain-name').value.trim();
+  const authCode = document.getElementById('auth-code').value.trim();
+  const isWhoisProtection = document.getElementById('transfer-whois-protection').value === 'yes';
+  const customerId = localStorage.getItem('customerId') || '15272'; // Fallback to default customer ID
 
+  // Validate input fields
+  if (!domainName || !authCode) {
+      alert('Please fill in all required fields.');
+      return;
+  }
+
+  if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
+      alert('Please enter a valid domain name.');
+      return;
+  }
+
+  if (!customerId) {
+      alert('Customer ID is missing. Please sign in again.');
+      return;
+  }
+
+  // Confirmation popup
+  const confirmationBox = document.createElement('div');
+  confirmationBox.className = 'chat-confirmation-box';
+
+  const content = document.createElement('div');
+  content.className = 'confirmation-content';
+  content.innerHTML = `<p>Do you want to transfer the domain <strong>${domainName}</strong>?</p>`;
+
+  const yesButton = document.createElement('button');
+  yesButton.innerText = 'Yes';
+  yesButton.addEventListener('click', () => confirmDomainTransfer(domainName, authCode, isWhoisProtection, customerId));
+
+  const noButton = document.createElement('button');
+  noButton.innerText = 'No';
+  noButton.addEventListener('click', closeConfirmationBox);
+
+  content.appendChild(yesButton);
+  content.appendChild(noButton);
+  confirmationBox.appendChild(content);
+  document.body.appendChild(confirmationBox);
+
+  disableChat(); // Disable chat while the confirmation box is open
+}
+
+// Function to confirm the domain transfer
+async function confirmDomainTransfer(domainName, authCode, isWhoisProtection, customerId) {
+  closeConfirmationBox(); // Close the confirmation box
+  disableChat(); // Keep chat disabled while processing
+
+  // Show "Processing..." popup
+  showChatPopup("Initiating domain transfer, please wait...", false, true);
+
+  try {
+      const response = await fetch('/api/transfer-domain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domainName, authCode, isWhoisProtection, customerId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+          showChatPopup("Domain transfer initiated successfully. Waiting for approval from losing registrar.", true);
+      } else {
+          showChatPopup(`Error: ${result.message}`, false);
+      }
+
+      // Close the domain transfer section and return to main chat
+      document.getElementById('domain-transfer-section').style.display = 'none';
+      document.getElementById('login-chat-section').style.display = 'flex';
+
+  } catch (error) {
+      console.error('❗ Unexpected error during domain transfer:', error);
+      showChatPopup('An error occurred during domain transfer. Please try again later.', false);
+  } finally {
+      enableChat(); // Re-enable chat regardless of success or failure
+  }
+}
 
 async function renewDomain() {
   const domainName = document.getElementById("renew-domain-name").value.trim();
@@ -908,12 +987,16 @@ async function verifyOTP() {
               localStorage.removeItem('customerId');
           }
 
+          clearchatlog();
+
           updateChatLog(data.message || 'OTP verified successfully!', 'bot');
 
           document.getElementById('otp-section').style.display = 'none';
           document.getElementById('login-chat-section').style.display = 'flex';
           document.getElementById('sidebar-content').style.display = 'none';
           document.getElementById('faq-post-login').style.display = 'flex';
+
+          updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
 
           updateAuthUI();
       } else {
@@ -925,7 +1008,14 @@ async function verifyOTP() {
       updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
   }
 }
-  
+
+// Function to clear the chat log
+function clearchatlog() {
+  const chatContainer = document.getElementById('chat-log');
+  if (chatContainer) {
+      chatContainer.innerHTML = ''; // Clear all chat messages
+  }
+}
   
     // Function to update UI after login
     function updateAuthUI() {
