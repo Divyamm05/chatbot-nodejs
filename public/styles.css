@@ -853,15 +853,15 @@ body {
 .domain-registration-wrapper {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center; /* Centering the two visible inputs initially */
   align-items: flex-start;
   width: 100%;
   gap: 10px;
 }
 
-/* Input Fields & Select Box - Five in a Row */
+/* Input Fields - Only Two Initially Visible */
 .domain-registration-wrapper .input-group {
-  width: calc(20% - 10px); /* Five inputs per row */
+  width: calc(50% - 10px); /* Two inputs per row */
   display: flex;
   flex-direction: column;
 }
@@ -877,7 +877,7 @@ body {
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
-  font-size: 10px;
+  font-size: 14px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
 }
@@ -891,58 +891,52 @@ body {
   border-color: #f1c40f;
 }
 
-/* Dropdown & Button Row - Five in a Row */
-.checkbox-button-row {
+/* Button Group */
+.button-group {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
   gap: 10px;
   width: 100%;
 }
 
-/* Full-width elements */
-#domain-registration-section button,
-#domain-registration-section select {
-  width: 100%;
-  height: 32px;
-  font-size: 12px;
-}
-
-.button-group {
-  display: flex;
-  justify-content: center; /* Centers buttons horizontally */
-  gap: 10px; /* Spacing between buttons */
-  width: 100%;
-}
-
 .button-group button {
-  flex: 1; /* Ensures buttons are of equal width */
-  max-width: 200px; /* Prevents them from being too wide */
+  flex: 1;
+  max-width: 200px;
   padding: 10px;
 }
 
+/* Additional Fields - Initially Hidden */
+.additional-fields {
+  display: none;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* US Domain Fields */
 .us-domain-fields {
   display: flex;
   align-items: center;
-  gap: 10px; /* Adds spacing between selects */
+  gap: 10px;
 }
 
 .us-domain-fields label {
-  white-space: nowrap; /* Prevents label from breaking into multiple lines */
+  white-space: nowrap;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
 }
 
 .us-domain-wrapper {
   display: flex;
-  gap: 10px; /* Adds spacing between dropdowns */
+  gap: 10px;
   align-items: center;
-  width: 100%; /* Ensures full width usage */
+  width: 100%;
 }
 
 .us-domain-wrapper select {
-  flex: 1; /* Makes both selects share equal space */
-  min-width: 150px; /* Ensures they don’t shrink too much */
+  flex: 1;
+  min-width: 150px;
 }
 
 /* Domain Transfer Section */
@@ -1072,6 +1066,119 @@ body {
   background-color: #7f8c8d;
   cursor: not-allowed;
 }
+
+/* Domain Renewal Section */
+#domain-renewal-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  padding: 16px;
+  box-sizing: border-box;
+  color: #ecf0f1;
+  width: 100%;
+}
+
+/* Wrapper for input fields */
+.domain-renewal-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  gap: 10px;
+}
+
+/* Input Fields */
+.domain-renewal-wrapper .input-group {
+  width: calc(50% - 10px);
+  display: flex;
+  flex-direction: column;
+}
+
+.domain-renewal-wrapper input,
+.domain-renewal-wrapper select {
+  width: 100%;
+  padding: 12px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #1abc9c;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  outline: none;
+  font-size: 10px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.domain-renewal-wrapper input::placeholder {
+  color: #95a5a6;
+}
+
+.domain-renewal-wrapper input:focus,
+.domain-renewal-wrapper select:focus {
+  border-color: #f1c40f;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.button-group button {
+  flex: 1;
+  max-width: 200px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1abc9c;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-group button:hover {
+  background-color: #16a085;
+}
+
+/* Response Message */
+#response-message {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+/* Domain Renewal Button */
+.renew-button {
+  padding: 10px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  color: #2c3e50;
+  border-radius: 20px;
+  background-color: #f1c40f;
+  transition: background-color 0.3s ease;
+  margin-top: 12px;
+  display: block; /* Ensures button is on a new line */
+  width: 100%; /* Makes button full width */
+  text-align: center; /* Centers text */
+}
+
+.renew-button:hover {
+  background-color: #d4ac0d;
+}
+
+
+.button-container {
+  margin-top: 10px;
+}
+
 /* Domain Query Section */
 login-chat-section {
   display: flex;

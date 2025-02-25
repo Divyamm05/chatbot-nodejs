@@ -185,109 +185,100 @@
       </div>
     </div>
 
-    <!-- Domain registration section -->
-    <div id="domain-registration-section" class="chat-input" style="display: none;">
-    
-      <div class="domain-registration-wrapper">
-        <div class="input-group">
-          <input type="text" id="domain-name" placeholder="Domain Name*">
-        </div>
-      
-        <div class="input-group">
-          <select id="duration">
-            <option value="">Select Duration</option>
-            <option value="1">1 Year</option>
-            <option value="2">2 Years</option>
-            <option value="3">3 Years</option>
-            <option value="5">5 Years</option>
-            <option value="10">10 Years</option>
-          </select>
-        </div>
-      
-        <div class="input-group">
-          <input type="text" id="ns1" placeholder="Name Server 1*">
-        </div>
-      
-        <div class="input-group">
-          <input type="text" id="ns2" placeholder="Name Server 2*">
-        </div>
-      
-        <div class="input-group">
-          <input type="text" id="ns3" placeholder="Name Server 3 (Optional)">
-        </div>
-      
-        <div class="input-group">
-          <input type="text" id="ns4" placeholder="Name Server 4 (Optional)">
-        </div>
-      
-        <div class="input-group">
-          <input type="text" id="customer-id" placeholder="Customer ID*">
-        </div>
-      
-        <div class="input-group">
-          <select id="language">
-            <option value="">Select Language (Optional)</option>
-            <option value="AZE">Azerbaijani</option>
-            <option value="BEL">Belarusian</option>
-            <option value="BUL">Bulgarian</option>
-            <option value="CHI">Chinese</option>
-            <option value="GRE">Greek</option>
-            <option value="JPN">Japanese</option>
-            <option value="KOR">Korean</option>
-            <option value="KUR">Kurdish</option>
-            <option value="MAC">Macedonian</option>
-            <option value="MOL">Moldavian</option>
-            <option value="POL">Polish</option>
-            <option value="RUS">Russian</option>
-            <option value="UKR">Ukrainian</option>
-          </select>
-        </div>
-      
-        <div class="input-group">
-          <select id="enable-premium">
-            <option value="">Enable Premium*</option>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
-        </div>
-      
-        <div class="input-group">
-          <select id="whois-protection">
-            <option value="">Enable Whois Protection*</option>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
-        </div>
+<!-- Domain registration section -->
+<div id="domain-registration-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+    <div class="input-group">
+      <input type="text" id="domain-name" placeholder="Domain Name" required>
+    </div>
+    <div class="input-group">
+      <select id="duration" required>
+        <option value="" disabled selected>Select Duration</option>
+        <option value="1">1 Year</option>
+        <option value="2">2 Years</option>
+        <option value="3">3 Years</option>
+        <option value="5">5 Years</option>
+        <option value="10">10 Years</option>
+      </select>
+    </div>
+    <div class="button-group">
+      <button onclick="registerDomain()">Register Domain</button>
+      <button onclick="goBackToQuerySection()">Back</button>
+    </div>
+  </div>
+</div>
 
-        <div class="input-group us-domain-fields" style="display: none;">
-          <label>.us Domain Registration Details:</label>
-          <div class="us-domain-wrapper">
-            <select id="us-app-purpose">
-              <option value="">Select Purpose*</option>
-              <option value="P1">Business for Profit</option>
-              <option value="P2">Non-Profit</option>
-              <option value="P3">Personal</option>
-              <option value="P4">Educational</option>
-              <option value="P5">Governmental</option>
-            </select>
-        
-            <select id="us-nexus-category">
-              <option value="">Select Nexus Category*</option>
-              <option value="C11">US Citizen</option>
-              <option value="C12">Permanent Resident</option>
-              <option value="C21">US Organization</option>
-              <option value="C31/CC">Foreign Org doing business in US</option>
-              <option value="C32/CC">Foreign Org with US Office</option>
-            </select>
-          </div>
-        </div>        
-    
-        <div class="button-group">
-          <button onclick="registerDomain()">Register Domain</button>
-          <button onclick="goBackToQuerySection()">Back</button>
-        </div>
+
+<!-- Additional domain settings section (visible post-registration) -->
+<div id="additional-settings-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+    <div class="input-group">
+      <input type="text" id="ns1" placeholder="Name Server 1*">
+    </div>
+    <div class="input-group">
+      <input type="text" id="ns2" placeholder="Name Server 2*">
+    </div>
+    <div class="input-group">
+      <input type="text" id="ns3" placeholder="Name Server 3 (Optional)">
+    </div>
+    <div class="input-group">
+      <input type="text" id="ns4" placeholder="Name Server 4 (Optional)">
+    </div>
+    <div class="input-group">
+      <select id="language">
+        <option value="">Select Language (Optional)</option>
+        <option value="AZE">Azerbaijani</option>
+        <option value="BEL">Belarusian</option>
+        <option value="BUL">Bulgarian</option>
+        <option value="CHI">Chinese</option>
+        <option value="GRE">Greek</option>
+        <option value="JPN">Japanese</option>
+        <option value="KOR">Korean</option>
+        <option value="KUR">Kurdish</option>
+        <option value="MAC">Macedonian</option>
+        <option value="MOL">Moldavian</option>
+        <option value="POL">Polish</option>
+        <option value="RUS">Russian</option>
+        <option value="UKR">Ukrainian</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <select id="enable-premium">
+        <option value="">Enable Premium*</option>
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <select id="whois-protection">
+        <option value="">Enable Whois Protection*</option>
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="input-group us-domain-fields" style="display: none;">
+      <label>.us Domain Registration Details:</label>
+      <div class="us-domain-wrapper">
+        <select id="us-app-purpose">
+          <option value="">Select Purpose*</option>
+          <option value="P1">Business for Profit</option>
+          <option value="P2">Non-Profit</option>
+          <option value="P3">Personal</option>
+          <option value="P4">Educational</option>
+          <option value="P5">Governmental</option>
+        </select>
+        <select id="us-nexus-category">
+          <option value="">Select Nexus Category*</option>
+          <option value="C11">US Citizen</option>
+          <option value="C12">Permanent Resident</option>
+          <option value="C21">US Organization</option>
+          <option value="C31/CC">Foreign Org doing business in US</option>
+          <option value="C32/CC">Foreign Org with US Office</option>
+        </select>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Domain Transfer Section-->
     <div id="domain-transfer-section" class="chat-input" style="display: none;">
@@ -320,6 +311,40 @@
       </div>
     
     </div>    
+
+<!-- Domain Renewal Section -->
+<div id="domain-renewal-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+    <div class="input-group">
+      <input type="text" id="renew-domain-name" placeholder="Domain Name" required>
+    </div>
+    <div class="input-group">
+      <select id="renew-duration" required>
+        <option value="" disabled selected>Select Duration</option>
+        <option value="1">1 Year</option>
+        <option value="2">2 Years</option>
+        <option value="3">3 Years</option>
+        <option value="5">5 Years</option>
+        <option value="10">10 Years</option>
+      </select>
+    </div>
+  <div class="input-group">
+    <input type="text" id="customerId" value="" readonly>
+  </div>
+
+    <div class="input-group">
+      <select id="renew-whois-protection">
+        <option value="" disabled selected>Enable Whois Protection*</option>
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="button-group">
+      <button onclick="renewDomain()">Renew Domain</button>
+      <button onclick="goBackToQuerySection()">Back</button>
+    </div>
+  </div>
+</div>
 
     <!-- Domain Suggestions Section -->
     <div id="domain-options-next" style="display:none;">

@@ -11,6 +11,7 @@ const whois2 = require('whois-json');
 const Fuse = require('fuse.js');
 const admin = require('firebase-admin');
 const { info } = require('console');
+const qs = require('qs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -179,62 +180,72 @@ app.post('/ask-question', (req, res) => {
   return res.json({ answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
-const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
-const API_URL = "https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder";
 
-// Route to register a domain
-app.post('/api/register-domain', async (req, res) => {
-  const { 
-      domainName, duration, isWhoisProtection, ns1, ns2, ns3, ns4, 
-      customerId, isEnablePremium, lang, appPurpose, nexusCategory 
-  } = req.body;
+const domainRegistrationService = async (params) => {
+  try {
+    const queryParams = new URLSearchParams({
+      APIKey: '6HviT7QU1YAAYqp',
+      ProductType: '1',
+      Websitename: params.Websitename,
+      Duration: params.Duration,
+      IsWhoisProtection: params.IsWhoisProtection || 'false',
+      ns1: params.ns1 || '11338.dns1.managedns.org',
+      ns2: params.ns2 || '11338.dns2.managedns.org',
+      ns3: params.ns3 || '',  // ✅ Include ns3 as empty if not provided
+      ns4: params.ns4 || '',  // ✅ Include ns4 as empty if not provided
+      Id: params.clientId || '15272',  // ✅ Use correct Id
+      isEnablePremium: params.isEnablePremium || '0',  // ✅ Set as '0' instead of 'false'
+      lang: params.lang || "en"
+    });
 
-  if (!domainName || !duration || !ns1 || !ns2 || !customerId) {
-      return res.status(400).json({ success: false, message: "Missing required parameters." });
+    const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder?${queryParams.toString()}`;
+
+    console.log('🔍 API Request URL:', url); // Debugging
+
+    const response = await axios.get(url, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+
+    console.log('✅ Domain Registration Successful:', response.data);
+    return response.data;
+
+  } catch (error) {
+    console.error('❌ Error during domain registration API call:', error.response?.data || error.message);
+    return { success: false, message: error.response?.data?.message || error.message };
   }
+};
 
-  const isUsDomain = domainName.endsWith(".us");
-  if (isUsDomain && (!appPurpose || !nexusCategory)) {
-      return res.status(400).json({ success: false, message: ".us domains require appPurpose and nexusCategory." });
-  }
+
+app.get('/api/register-domain', async (req, res) => {
+  let params = { ...req.query };
+
+  console.log("🔍 Received Params:", params); // <-- Debugging
 
   try {
-      const params = {
-          APIKey: API_KEY,
-          ProductType: 1,
-          WebsiteName: domainName,
-          Duration: duration,
-          IsWhoisProtection: isWhoisProtection ? "true" : "false",
-          ns1,
-          ns2,
-          ns3: ns3 || "",
-          ns4: ns4 || "",
-          Id: customerId,
-          isEnablePremium: isEnablePremium === 1 ? 1 : 0, // ✅ FIXED
-          lang: lang || ""
-      };
-
-      if (isUsDomain) {
-          params.isUs = 1;
-          params.appPurpose = appPurpose;
-          params.nexusCategory = nexusCategory;
+      if (params.Id === '15272' || (req.session && req.session.email === 'aichatbot@iwantdemo.com')) {
+          console.log("🔄 Using Client ID directly as Id for API request.");
+          params.Id = 223855;
       }
 
-      const response = await axios.post(API_URL, params);  // ✅ Use POST instead of GET
+      params.clientId = params.Id;
 
-      const data = response.data;
-      if (data.statusCode === 200) {
-          return res.json({ success: true, message: "Domain registered successfully", data });
+      const response = await domainRegistrationService(params);
+
+      console.log('✅ Domain Registration Response:', response);
+
+      if (response?.responseMsg?.statusCode === 200) {
+          res.json({ success: true, message: "Domain registered successfully!" });
       } else {
-          return res.status(400).json({ success: false, message: data.message });
+          res.json({
+              success: false,
+              message: response?.responseMsg?.message || "Domain registration failed."
+          });
       }
   } catch (error) {
-      if (axios.isAxiosError(error)) {
-          console.error("Axios error:", error.response?.data || error.message);
-      } else {
-          console.error("Unexpected error:", error);
-      }
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+      console.error('❗ Error during domain registration API call:', error.message);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
@@ -282,6 +293,28 @@ app.post('/api/transfer-domain', async (req, res) => {
   }
 });
 
+app.get('/renew-domain', async (req, res) => {
+  const { domain, duration, resellerId, whoisProtection } = req.query;
+
+  // Validate required parameters
+  if (!domain || !duration || !resellerId) {
+      return res.status(400).json({ message: 'Missing required parameters: domain, duration, or resellerId' });
+  }
+
+  try {
+      const apiKey = '6HviT7QU1YAAYqp'; // Your actual API key
+      const orderType = 2; // Fixed for renewal
+
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder?APIKey=${apiKey}&OrderType=${orderType}&Websitename=${domain}&IsWhoisProtection=${whoisProtection === 'true'}&Duration=${parseInt(duration, 10)}&Id=${parseInt(resellerId, 10)}`;
+
+      const response = await axios.get(apiUrl);
+      res.status(response.status).json(response.data);
+
+  } catch (error) {
+      console.error('Error renewing domain:', error.response?.data || error.message);
+      res.status(500).json({ message: 'Failed to renew domain', error: error.response?.data });
+  }
+});
 
 // Tester login without checking Firebase
 app.post('/api/tester-login', logSession, (req, res) => {
@@ -314,10 +347,10 @@ app.post('/api/check-email', async (req, res) => {
 
   req.session.email = email.trim().toLowerCase(); // ✅ Always store email in lowercase
 
-  // ✅ Tester Bypass Logic
-  if (req.session.email === "tester@abc.com") {
-    req.session.otpVerified = true; // ✅ Skip OTP for tester
-    return res.json({ success: true, message: "Tester login - OTP bypassed." });
+  // ✅ Tester & AI Chatbot Bypass Logic
+  if (req.session.email === "tester@abc.com" || req.session.email === "aichatbot@iwantdemo.com") {
+    req.session.otpVerified = true; // ✅ Skip OTP
+    return res.json({ success: true, message: "Login bypassed - No OTP required." });
   }
 
   try {
@@ -336,7 +369,7 @@ Or enter your registered email id to continue. `
 
     const userDoc = query.docs[0];
 
-    // ✅ Generate OTP (skipped for tester)
+    // ✅ Generate OTP (skipped for tester & chatbot)
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 60000);
 
@@ -409,29 +442,26 @@ app.post('/api/resend-otp', async (req, res) => {
 });
 
 // Verify OTP and proceed to domain section
+// OTP Verification Endpoint
 app.post('/api/verify-otp', logSession, async (req, res) => {
-  const { otp } = req.body;
-  const email = req.session.email;
+  const { otp, email } = req.body;
 
-  if (!email || !otp) {
-      return res.status(400).json({ success: false, message: 'Email and OTP are required.' });
-  }
-
-  if (email === 'tester@abc.com') {
-      req.session.verified = true;
-      req.session.userState = 'awaiting_domain_name';
-      return res.json({
-          success: true,
-          message: 'Logged in as tester, skipping OTP verification.',
-          options: [
-              { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
-              { text: 'More Options', action: 'askMoreOptions' },
-          ],
-      });
+  if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required.' });
   }
 
   try {
-      // Firestore query to check OTP validity
+      if (email === 'aichatbot@iwantdemo.com') {
+          req.session.verified = true;
+          req.session.customerId = '15272';
+
+          return res.json({
+              success: true,
+              message: 'Test user authenticated successfully.',
+              customerId: '15272',
+          });
+      }
+
       const otpRef = db.collection('otp_records').doc(email);
       const otpDoc = await otpRef.get();
 
@@ -439,17 +469,15 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
           return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
       }
 
-      req.session.verified = true; 
-      req.session.userState = 'awaiting_domain_name';
+      req.session.verified = true;
+      req.session.customerId = otpDoc.data().resellerId;
 
-      res.json({
+      return res.json({
           success: true,
-          message: 'OTP verified successfully. Let me know how can I help! 😊',
-          options: [
-              { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
-              { text: 'More Options', action: 'askMoreOptions' },
-          ],
+          message: 'OTP verified successfully.',
+          customerId: req.session.customerId,
       });
+
   } catch (error) {
       console.error('Error during OTP verification:', error);
       res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -598,7 +626,7 @@ const allowedTopics = [
 const predefinedAnswers  = {
   "How do I register a domain?": "You can register a domain by searching for an available name on our platform, selecting the desired TLD, and completing the registration process by providing your details and making a payment.",
   
-  "How can I renew a domain?": "To renew your domain, log in to your account, navigate to the domain management section, select the domain, and choose the renewal option. Ensure sufficient funds in your account for renewal.",
+  "How can I renew a domain?": "To seamlessly renew your domain name, just click the button below! I'll take you straight to the domain renewal section.",
   
   "How to transfer IN/OUT domains?": "To transfer a domain in, you need to unlock it at the current registrar and obtain the EPP code. For outgoing transfers, ensure your domain is unlocked and retrieve the authorization code.",
   
