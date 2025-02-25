@@ -28,6 +28,7 @@
         "node-fetch": "^2.7.0",
         "nodemailer": "^6.10.0",
         "openai": "^4.79.4",
+        "qs": "^6.14.0",
         "spellchecker": "^3.7.1",
         "whois": "^2.14.2",
         "whois-json": "^2.0.4"

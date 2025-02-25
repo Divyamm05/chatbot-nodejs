@@ -206,6 +206,38 @@ if (
   newMessage.appendChild(transferButton);
 }
 
+// Check for "renew a domain" message
+if (
+  sender === 'bot' &&
+  isUserSignedIn &&
+  (
+      message.toLowerCase().includes("renew a domain") || 
+      message.includes("To seamlessly renew your domain name, just click the button below! I'll take you straight to the domain renewal section.")
+  )
+) {
+  console.log("Renew domain button condition met."); // Debugging log
+
+  const renewButton = document.createElement('button');
+  renewButton.textContent = "Renew a Domain";
+  renewButton.classList.add('renew-button');
+
+  renewButton.onclick = () => {
+      const renewalSection = document.getElementById('domain-renewal-section');
+      const loginChatSection = document.getElementById('login-chat-section');
+      if (renewalSection) {
+          renewalSection.style.display = "block";
+          loginChatSection.style.display = "none";
+      }
+  };
+
+  // Ensure the button is always on a new line
+  const buttonContainer = document.createElement('div');
+  buttonContainer.classList.add('button-container');
+  buttonContainer.appendChild(renewButton);
+
+  newMessage.appendChild(buttonContainer);
+}
+
   // Show auth buttons if response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
       if (typeof authButtonsContainer !== 'undefined' && authButtonsContainer) {
@@ -425,76 +457,168 @@ document.getElementById("domain-name").addEventListener("input", function () {
 async function registerDomain() {
   const domainName = document.getElementById("domain-name").value.trim();
   const duration = document.getElementById("duration").value;
-  const ns1 = document.getElementById("ns1").value.trim();
-  const ns2 = document.getElementById("ns2").value.trim();
-  const ns3 = document.getElementById("ns3").value.trim();
-  const ns4 = document.getElementById("ns4").value.trim();
-  const customerId = document.getElementById("customer-id").value.trim();
-  const isWhoisProtection = document.getElementById("whois-protection").value === "yes";
-  const isEnablePremium = document.getElementById("enable-premium").value === "yes" ? 1 : 0;
-  const lang = document.getElementById("language").value;
 
-  let appPurpose = "";
-  let nexusCategory = "";
-  if (domainName.endsWith(".us")) {
-      appPurpose = document.getElementById("us-app-purpose").value;
-      nexusCategory = document.getElementById("us-nexus-category").value;
-
-      if (!appPurpose || !nexusCategory) {
-          alert("For .us domains, you must select App Purpose and Nexus Category.");
-          return;
-      }
-  }
-
-  if (!domainName || !duration || !ns1 || !ns2 || !customerId) {
+  if (!domainName || !duration) {
       alert("Please fill in all required fields.");
       return;
   }
 
-  const requestData = {
-      domainName,
-      duration,
-      ns1,
-      ns2,
-      ns3: ns3 || null,
-      ns4: ns4 || null,
-      customerId,
-      isWhoisProtection,
-      isEnablePremium,
-      lang: lang || null,
-      ...(domainName.endsWith(".us") && { appPurpose, nexusCategory })
-  };
+  if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
+      alert("Please enter a valid domain name.");
+      return;
+  }
 
-  const registerButton = document.querySelector("button[onclick='registerDomain()']");
-  registerButton.disabled = true;  // Disable button during request
+  disableChat();
 
+  const confirmationBox = document.createElement('div');
+  confirmationBox.className = 'chat-confirmation-box';
+
+  const content = document.createElement('div');
+  content.className = 'confirmation-content';
+  content.innerHTML = `<p>Do you want to register the domain <strong>${domainName}</strong>?</p>`;
+
+  const yesButton = document.createElement('button');
+  yesButton.innerText = 'Yes';
+  yesButton.addEventListener('click', () => confirmRegistration(domainName, duration));
+
+  const noButton = document.createElement('button');
+  noButton.innerText = 'No';
+  noButton.addEventListener('click', closeConfirmationBox);
+
+  content.appendChild(yesButton);
+  content.appendChild(noButton);
+  confirmationBox.appendChild(content);
+  document.body.appendChild(confirmationBox);
+}
+
+
+function confirmRegistration(domainName, duration) {
+  closeConfirmationBox();
+  fetch(`/api/register-domain?Websitename=${domainName}&Duration=${duration}&Id=15272`, { method: "GET" })
+      .then(response => response.json())
+      .then(result => {
+          enableChat(); // Ensure chat is re-enabled after response
+          if (result.success) {
+              alert("Domain registered successfully!");
+          } else {
+              alert("Error: " + result.message);
+          }
+      })
+      .catch(error => {
+          enableChat(); // Ensure chat is re-enabled even on error
+          console.error("❗ Unexpected error:", error);
+          alert("Internal Server Error");
+      });
+}
+
+function closeConfirmationBox() {
+  const box = document.querySelector('.chat-confirmation-box');
+  if (box) box.remove();
+  enableChat(); // Re-enable chat when the confirmation box is closed
+}
+
+function disableChat() {
+  const chatContainer = document.getElementById("chat-container");
+  if (chatContainer) {
+      chatContainer.style.pointerEvents = "none";
+      chatContainer.style.opacity = "0.5";
+  }
+}
+
+function enableChat() {
+  const chatContainer = document.getElementById("chat-container");
+  if (chatContainer) {
+      chatContainer.style.pointerEvents = "auto";
+      chatContainer.style.opacity = "1";
+  }
+}
+
+/* Add CSS for the confirmation box to match chatbot theme */
+const style = document.createElement('style');
+style.textContent = `
+.chat-confirmation-box {
+  position: fixed;
+  bottom: 45%;
+  right: 6%;
+  background-color: #2d2d2d;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+.confirmation-content p {
+  margin-bottom: 10px;
+}
+.confirmation-content button {
+  margin: 5px;
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.confirmation-content button:hover {
+  background-color: #45a049;
+}
+`;
+document.head.appendChild(style);
+
+
+// Function to verify OTP and auto-populate customerId
+async function verifyOtpAndSetCustomerId(otp) {
   try {
-      const response = await fetch("/api/register-domain", {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json"
-          },
-          body: JSON.stringify(requestData)
+      const response = await fetch('/api/verify-otp', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp })
       });
 
-      if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      const data = await response.json();
+      console.log(data); // Debug: check if the response has resellerId
 
-      const result = await response.json();
-
-      if (result.success) {
-          alert("Domain registered successfully!");
-          console.log("Success:", result);
+      if (data.success) {
+          const customerIdInput = document.getElementById('customerId');
+          if (customerIdInput) {
+              customerIdInput.value = data.resellerId; // Set the value to resellerId
+              customerIdInput.readOnly = true; // Make the input read-only
+          }
       } else {
-          alert("Error: " + result.message);
-          console.error("Error:", result);
+          console.error('OTP verification failed:', data.message);
       }
   } catch (error) {
-      console.error("Request failed:", error);
-      alert("An error occurred. Please try again.");
-  } finally {
-      registerButton.disabled = false;  // Re-enable button
+      console.error('Error fetching customer ID:', error);
+  }
+}
+
+// Example usage
+// verifyOtpAndSetCustomerId('123456');
+
+
+async function renewDomain() {
+  const domain = document.getElementById('renew-domain-name').value.trim();
+  const duration = document.getElementById('renew-duration').value;
+  const customerId = document.getElementById('renew-customer-id').value.trim();
+  const whoisProtection = document.getElementById('renew-whois-protection').value === 'yes';
+
+  if (!domain || !duration || !customerId) {
+      alert('Please fill all required fields.');
+      return;
+  }
+
+  try {
+      const response = await fetch(`/renew-domain?domain=${domain}&duration=${duration}&resellerId=${customerId}&whoisProtection=${whoisProtection}`);
+      const data = await response.json();
+
+      if (response.ok) {
+          alert(`Domain renewed successfully!\nNew Expiry Date: ${data.responseData.expiryDate}`);
+      } else {
+          alert(`Failed to renew domain. ${data.message || 'Please check the input fields and try again.'}`);
+      }
+  } catch (error) {
+      console.error('Error renewing domain:', error);
+      alert('An error occurred while processing your request.');
   }
 }
 
@@ -590,7 +714,7 @@ function showAuthButtons() {
       
         if (data.success) {
           updateChatLog(data.message, 'bot');
-          if (email === 'tester@abc.com') {
+          if (email === 'tester@abc.com' ,'aichatbot@iwantdemo.com') {
             updateChatLog('Logged in as tester. No OTP required.', 'bot');
             localStorage.setItem('isSignedIn', 'true');
             document.getElementById('email-section').style.display = 'none';
@@ -643,47 +767,66 @@ function showAuthButtons() {
     // Verify OTP and proceed to domain section
     let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; // Ensure it's stored persistently
 
-    async function verifyOTP() {
-        const email = document.getElementById('user-email').value.trim();
-        const otp = document.getElementById('otp-code').value.trim();
-    
-        if (!otp) {
-            updateChatLog('Please enter the OTP to proceed.', 'bot');
-            return;
-        }
-    
-        try {
-            const response = await fetch('/api/verify-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp }),
-            });
-    
-            const data = await response.json();
-    
-            if (data.success) {
-                isSignedIn = true;
-                localStorage.setItem('isSignedIn', 'true'); // Store persistently
-    
-                updateChatLog(data.message || 'OTP verified successfully!', 'bot');
-    
-                // Hide OTP section and show chat section
-                document.getElementById('otp-section').style.display = 'none';
-                document.getElementById('login-chat-section').style.display = 'flex';
-    
-                // Show post-verification FAQs and hide pre-verification FAQs
-                document.getElementById('sidebar-content').style.display = 'none';
-                document.getElementById('faq-post-login').style.display = 'flex';
-    
-                updateAuthUI(); // Update UI after login
-            } else {
-                updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
-            }
-        } catch (error) {
-            updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
-        }
-    }
-    
+// OTP Verification Function
+async function verifyOTP() {
+  const email = document.getElementById('user-email').value.trim();
+  const otpInput = document.getElementById('otp-code');
+  const otp = otpInput ? otpInput.value.trim() : '';
+
+  if (!email) {
+      updateChatLog('Please enter your email to proceed.', 'bot');
+      return;
+  }
+
+  // Prepare request payload
+  const bodyData = { email, otp };
+
+  if (email !== 'aichatbot@iwantdemo.com' && !otp) {
+      updateChatLog('Please enter the OTP to proceed.', 'bot');
+      return;
+  }
+
+  try {
+      const response = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+          isSignedIn = true;
+          localStorage.setItem('isSignedIn', 'true');
+
+          // Use customerId (resellerId) from the response
+          if (data.customerId) {
+              localStorage.setItem('customerId', data.customerId);
+              console.log("💾 Customer ID stored:", data.customerId);
+          } else {
+              console.error("⚠️ No customer ID received in response");
+              localStorage.removeItem('customerId');
+          }
+
+          updateChatLog(data.message || 'OTP verified successfully!', 'bot');
+
+          document.getElementById('otp-section').style.display = 'none';
+          document.getElementById('login-chat-section').style.display = 'flex';
+          document.getElementById('sidebar-content').style.display = 'none';
+          document.getElementById('faq-post-login').style.display = 'flex';
+
+          updateAuthUI();
+      } else {
+          console.error("❌ OTP Verification Failed:", data.message);
+          updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
+      }
+  } catch (error) {
+      console.error("❗ Error during OTP verification:", error);
+      updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
+  }
+}
+  
+  
     // Function to update UI after login
     function updateAuthUI() {
         const authContainer = document.getElementById('auth-buttons-container');
@@ -790,7 +933,7 @@ function goBackToQuerySection() {
   console.log("login-chat-section is now visible");
 
   // Hide the other sections
-  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section'];
+  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section'];
 
   sectionsToHide.forEach(sectionId => {
     const element = document.getElementById(sectionId);
@@ -1036,7 +1179,7 @@ function goBackToQuerySection() {
         }
 
         if (data.answer) {
-          updateChatLog(`Answer: ${data.answer}`, 'bot');
+          updateChatLog(`${data.answer}`, 'bot');
 
           const chatLog = document.querySelector('.chat-log');
           const answerElement = chatLog.querySelector('.bot-message:last-child');
