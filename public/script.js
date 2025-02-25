@@ -206,6 +206,31 @@ if (
   newMessage.appendChild(transferButton);
 }
 
+  // Check for "domain availability" message
+  if (
+    sender === 'bot' &&
+    (message.includes("Check domain availability") || message.includes("domain availability") || message.includes("I can help you with checking domain availability! Please click check domain availability button.")) && isUserSignedIn // Ensure "transferring" doesn't trigger the button
+  ) {
+    const availableButton = document.createElement('button');
+    availableButton.textContent = "Check Domain Availability";
+    availableButton.classList.add('available-button');
+  
+    availableButton.onclick = () => {
+        const availabilitySection = document.getElementById('domain-availability-section');
+        const loginchatsection = document.getElementById('login-chat-section');
+        if (availabilitySection) {
+            availabilitySection.style.display = "block";
+            loginchatsection.style.display = "none";
+        }
+    };
+
+    const buttonContainer = document.createElement('div');
+    buttonContainer.classList.add('button-container');
+    buttonContainer.appendChild(availableButton);
+  
+    newMessage.appendChild(buttonContainer);
+  }
+
 // Check for "renew a domain" message
 if (
   sender === 'bot' &&
@@ -597,29 +622,65 @@ async function verifyOtpAndSetCustomerId(otp) {
 
 
 async function renewDomain() {
-  const domain = document.getElementById('renew-domain-name').value.trim();
-  const duration = document.getElementById('renew-duration').value;
-  const customerId = document.getElementById('renew-customer-id').value.trim();
-  const whoisProtection = document.getElementById('renew-whois-protection').value === 'yes';
+  const domainName = document.getElementById("renew-domain-name").value.trim();
+  const duration = document.getElementById("renew-duration").value;
 
-  if (!domain || !duration || !customerId) {
-      alert('Please fill all required fields.');
+  if (!domainName || !duration) {
+      alert("Please fill in all required fields.");
       return;
   }
 
-  try {
-      const response = await fetch(`/renew-domain?domain=${domain}&duration=${duration}&resellerId=${customerId}&whoisProtection=${whoisProtection}`);
-      const data = await response.json();
-
-      if (response.ok) {
-          alert(`Domain renewed successfully!\nNew Expiry Date: ${data.responseData.expiryDate}`);
-      } else {
-          alert(`Failed to renew domain. ${data.message || 'Please check the input fields and try again.'}`);
-      }
-  } catch (error) {
-      console.error('Error renewing domain:', error);
-      alert('An error occurred while processing your request.');
+  if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
+      alert("Please enter a valid domain name.");
+      return;
   }
+
+  disableChat();
+
+  const confirmationBox = document.createElement('div');
+  confirmationBox.className = 'chat-confirmation-box';
+
+  const content = document.createElement('div');
+  content.className = 'confirmation-content';
+  content.innerHTML = `<p>Do you want to renew the domain <strong>${domainName}</strong> for ${duration} year(s)?</p>`;
+
+  const yesButton = document.createElement('button');
+  yesButton.innerText = 'Yes';
+  yesButton.addEventListener('click', () => confirmRenewal(domainName, duration));
+
+  const noButton = document.createElement('button');
+  noButton.innerText = 'No';
+  noButton.addEventListener('click', closeConfirmationBox);
+
+  content.appendChild(yesButton);
+  content.appendChild(noButton);
+  confirmationBox.appendChild(content);
+  document.body.appendChild(confirmationBox);
+}
+
+function confirmRenewal(domainName, duration) {
+  closeConfirmationBox();
+  fetch(`/api/renew-domain?Websitename=${domainName}&Duration=${duration}&OrderType=2&Id=15272&IsWhoisProtection=false`, { method: "GET" })
+      .then(response => response.json())
+      .then(result => {
+          enableChat(); // Ensure chat is re-enabled after response
+          if (result.success) {
+              alert(`Domain renewed successfully!\nNew Expiry Date: ${result.responseData.expiryDate}`);
+          } else {
+              alert("Error: " + result.message);
+          }
+      })
+      .catch(error => {
+          enableChat(); // Ensure chat is re-enabled even on error
+          console.error("❗ Unexpected error:", error);
+          alert("Internal Server Error");
+      });
+}
+
+function closeConfirmationBox() {
+  const box = document.querySelector('.chat-confirmation-box');
+  if (box) box.remove();
+  enableChat(); // Re-enable chat when the confirmation box is closed
 }
 
   async function handleBotResponse(userQuestion) {
@@ -933,7 +994,7 @@ function goBackToQuerySection() {
   console.log("login-chat-section is now visible");
 
   // Hide the other sections
-  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section'];
+  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section'];
 
   sectionsToHide.forEach(sectionId => {
     const element = document.getElementById(sectionId);

@@ -184,7 +184,7 @@ app.post('/ask-question', (req, res) => {
 const domainRegistrationService = async (params) => {
   try {
     const queryParams = new URLSearchParams({
-      APIKey: '6HviT7QU1YAAYqp',
+      APIKey: process.env.CONNECT_RESELLER_API_KEY,
       ProductType: '1',
       Websitename: params.Websitename,
       Duration: params.Duration,
@@ -293,27 +293,65 @@ app.post('/api/transfer-domain', async (req, res) => {
   }
 });
 
-app.get('/renew-domain', async (req, res) => {
-  const { domain, duration, resellerId, whoisProtection } = req.query;
+const ORDER_TYPE_RENEWAL = 2;
 
-  // Validate required parameters
-  if (!domain || !duration || !resellerId) {
-      return res.status(400).json({ message: 'Missing required parameters: domain, duration, or resellerId' });
-  }
+const renewDomainService = async (params) => {
+    try {
+        const queryParams = new URLSearchParams({
+            APIKey: process.env.CONNECT_RESELLER_API_KEY,
+            OrderType: ORDER_TYPE_RENEWAL,
+            Websitename: params.Websitename,
+            Duration: params.Duration,
+            Id: params.clientId,
+            IsWhoisProtection: params.IsWhoisProtection || false
+        });
 
-  try {
-      const apiKey = '6HviT7QU1YAAYqp'; // Your actual API key
-      const orderType = 2; // Fixed for renewal
+        const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder?${queryParams.toString()}`;
 
-      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder?APIKey=${apiKey}&OrderType=${orderType}&Websitename=${domain}&IsWhoisProtection=${whoisProtection === 'true'}&Duration=${parseInt(duration, 10)}&Id=${parseInt(resellerId, 10)}`;
+        console.log("🔍 API Request URL:", url);
+        const response = await axios.get(url, {
+            headers: { 'Accept': 'application/json' }
+        });
 
-      const response = await axios.get(apiUrl);
-      res.status(response.status).json(response.data);
+        console.log('✅ Domain Renewal Successful:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error during domain renewal API call:', error.message);
+        return { success: false, message: error.message };
+    }
+};
 
-  } catch (error) {
-      console.error('Error renewing domain:', error.response?.data || error.message);
-      res.status(500).json({ message: 'Failed to renew domain', error: error.response?.data });
-  }
+app.get('/api/renew-domain', async (req, res) => {
+    let params = { ...req.query };
+    console.log("🔍 Received Params:", params);
+
+    try {
+        if (params.Id === '15272' || (req.session && req.session.email === 'aichatbot@iwantdemo.com')) {
+            console.log("🔄 Using Client ID directly as Id for API request.");
+            params.Id = 223855;
+        }
+
+        params.clientId = params.Id;
+        const response = await renewDomainService(params);
+
+        console.log('✅ Domain Renewal Response:', response);
+
+        if (response?.responseMsg?.statusCode === 200) {
+            res.json({
+                success: true,
+                message: "Domain renewed successfully!",
+                expiryDate: response?.responseData?.expiryDate
+            });
+        } else {
+            res.json({
+                success: false,
+                message: response?.responseMsg?.message || "Domain renewal failed."
+            });
+        }
+    } catch (error) {
+        console.error('❗ Error during domain renewal API call:', error.message);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
 });
 
 // Tester login without checking Firebase
