@@ -554,14 +554,13 @@ body {
 }
 
 #otp-section input {
-  width: calc(100% - 160px);
+  width: calc(100% - 180px);
   margin-right: 10px;
   box-sizing: border-box;
 }
 
 #otp-section button {
-  width: auto;
-  padding: 8px 18px;
+  width: 13%;
   margin-left: 10px;
   background-color: #f1c40f;
   color: #ffffff;
@@ -569,9 +568,10 @@ body {
   border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
   transition: background-color 0.3s ease;
   box-sizing: border-box;
+  margin: 3px;
 }
 
 #otp-section button:hover {
@@ -1137,7 +1137,7 @@ body {
   border: none;
   border-radius: 8px;
   background-color: #1abc9c;
-  color: white;
+  color: #34495e;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -1155,18 +1155,19 @@ body {
 /* Domain Renewal Button */
 .renew-button {
   padding: 10px 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  color: #2c3e50;
-  border-radius: 20px;
-  background-color: #f1c40f;
-  transition: background-color 0.3s ease;
-  margin-top: 12px;
-  display: block; /* Ensures button is on a new line */
-  width: 100%; /* Makes button full width */
-  text-align: center; /* Centers text */
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    color: #2c3e50;
+    border-radius: 20px;
+    background-color: #f1c40f;
+    transition: background-color 0.3s ease;
+    margin-top: 12px;
+    display: block;
+    width: 100%;
+    text-align: center;
 }
 
 .renew-button:hover {
@@ -1177,6 +1178,45 @@ body {
 .button-container {
   margin-top: 10px;
 }
+
+/* Chat Popup Box */
+.chat-popup-box {
+  position: fixed;
+  bottom: 45%;
+  right: 15%;
+  background-color: #2d2d2d;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 250px;
+  max-width: 300px;
+  text-align: center;
+}
+
+/* Popup Content */
+.popup-content p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Popup Button */
+.popup-close-btn {
+  margin: 5px;
+  padding: 5px 10px;
+  background-color: #f1c40f;
+  color: #000000;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-close-btn:hover {
+  background-color: #45a049;
+}
+
 
 /* Domain Query Section */
 login-chat-section {

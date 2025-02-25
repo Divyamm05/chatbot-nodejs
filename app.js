@@ -180,6 +180,21 @@ app.post('/ask-question', (req, res) => {
   return res.json({ answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
+const checkDomainAvailability = async (domainName) => {
+  try {
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
+      
+      console.log('🔍 Checking Domain Availability:', url);
+      const response = await axios.get(url, { headers: { 'Accept': 'application/json' } });
+
+      console.log('✅ Domain Availability Response:', response.data);
+      return response.data;
+  } catch (error) {
+      console.error('❌ Error during domain availability check:', error.response?.data || error.message);
+      return { success: false, message: error.response?.data?.message || error.message };
+  }
+};
+
 
 const domainRegistrationService = async (params) => {
   try {
@@ -217,13 +232,22 @@ const domainRegistrationService = async (params) => {
   }
 };
 
-
 app.get('/api/register-domain', async (req, res) => {
   let params = { ...req.query };
 
-  console.log("🔍 Received Params:", params); // <-- Debugging
+  console.log("🔍 Received Params:", params);
 
   try {
+      // Check domain availability first
+      const availabilityResponse = await checkDomainAvailability(params.Websitename);
+
+      if (availabilityResponse?.responseMsg?.statusCode === 400 || !availabilityResponse?.responseData?.available) {
+          return res.json({
+              success: false,
+              message: "Domain is not available for registration."
+          });
+      }
+
       if (params.Id === '15272' || (req.session && req.session.email === 'aichatbot@iwantdemo.com')) {
           console.log("🔄 Using Client ID directly as Id for API request.");
           params.Id = 223855;
@@ -253,45 +277,54 @@ const API_KEY_TRANSFER = process.env.CONNECT_RESELLER_API_KEY;
 const API_URL_TRANSFER = 'https://api.connectreseller.com/ConnectReseller/ESHOP/TransferOrder';
 
 app.post('/api/transfer-domain', async (req, res) => {
-  const { domainName, authCode, isWhoisProtection, customerId } = req.body;
+    const { domainName, authCode, isWhoisProtection, customerId } = req.body;
 
-  // Validate required parameters
-  if (!domainName || !authCode || !customerId) {
-      return res.status(400).json({ success: false, message: "Missing required parameters." });
-  }
+    // Validate required parameters
+    if (!domainName || !authCode || !customerId) {
+        return res.status(400).json({ success: false, message: "Missing required parameters." });
+    }
 
-  try {
-      const params = {
-          APIKey: API_KEY_TRANSFER,
-          OrderType: 4, // Required value for transfers
-          WebsiteName: domainName,
-          IsWhoisProtection: Boolean(isWhoisProtection).toString(), // Ensures correct string format
-          AuthCode: authCode,
-          Id: customerId
-      };
+    try {
+        const params = {
+            APIKey: API_KEY_TRANSFER,
+            OrderType: 4, // Required value for transfers
+            Websitename: domainName, // ✅ Correct casing as per documentation
+            IsWhoisProtection: Boolean(isWhoisProtection).toString(), // Ensures correct string format
+            AuthCode: authCode,
+            Id: customerId
+        };
 
-      // Make GET request with params
-      const response = await axios.get(API_URL_TRANSFER, { params });
+        console.log("🔍 Transfer API Request URL:", `${API_URL_TRANSFER}?${new URLSearchParams(params)}`); // Debugging
 
-      const data = response.data;
-      if (data.statusCode === 200) {
-          return res.json({ 
-              success: true, 
-              message: "Domain transfer initiated successfully. Waiting for approval from losing registrar.", 
-              data 
-          });
-      } else {
-          return res.status(400).json({ success: false, message: data.message });
-      }
-  } catch (error) {
-      console.error("API Error:", {
-          message: error.message,
-          responseData: error.response?.data,
-          requestConfig: error.config
-      });
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
-  }
+        // Make GET request with params
+        const response = await axios.get(API_URL_TRANSFER, { params });
+
+        const data = response.data;
+        console.log("✅ Transfer API Response:", data); // Debugging
+
+        if (data?.responseMsg?.statusCode === 200) {
+            return res.json({ 
+                success: true, 
+                message: "Domain transfer initiated successfully. Waiting for approval from losing registrar.", 
+                data 
+            });
+        } else {
+            return res.status(400).json({ 
+                success: false, 
+                message: data?.responseMsg?.message || "Domain transfer failed.",
+                data
+            });
+        }
+    } catch (error) {
+        console.error("❌ API Error:", {
+            message: error.message,
+            responseData: error.response?.data,
+            requestConfig: error.config
+        });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
 });
+
 
 const ORDER_TYPE_RENEWAL = 2;
 
@@ -316,9 +349,18 @@ const renewDomainService = async (params) => {
         console.log('✅ Domain Renewal Successful:', response.data);
         return response.data;
     } catch (error) {
-        console.error('❌ Error during domain renewal API call:', error.message);
-        return { success: false, message: error.message };
-    }
+      console.error('❌ Error during domain renewal API call:', error.message);
+
+      // 🔴 Log the full error response to capture the actual reason for failure
+      if (error.response) {
+          console.error('🔍 API Response Status:', error.response.status);
+          console.error('📄 API Response Data:', error.response.data);
+      } else {
+          console.error('🚫 No Response Received');
+      }
+
+      return { success: false, message: error.message };
+  }
 };
 
 app.get('/api/renew-domain', async (req, res) => {
@@ -387,13 +429,16 @@ app.post('/api/check-email', async (req, res) => {
 
   // ✅ Tester & AI Chatbot Bypass Logic
   if (req.session.email === "tester@abc.com" || req.session.email === "aichatbot@iwantdemo.com") {
-    req.session.otpVerified = true; // ✅ Skip OTP
-    return res.json({ success: true, message: "Login bypassed - No OTP required." });
+    req.session.otpVerified = true; // ✅ Mark as verified without OTP
+    return res.json({ 
+        success: true, 
+        otpRequired: false 
+    });
   }
 
   try {
-    const usersRef = db.collection('users');
-    const query = await usersRef.where('email', '==', req.session.email).get();
+    const usersRef = db.collection('Client');
+    const query = await usersRef.where('UserName', '==', req.session.email).get();
 
     if (query.empty) {
       return res.status(404).json({ 
@@ -405,16 +450,12 @@ Or enter your registered email id to continue. `
       });
     }
 
-    const userDoc = query.docs[0];
-
-    // ✅ Generate OTP (skipped for tester & chatbot)
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 60000);
 
     const otpRef = db.collection('otp_records').doc(req.session.email);
     await otpRef.set({ otp, expires_at: expiresAt }, { merge: true });
 
-    // ✅ Send OTP Email
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: req.session.email,
@@ -423,12 +464,17 @@ Or enter your registered email id to continue. `
     };
 
     await transporter.sendMail(mailOptions);
-    res.json({ success: true, message: 'OTP sent to your email address.' });
+    res.json({ 
+      success: true, 
+      message: 'OTP sent to your email address.', 
+      otpRequired: true 
+    });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 });
+
 
 // Resend OTP if valid or generate new OTP
 app.post('/api/resend-otp', async (req, res) => {
@@ -479,7 +525,6 @@ app.post('/api/resend-otp', async (req, res) => {
   }
 });
 
-// Verify OTP and proceed to domain section
 // OTP Verification Endpoint
 app.post('/api/verify-otp', logSession, async (req, res) => {
   const { otp, email } = req.body;
@@ -489,17 +534,28 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
   }
 
   try {
-      if (email === 'aichatbot@iwantdemo.com') {
+      const lowerCaseEmail = email.toLowerCase();
+
+      if (lowerCaseEmail === 'aichatbot@iwantdemo.com') {
+          // 🔍 Check if OTP is required for chatbot email
+          const otpRef = db.collection('otp_records').doc(email);
+          const otpDoc = await otpRef.get();
+
+          if (!otpDoc.exists || otpDoc.data().otp !== otp || otpDoc.data().expires_at.toDate() < new Date()) {
+              return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+          }
+
           req.session.verified = true;
-          req.session.customerId = '15272';
+          req.session.customerId = '223855';
 
           return res.json({
               success: true,
               message: 'Test user authenticated successfully.',
-              customerId: '15272',
+              customerId: '223855',
           });
       }
 
+      // Normal OTP verification for other users
       const otpRef = db.collection('otp_records').doc(email);
       const otpDoc = await otpRef.get();
 
@@ -508,7 +564,14 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
       }
 
       req.session.verified = true;
-      req.session.customerId = otpDoc.data().resellerId;
+
+      // 🔍 Fetch clientId from Client table using email as UserName
+      const clientQuery = await db.collection('Client').where('UserName', '==', email).get();
+      if (!clientQuery.empty) {
+          req.session.customerId = clientQuery.docs[0].data().clientId;
+      } else {
+          return res.status(404).json({ success: false, message: 'Client not found in database.' });
+      }
 
       return res.json({
           success: true,
@@ -521,6 +584,7 @@ app.post('/api/verify-otp', logSession, async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
+
 
 // Function to check availability of multiple domains
 const checkDomainsAvailability = async (suggestions) => {

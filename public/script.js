@@ -478,7 +478,6 @@ document.getElementById("domain-name").addEventListener("input", function () {
   }
 });
 
-
 async function registerDomain() {
   const domainName = document.getElementById("domain-name").value.trim();
   const duration = document.getElementById("duration").value;
@@ -492,8 +491,6 @@ async function registerDomain() {
       alert("Please enter a valid domain name.");
       return;
   }
-
-  disableChat();
 
   const confirmationBox = document.createElement('div');
   confirmationBox.className = 'chat-confirmation-box';
@@ -514,32 +511,45 @@ async function registerDomain() {
   content.appendChild(noButton);
   confirmationBox.appendChild(content);
   document.body.appendChild(confirmationBox);
-}
 
+  disableChat(); // 🛑 Disable chat when the confirmation box is open
+}
 
 function confirmRegistration(domainName, duration) {
   closeConfirmationBox();
+
+  // Keep chat disabled while processing
+  disableChat(); 
+
+  // Show "Processing..." message to indicate the request is in progress
+  showChatPopup("Registering your domain, please wait...", false, true);
+
   fetch(`/api/register-domain?Websitename=${domainName}&Duration=${duration}&Id=15272`, { method: "GET" })
       .then(response => response.json())
       .then(result => {
-          enableChat(); // Ensure chat is re-enabled after response
           if (result.success) {
-              alert("Domain registered successfully!");
+              showChatPopup("Domain registered successfully!", true); // Show success message
           } else {
-              alert("Error: " + result.message);
+              showChatPopup("Error: " + result.message, false); // Show error message
           }
+
+          // 🆕 Close the domain renewal section
+          document.getElementById('domain-renewal-section').style.display = 'none';
+          document.getElementById('login-chat-section').style.display = 'flex';
       })
       .catch(error => {
-          enableChat(); // Ensure chat is re-enabled even on error
           console.error("❗ Unexpected error:", error);
-          alert("Internal Server Error");
+          showChatPopup("Internal Server Error", false); // Show error message
+      })
+      .finally(() => {
+          enableChat(); // 🟢 Re-enable chat regardless of success or failure
       });
 }
 
 function closeConfirmationBox() {
   const box = document.querySelector('.chat-confirmation-box');
   if (box) box.remove();
-  enableChat(); // Re-enable chat when the confirmation box is closed
+  enableChat(); // 🟢 Re-enable chat when the confirmation box is closed
 }
 
 function disableChat() {
@@ -576,13 +586,13 @@ style.textContent = `
   margin-bottom: 10px;
 }
 .confirmation-content button {
-  margin: 5px;
-  padding: 5px 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+margin: 5px;
+    padding: 5px 10px;
+    background-color: #f1c40f;
+    color: #000000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
 .confirmation-content button:hover {
   background-color: #45a049;
@@ -658,30 +668,67 @@ async function renewDomain() {
   document.body.appendChild(confirmationBox);
 }
 
-function confirmRenewal(domainName, duration) {
-  closeConfirmationBox();
-  fetch(`/api/renew-domain?Websitename=${domainName}&Duration=${duration}&OrderType=2&Id=15272&IsWhoisProtection=false`, { method: "GET" })
-      .then(response => response.json())
-      .then(result => {
-          enableChat(); // Ensure chat is re-enabled after response
-          if (result.success) {
-              alert(`Domain renewed successfully!\nNew Expiry Date: ${result.responseData.expiryDate}`);
-          } else {
-              alert("Error: " + result.message);
-          }
-      })
-      .catch(error => {
-          enableChat(); // Ensure chat is re-enabled even on error
-          console.error("❗ Unexpected error:", error);
-          alert("Internal Server Error");
-      });
+// Function to show a popup message in the chatbox
+function showChatPopup(message, isSuccess = true, isProcessing = false) {
+  const existingPopup = document.querySelector('.chat-popup-box');
+  if (existingPopup) existingPopup.remove();
+
+  const popupBox = document.createElement('div');
+  popupBox.className = 'chat-popup-box';
+  popupBox.classList.add(isSuccess ? 'success-popup' : 'error-popup');
+
+  const popupContent = document.createElement('div');
+  popupContent.className = 'popup-content';
+  popupContent.innerHTML = `<p>${message}</p>`;
+
+  if (!isProcessing) {
+      const closeButton = document.createElement('button');
+      closeButton.innerText = 'OK';
+      closeButton.className = 'popup-close-btn';
+      closeButton.addEventListener('click', () => popupBox.remove());
+      popupContent.appendChild(closeButton);
+  }
+
+  popupBox.appendChild(popupContent);
+  document.body.appendChild(popupBox);
 }
 
-function closeConfirmationBox() {
-  const box = document.querySelector('.chat-confirmation-box');
-  if (box) box.remove();
-  enableChat(); // Re-enable chat when the confirmation box is closed
+function confirmRenewal(domainName, duration) {
+  closeConfirmationBox();
+
+  disableChat();
+  showChatPopup("Renewing your domain, please wait...", false, true);
+
+  setTimeout(() => {
+      fetch(`/api/renew-domain?Websitename=${domainName}&Duration=${duration}&OrderType=2&IsWhoisProtection=false`, { method: "GET" })
+          .then(response => response.json())
+          .then(result => {
+              enableChat(); 
+              console.log("✅ Domain Renewal Response:", result);
+
+              // 🟢 Using the 'success' field from the backend response directly
+              if (result?.success) {
+                  showChatPopup(`Domain <strong>${domainName}</strong> renewed successfully!`, true);
+              } else {
+                  showChatPopup(`Error: ${result?.message || 'Could not renew domain successfully.'}`, false);
+              }
+
+              // 🆕 Close the domain renewal section
+              document.getElementById('domain-renewal-section').style.display = 'none';
+              document.getElementById('login-chat-section').style.display = 'flex';
+          })
+          .catch(error => {
+              enableChat(); 
+              console.error("❗ Unexpected error:", error);
+              showChatPopup("Internal Server Error", false);
+
+              // 🆕 Same behavior on error
+              document.getElementById('domain-renewal-section').style.display = 'none';
+              document.getElementById('login-chat-section').style.display = 'flex';
+          });
+  }, 100); 
 }
+
 
   async function handleBotResponse(userQuestion) {
     try {
@@ -736,64 +783,56 @@ function showAuthButtons() {
     }
 }
 
-// You can call showAuthButtons() when you want to show the auth buttons
-    
-    // Function to show the button press in the chat log
-    function logButtonPress(buttonName) {
-      updateChatLog(`You pressed the "${buttonName}" button.`, 'user');
-    }
-
     let userEmail = '';
-    async function requestOTP() {
-      const emailInput = document.getElementById('user-email');
-      const email = emailInput.value.trim();
-    
+    function requestOTP() {
+      const email = document.getElementById("user-email").value.trim();
+  
       if (!email) {
-        updateChatLog('Please enter a valid email.', 'bot');
-        return;
+          updateChatLog('Please enter a valid email address.', 'bot');
+          return;
       }
-      
-      updateChatLog(`Email entered: ${email}`, 'user');
-      
-      try {
-        const response = await fetch('/api/check-email', {
+  
+      fetch('/api/check-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-      
-        if (!response.ok) {
-          const data = await response.json();
-          updateChatLog(data.message || 'An error occurred. Please try again.', 'bot');
-          
-          emailInput.value = '';  
-          return;  
-        }
-      
-        const data = await response.json();
-        console.log("API Response:", data);
-      
-        if (data.success) {
-          updateChatLog(data.message, 'bot');
-          if (email === 'tester@abc.com' ,'aichatbot@iwantdemo.com') {
-            updateChatLog('Logged in as tester. No OTP required.', 'bot');
-            localStorage.setItem('isSignedIn', 'true');
-            document.getElementById('email-section').style.display = 'none';
-            document.getElementById('login-chat-section').style.display = 'flex';
-            document.getElementById('sidebar-content').style.display = 'none';
-            document.getElementById('faq-post-login').style.display = 'flex'; 
+          body: JSON.stringify({ email })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              document.getElementById("email-section").style.display = "none";
+  
+              if (data.otpRequired) {
+                  // Show OTP input section if OTP is required
+                  document.getElementById("otp-section").style.display = "block";
+                  updateChatLog('OTP has been sent to your email address. Please check your inbox.', 'bot');
+              } else {
+                  // Directly handle authenticated state (No message shown)
+                  handleAuthenticatedUser();
+              }
           } else {
-            document.getElementById('email-section').style.display = 'none';
-            document.getElementById('otp-section').style.display = 'flex'; 
-            document.getElementById('resend-otp').style.display = 'block';
+              updateChatLog(data.message, 'bot');
           }
-        } else {
-          updateChatLog('Failed to send OTP. Please try again.', 'bot');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          updateChatLog('An error occurred while requesting OTP. Please try again.', 'bot');
+      });
+  }
+  
+  function handleAuthenticatedUser() {
+      // Show the User Query Section without any message
+      document.getElementById('otp-section').style.display = 'none';
+      document.getElementById('login-chat-section').style.display = 'flex';
+      document.getElementById('sidebar-content').style.display = 'none';
+      document.getElementById('faq-post-login').style.display = 'flex';
+      
+      isSignedIn = true;
+      localStorage.setItem('isSignedIn', 'true');
+      localStorage.setItem('customerId', '223855'); // Fixed ID for bypassed test users
+      updateAuthUI();
+  }
+  
     
     // Resend OTP 
     async function resendOTP() {
