@@ -209,7 +209,7 @@ if (
   // Check for "domain availability" message
   if (
     sender === 'bot' &&
-    (message.includes("Check domain availability") || message.includes("domain availability") || message.includes("I can help you with checking domain availability! Please click check domain availability button.")) && isUserSignedIn // Ensure "transferring" doesn't trigger the button
+    (message.includes("Check domain availability") || message.includes("domain availability") || message.includes("I can help you with checking domain availability! Please click check domain availability button.")) && !message.includes("This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.")&&isUserSignedIn // Ensure "transferring" doesn't trigger the button
   ) {
     const availableButton = document.createElement('button');
     availableButton.textContent = "Check Domain Availability";
@@ -534,7 +534,7 @@ function confirmRegistration(domainName, duration) {
           }
 
           // 🆕 Close the domain renewal section
-          document.getElementById('domain-renewal-section').style.display = 'none';
+          document.getElementById('domain-registration-section').style.display = 'none';
           document.getElementById('login-chat-section').style.display = 'flex';
       })
       .catch(error => {
@@ -1123,7 +1123,7 @@ function goBackToQuerySection() {
   console.log("login-chat-section is now visible");
 
   // Hide the other sections
-  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section'];
+  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , ];
 
   sectionsToHide.forEach(sectionId => {
     const element = document.getElementById(sectionId);
