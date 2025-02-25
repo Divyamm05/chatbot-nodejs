@@ -147,10 +147,6 @@
       <button id="back-to-previous-section" onclick="goBackToQuerySection()">Back</button>
     </div>
 
-    <div id="domain-availability-section" style="display: none;">
-      <button class="available-button" onclick="showDomainSection()">Check domain name availability</button>
-    </div>
-
     <!-- Domain Availability Section -->
     <div class="chat-input" style="display:none" id="domain-availability-section">
       <div id="domain-availability-check-section">
@@ -328,17 +324,7 @@
         <option value="10">10 Years</option>
       </select>
     </div>
-  <div class="input-group">
-    <input type="text" id="customerId" value="" readonly>
-  </div>
 
-    <div class="input-group">
-      <select id="renew-whois-protection">
-        <option value="" disabled selected>Enable Whois Protection*</option>
-        <option value="no">No</option>
-        <option value="yes">Yes</option>
-      </select>
-    </div>
     <div class="button-group">
       <button onclick="renewDomain()">Renew Domain</button>
       <button onclick="goBackToQuerySection()">Back</button>
