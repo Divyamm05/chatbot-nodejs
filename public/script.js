@@ -357,66 +357,76 @@ const suggestButtonsContainer = document.getElementById('suggest-buttons-contain
 
 let tooltip; // To keep track of the tooltip element
 
-        function fillChatInputWithPlaceholder(template) {
-            const chatInput = document.getElementById('domain-query-text');
-            const placeholder = '{yourdomain.com}';
+function fillChatInputWithPlaceholder(template) {
+  const chatInput = document.getElementById('domain-query-text');
+  const submitButton = document.getElementById('submitDomainQuery');
+  const inputSection = document.getElementById('login-chat-section');
+  const placeholder = '{yourdomain.com}';
+  const toggleContainer = document.getElementById('theft-protection-toggle-container'); // Fixed reference
 
-            // Fill the chat input with the template
-            chatInput.value = template;
-            chatInput.focus();
+  chatInput.value = template;
+  chatInput.focus();
 
-            // Get the position of the placeholder and select it
-            const startPos = template.indexOf(placeholder);
-            if (startPos !== -1) {
-                chatInput.setSelectionRange(startPos, startPos + placeholder.length);
+  // Find the placeholder position and select it
+  const startPos = template.indexOf(placeholder);
+  if (startPos !== -1) {
+      const endPos = startPos + placeholder.length;
+      chatInput.setSelectionRange(startPos, endPos);
+  }
 
-                // Remove any existing tooltip
+  // Show toggle container if theft protection is requested
+  if (template.includes('Enable/disable theft protection')) {
+    toggleContainer.style.display = 'flex'; // Show the toggle switch
+    submitButton.style.width = '15%';
+    submitButton.style.backgroundColor = '#f1c40f';
+    inputSection.style.gap = '50px';
+  } else {
+    toggleContainer.style.display = 'none';
+  }
+
+  // Tooltip handling
+  if (startPos !== -1) {
+      if (tooltip) tooltip.remove();
+      tooltip = document.createElement('div');
+      tooltip.textContent = 'Enter your domain name here';
+      tooltip.className = 'tooltip';
+
+      const hiddenSpan = document.createElement('span');
+      hiddenSpan.style.visibility = 'hidden';
+      hiddenSpan.style.whiteSpace = 'pre';
+      hiddenSpan.style.font = window.getComputedStyle(chatInput).font;
+      hiddenSpan.textContent = template.substring(0, startPos);
+      document.body.appendChild(hiddenSpan);
+
+      const rect = chatInput.getBoundingClientRect();
+      const inputStyle = window.getComputedStyle(chatInput);
+      const paddingLeft = parseInt(inputStyle.paddingLeft);
+
+      tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
+      tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth + paddingLeft) + 'px';
+      
+      document.body.appendChild(tooltip);
+      hiddenSpan.remove();
+  }
+}
+
+
+    function hideTooltipOnInput() {
+        if (tooltip) {
+            tooltip.classList.add('hidden');
+            setTimeout(() => {
                 if (tooltip) {
                     tooltip.remove();
+                    tooltip = null;
                 }
-
-                // Create a new tooltip
-                tooltip = document.createElement('div');
-                tooltip.textContent = 'Enter your domain name here';
-                tooltip.className = 'tooltip';
-
-                // Measure text width up to the placeholder using a hidden span
-                const hiddenSpan = document.createElement('span');
-                hiddenSpan.style.visibility = 'hidden';
-                hiddenSpan.style.whiteSpace = 'pre';
-                hiddenSpan.style.font = window.getComputedStyle(chatInput).font;
-                hiddenSpan.textContent = template.substring(0, startPos);
-                document.body.appendChild(hiddenSpan);
-
-                const rect = chatInput.getBoundingClientRect();
-                const inputStyle = window.getComputedStyle(chatInput);
-                const paddingLeft = parseInt(inputStyle.paddingLeft);
-
-                // Position the tooltip near the placeholder
-                tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
-                tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth + paddingLeft) + 'px';
-
-                document.body.appendChild(tooltip);
-                hiddenSpan.remove();
-            }
+            }, 200);
         }
+    }
 
-        function hideTooltipOnInput() {
-          if (tooltip) {
-              tooltip.classList.add('hidden'); // Hide tooltip smoothly
-              setTimeout(() => {
-                  if (tooltip) {
-                      tooltip.remove(); // Remove tooltip from DOM
-                      tooltip = null;
-                  }
-              }, 200);
-          }
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-          const chatInput = document.getElementById('domain-query-text');
-          chatInput.addEventListener('input', hideTooltipOnInput); // Hide tooltip when user starts typing
-      });
+    document.addEventListener("DOMContentLoaded", function () {
+        const chatInput = document.getElementById('domain-query-text');
+        chatInput.addEventListener('input', hideTooltipOnInput);
+    });
 
 
 function toggleFAQSidebar() {
@@ -1408,9 +1418,10 @@ function goBackToQuerySection() {
 
     updateChatLog(`${queryText}`, 'user');
 
-    const domainMatch = queryText.match(/give me domain information for (.+)/i);
-    if (domainMatch) {
-        const domainName = domainMatch[1].trim();
+    // Handle domain information request
+    const domainInfoMatch = queryText.match(/give me domain information for (.+)/i);
+    if (domainInfoMatch) {
+        const domainName = domainInfoMatch[1].trim();
 
         try {
             console.log('Fetching domain details for:', domainName);
@@ -1424,19 +1435,46 @@ function goBackToQuerySection() {
             console.log('Domain details response:', data);
 
             if (data.success) {
-              console.log('Domain data:', data.domainData); // Added log to see the actual data
-          
-              updateChatLog(
-                  `Domain Information for ${domainName}: ${JSON.stringify(data.domainData, null, 2)}`, 
-                  'bot'
-              );
-          } else {
-              updateChatLog(`${data.message}`, 'bot');
-          }          
+                console.log('Domain data:', data.domainData); 
+                updateChatLog(
+                    `Domain Information for ${domainName}: ${JSON.stringify(data.domainData, null, 2)}`, 
+                    'bot'
+                );
+            } else {
+                updateChatLog(`${data.message}`, 'bot');
+            }          
 
         } catch (error) {
             console.error("Error fetching domain details:", error);
             updateChatLog("Unable to fetch domain details at this time.", 'bot');
+        }
+
+        return;
+    }
+
+    const theftProtectionMatch = queryText.match(/(enable|disable) theft protection for (\S+)/i);
+    if (theftProtectionMatch) {
+        const action = theftProtectionMatch[1]; // "enable" or "disable"
+        const domain = theftProtectionMatch[2];
+        const enableTheftProtection = action === 'enable';
+
+        try {
+            updateChatLog(`${action.charAt(0).toUpperCase() + action.slice(1)}ing theft protection for ${domain}...`, 'bot');
+
+            const response = await fetch(`/api/manage-theft-protection?domain=${domain}&enable=${enableTheftProtection}`, {
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update theft protection. Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            updateChatLog(result.message, 'bot');
+
+        } catch (error) {
+            console.error('Error managing theft protection:', error);
+            updateChatLog('Failed to update theft protection', 'bot');
         }
 
         return;
@@ -1473,6 +1511,7 @@ function goBackToQuerySection() {
         updateChatLog("This chatbot can answer domain-related questions only", 'bot');
     }
 }
+
 
   function switchSection(newSectionId) {
     document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });

@@ -759,6 +759,78 @@ app.get('/api/domain-info', async (req, res) => {
   }
 });
 
+const BASE_URL = "https://api.connectreseller.com/ConnectReseller";
+const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
+async function getDomainDetails(websiteName) {
+  console.log(`🔍 Fetching domain details for: ${websiteName}`);
+
+  try {
+      const domainsRef = admin.firestore().collection('DomainName'); // Ensure correct Firestore collection
+      const querySnapshot = await domainsRef.where('websiteName', '==', websiteName).get();
+
+      if (querySnapshot.empty) {
+          console.warn(`⚠️ No domain found for websiteName: ${websiteName}`);
+          return null;
+      }
+
+      const domainData = querySnapshot.docs[0].data(); // Get first matching result
+      console.log(`✅ Found domain details:`, domainData);
+      return domainData;
+  } catch (error) {
+      console.error(`❌ Error fetching domain details:`, error);
+      return null;
+  }
+}
+
+// 🔄 Enable/Disable Theft Protection
+async function manageTheftProtection(websiteName, enable) {
+  const domainDetails = await getDomainDetails(websiteName);
+  if (!domainDetails) {
+      return { success: false, message: `Domain ${websiteName} not found.` };
+  }
+
+  const { domainNameId } = domainDetails;
+  try {
+      console.log(`🔄 Updating theft protection for domainNameId: ${domainNameId} to ${enable}`);
+
+      const isTheftProtection = enable ? 'true' : 'false';
+
+      // ✅ Ensure `websiteName` is included in API call
+      const url = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&websiteName=${websiteName}&domainNameId=${domainNameId}&isTheftProtection=${isTheftProtection}`;
+
+      console.log(`🔗 API Request URL: ${url}`);
+
+      const response = await axios.get(url);
+      console.log('📨 ConnectReseller API Response:', response.data);
+
+      if (response.data?.responseMsg?.statusCode === 200) {
+          return {
+              success: true,
+              message: `Theft protection has been ${enable ? 'enabled' : 'disabled'} for ${websiteName}.`,
+          };
+      }
+
+      return { success: false, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
+  } catch (error) {
+      console.error('❌ Error updating theft protection:', error);
+      return { success: false, message: 'Internal server error.' };
+  }
+}
+
+// 🚀 API Endpoint
+app.get('/api/manage-theft-protection', async (req, res) => {
+  const { domain, enable } = req.query;
+  console.log(`📥 API request received. Domain: ${domain}, Enable: ${enable}`);
+
+  if (!domain || (enable !== 'true' && enable !== 'false')) {
+      return res.status(400).json({ success: false, message: 'Both domain and enable (true/false) parameters are required.' });
+  }
+
+  const enableBool = enable === 'true';
+  const result = await manageTheftProtection(domain, enableBool);
+  return res.json(result);
+});
+
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
@@ -795,10 +867,6 @@ const predefinedAnswers = {
   "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions, and ask domain-related queries.",
 //
   "How do I lock/unlock a domain?": "Go to your domain management panel, find the lock settings, and toggle between lock and unlock.",
-//
-  "How do I enable/disable privacy protection?": "Navigate to your domain settings and toggle the privacy protection option as needed.",
-//
-  "How do I enable/disable theft protection?": "You can enable or disable theft protection from your domain management panel under security settings.",
 //
   "How can I view the auth code for a domain?": "You can find the auth code in your domain management panel under transfer settings.",
 //
@@ -1012,6 +1080,24 @@ app.post('/api/domain-queries', async (req, res) => {
             message: 'Failed to fetch domain information.'
         });
     }
+}
+
+// Check for Theft Protection Management in Chatbot Queries
+if (domainName && (query.toLowerCase().includes('enable theft protection') || query.toLowerCase().includes('disable theft protection'))) {
+  console.log('[DOMAIN-QUERIES] 🔐 Theft protection management requested for:', domainName);
+
+  const enable = query.toLowerCase().includes('enable') || query.toLowerCase().includes('turn on') || query.toLowerCase().includes('activate');
+  const disable = query.toLowerCase().includes('disable') || query.toLowerCase().includes('turn off') || query.toLowerCase().includes('deactivate');
+
+  if (!enable && !disable) {
+      return res.json({
+          success: false,
+          answer: 'Please specify whether you want to enable or disable theft protection.',
+      });
+  }
+
+  const result = await manageTheftProtection(domainName, enable);
+  return res.json(result);
 }
 
   // Step 3: Check if the query is domain-related using Fuse.js
