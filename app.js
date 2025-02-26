@@ -713,6 +713,52 @@ app.post('/api/domain-suggestions', async (req, res) => {
   }
 });
 
+app.get('/api/domain-info', async (req, res) => {
+  const domainName = req.query.domain;
+
+  if (!domainName) {
+      console.warn('[DOMAIN-INFO] ❌ Domain name is missing in the request.');
+      return res.status(400).json({ success: false, message: 'Domain name is required in the query parameter.' });
+  }
+
+  console.log('[DOMAIN-INFO] 🔍 Fetching information for domain:', domainName);
+
+  const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
+  console.log('[DOMAIN-INFO] 🌐 API Request URL:', apiUrl);
+
+  try {
+      const response = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`, {
+          params: {
+              APIKey: process.env.CONNECT_RESELLER_API_KEY,
+              websiteName: domainName,
+          }
+      });
+
+      console.log('[DOMAIN-INFO] 🌐 API Response:', response.data);
+
+      if (response.data.responseMsg.statusCode === 200) {
+          console.log('[DOMAIN-INFO] ✅ Domain information retrieved successfully for:', domainName);
+          return res.json({
+              success: true,
+              answer: `Domain information for ${domainName}:`,
+              domainData: response.data.responseData
+          });
+      } else {
+          console.warn('[DOMAIN-INFO] ⚠️ Domain not found in records:', domainName);
+          return res.json({
+              success: false,
+              message: `Domain ${domainName} is not registered with us`,
+          });
+      }
+  } catch (error) {
+      console.error('[DOMAIN-INFO] ❗ Error fetching domain info:', error.message);
+      return res.status(500).json({
+          success: false,
+          message: 'Failed to fetch domain information from ConnectReseller API.'
+      });
+  }
+});
+
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
@@ -723,83 +769,86 @@ const allowedTopics = [
   'how to enable/disable theft protection', 'what are the name servers for',
   'when was this domain registered'
 ];
+// Refined predefined answers with improved grammar, chatbot tone, and categorized responses
+const predefinedAnswers = {
+  // Register Domain
+  "How do I register a domain?": "To register a domain, navigate to the 'Register Domain' section, enter the desired domain name, select your preferred TLD, choose the registration duration, and complete the process by clicking the 'Register' button.",
+//
+  "Where can I register domains?": "You can register domains directly through this chatbot via the 'Register Domain' section by entering the desired domain name and selecting the desired registration duration.",
 
-// Predefined answers
-const predefinedAnswers  = {
-  "How do I register a domain?": "You can register a domain by searching for an available name on our platform, selecting the desired TLD, and completing the registration process by providing your details and making a payment.",
-  
-  "How can I renew a domain?": "To seamlessly renew your domain name, just click the button below! I'll take you straight to the domain renewal section.",
-  
-  "How to transfer IN/OUT domains?": "To transfer a domain in, you need to unlock it at the current registrar and obtain the EPP code. For outgoing transfers, ensure your domain is unlocked and retrieve the authorization code.",
-  
-  "Where can I register domains?": "You can register domains directly on our platform or use domain registrars like GoDaddy, Namecheap, or Google Domains.",
-  
-  "List of domain registrars?": "Popular domain registrars include GoDaddy, Namecheap, Google Domains, Dynadot, and NameSilo.",
-  
+  // Renew Domain
+  "How can I renew a domain?": "To seamlessly renew your domain name, simply click the 'Renew Domain Name' button to navigate to the renewal section. Enter the domain name you wish to renew and select the desired renewal duration.",
+
+  // Transfer Domain
+  "How do I transfer IN/OUT domains?": "To transfer a domain to us, unlock it at your current registrar and obtain the AuthCode/EPP code. Then, navigate to the 'Transfer Domain Name' section, enter the domain name you wish to transfer, and provide the AuthCode/EPP code to complete the transfer process with us.",
+
+  // General Domain Management
+
   "Where can I view the domain information?": "You can view domain information in your account's domain management section or use a WHOIS lookup tool.",
-  
-  "List of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
-  
-  "Suggest TLDs for 'selected category'?": "Popular TLDs vary by category. For tech, use .tech or .ai. For businesses, use .biz or .company. For personal use, try .me or .name.",
-  
-  "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions and ask domain related queries.",
-  
-  "How to lock/unlock a domain?": "Go to your domain management panel, find the lock settings, and toggle between lock and unlock.",
-  
-  "How to enable/disable privacy protection?": "Navigate to your domain settings and toggle the privacy protection option as needed.",
-  
-  "How to enable/disable theft protection?": "You can enable or disable theft protection from your domain management panel under security settings.",
-  
-  "I want to view the auth code for 'Domain Name'?": "You can find the auth code in your domain management panel under transfer settings.",
-  
-  "What are the name servers for this 'Domain Name'?": "The name servers for your domain can be viewed in your domain management dashboard under DNS settings.",
-  
-  "When was this 'Domain Name' registered?": "Domain registration details, including the registration date, can be found in the domain management section or a WHOIS lookup tool.",
-  
+//    
+  "Give me the list of domain registrars.": "You can view domain information in your account's domain management section or use a WHOIS lookup tool.",
+//
+  "Give me a list of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
+//
+  "Can you suggest TLDs for a selected category?": "Popular TLDs vary by category. For tech, use .tech or .ai. For businesses, use .biz or .company. For personal use, try .me or .name.",
+//
+  "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions, and ask domain-related queries.",
+//
+  "How do I lock/unlock a domain?": "Go to your domain management panel, find the lock settings, and toggle between lock and unlock.",
+//
+  "How do I enable/disable privacy protection?": "Navigate to your domain settings and toggle the privacy protection option as needed.",
+//
+  "How do I enable/disable theft protection?": "You can enable or disable theft protection from your domain management panel under security settings.",
+//
+  "How can I view the auth code for a domain?": "You can find the auth code in your domain management panel under transfer settings.",
+//
+  "What are the name servers for this domain?": "The name servers for your domain can be viewed in your domain management dashboard under DNS settings.",
+//
+  "When was this domain registered?": "Domain registration details, including the registration date, can be found in the domain management section or a WHOIS lookup tool.",
+//
   "What is my current balance in my account?": "You can check your balance in the billing section of your account.",
-  
-  "Check available funds": "Log in to your account and navigate to the billing section to check your available funds.",
-  
-  "I want to update the name servers for 'Domain Name'?": "Go to your domain management panel, find DNS settings, and update the name servers accordingly.",
-  
-  "I want API documentation?": "You can find API documentation in the developer section of our website.",
-  
-  "I need API for 'Action Name'": "Our API supports various domain management actions. Refer to the API documentation for specific endpoints.",
-  
-  "Need transaction report of 'Selected Month'": "You can generate and download transaction reports from the billing or reports section of your account.",
-  
+//
+  "How can I check available funds?": "You can check your balance in the billing section of your account.",
+//
+  "How can I update the name servers for a domain?": "Go to your domain management panel, find DNS settings, and update the name servers accordingly.",
+//
+  "Where can I find the API documentation?": "You can find API documentation in the developer section of our website.",
+//
+  "Where can I find API for 'action name'": "You can find API documentation in the developer section of our website.",
+//
+  "How can I get a transaction report for a selected month?": "You can generate and download transaction reports from the billing or reports section of your account.",
+//
   "Which domains are getting expired?": "You can check expiring domains in the domain management section under the expiration tab.",
-  
-  "Which domains are getting deleted on this 'Selected Date/Month'?": "You can view scheduled deletions in the domain management section under the deletion schedule.",
-  
-  "Which domains were registered on this platform?": "You can find a list of registered domains in your account under domain management.",
-  
-  "Which domain was registered on 'Selected Date/Month'?": "Check your domain registration history in the account panel or request a report for a specific date range.",
-  
+//
+  "Which domains are getting deleted on a selected date/month?": "You can view scheduled deletions in the domain management section under the deletion schedule.",
+//
+  "Which domains were registered on this domain?": "You can find a list of registered domains in your account under domain management.",
+//
+  "Which domain was registered on a selected date/month?": "Check your domain registration history in the account panel or request a report for a specific date range.",
+//
   "How can I contact support?": "You can contact support through our support page or email us at support@domainplatform.com.",
-  
-  "What ongoing offers are available?": "Check the promotions or offers section on our website for the latest discounts and deals.",
-  
-  "Types of SSL?": "We offer various SSL certificates, including Domain Validation (DV), Organization Validation (OV), and Extended Validation (EV) SSL.",
-  
-  "From where can I sign up?": "You can sign up at our registration page: <a href='https://example.com/signup'>CLICK HERE</a>.",
-  
-  "I want to download the WHMCS module": "You can download the WHMCS module from our developer tools section.",
-  
-  "Export 'List Name'": "You can export domain-related lists from your account dashboard under the reports or export section.",
-  
-  "How to suspend/unsuspend any domain?": "You can suspend or unsuspend a domain from the domain management section by selecting the suspension settings.",
-  
-  "Suspend/Unsuspend the 'Domain Name'": "Go to your domain settings and toggle the suspension status as needed.",
-  
+//
+  "What types of SSL are available?": "We offer various SSL certificates, including Domain Validation (DV), Organization Validation (OV), and Extended Validation (EV) SSL.",
+//
+  "Where can I sign up?": "You can sign up at our registration page: <a href='https://example.com/signup'>CLICK HERE</a>.",
+//
+  "How can I download the WHMCS module?": "You can download the WHMCS module from our developer tools section.",
+//
+  "How do I export 'List Name'?": "You can export domain-related lists from your account dashboard under the reports or export section.",
+//
+  "How do I suspend/unsuspend a domain?": "You can suspend or unsuspend a domain from the domain management section by selecting the suspension settings.",
+//
+  "Suspend/Unsuspend 'domain name' for me": "You can suspend or unsuspend a domain from the domain management section by selecting the suspension settings.",
+//
   "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process.",
-  
-  "How to add a child nameserver?": "Navigate to your DNS settings and add a child nameserver by specifying the IP address and hostname.",
-  
-  "How to pull a domain?": "A domain pull can be initiated from your registrar account under the transfer or migration section.",
-  
-  "What type of reports can I get?": "You can generate transaction reports, domain registration reports, expiration reports, and more from your account dashboard."
+//
+  "How can I add a child nameserver?": "Navigate to your DNS settings and add a child nameserver by specifying the IP address and hostname.",
+//
+  "How do I pull a domain?": "A domain pull can be initiated from your registrar account under the transfer or migration section.",
+//
+  "What types of reports can I get?": "You can generate transaction reports, domain registration reports, expiration reports, and more from your account dashboard."
 };
+
 
 // Convert predefined questions into an array
 const predefinedQuestions = Object.keys(predefinedAnswers);
@@ -924,6 +973,46 @@ app.post('/api/domain-queries', async (req, res) => {
       console.error('WHOIS lookup failed:', error);
     }
   }
+
+  // Check for Domain Information Query
+  // Check for Domain Information
+  if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain'))) {
+    console.log('[DOMAIN-QUERIES] 📝 Domain information requested for:', domainName);
+    try {
+        const response = await axios.get(
+            `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`,
+            {
+                params: {
+                    APIKey: process.env.CONNECT_RESELLER_API_KEY,
+                    websiteName: domainName,
+                }
+            }
+        );
+
+        console.log('[DOMAIN-QUERIES] 🌐 API Response:', response.data);
+
+        if (response.data.responseMsg.statusCode === 200) {
+            console.log('[DOMAIN-QUERIES] ✅ Successfully fetched domain info for:', domainName);
+            return res.json({
+                success: true,
+                answer: `Domain information for ${domainName}:`,
+                domainData: response.data.responseData
+            });
+        } else {
+            console.warn('[DOMAIN-QUERIES] ⚠️ Domain not found in records:', domainName);
+            return res.json({
+                success: false,
+                message: `Domain ${domainName} not found in our records.`,
+            });
+        }
+    } catch (error) {
+        console.error('[DOMAIN-QUERIES] ❗ Error fetching domain info:', error.message);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch domain information.'
+        });
+    }
+}
 
   // Step 3: Check if the query is domain-related using Fuse.js
   const isDomainRelated = fuse2.search(query).length > 0;
