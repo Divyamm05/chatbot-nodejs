@@ -1152,6 +1152,36 @@ body {
   font-size: 14px;
 }
 
+
+/* Tooltip styling */
+.tooltip {
+  position: absolute;
+  background: #3b3b3b;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: white;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* Pointer styling for tooltip */
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Domain Renewal Button */
 .renew-button {
   padding: 10px 10px;

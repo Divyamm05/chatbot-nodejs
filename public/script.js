@@ -137,7 +137,8 @@ function updateChatLog(message, sender) {
         .register-button, .transfer-button {
           padding: 10px 10px;
           font-family: 'Inter', sans-serif;
-          font-size: 16px;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
           border: none;
           color: #2c3e50;
@@ -162,7 +163,7 @@ function updateChatLog(message, sender) {
   }
   
   // Check for "register a domain" message
-  if (sender === 'bot' && message.includes("register a domain") && isUserSignedIn && !message.includes("To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.")) {
+  if (sender === 'bot' && message.includes("register a domain") || message.includes("To register a domain, navigate to the 'Register Domain' section, enter the desired domain name, select your preferred TLD, choose the registration duration, and complete the process by clicking the 'Register' button.") || message.includes("You can register domains directly through this chatbot via the 'Register Domain' section by entering the desired domain name and selecting the desired registration duration.") && isUserSignedIn && !message.includes("To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.")) {
       const registerButton = document.createElement('button');
       registerButton.textContent = "Register a Domain";
       registerButton.classList.add('register-button');
@@ -187,7 +188,7 @@ function updateChatLog(message, sender) {
 // Check for "transfer a domain" message
 if (
   sender === 'bot' &&
-  (message.includes("transfer") || message.includes("domain transfer") || message.includes(" I can assist you with domain transfer. Please visit the transfer domain name section to proceed.")) && isUserSignedIn &&
+  (message.includes("transfer") || message.includes("domain transfer") || message.includes("To transfer a domain to us, unlock it at your current registrar and obtain the AuthCode/EPP code. Then, navigate to the 'Transfer Domain Name' section, enter the domain name you wish to transfer, and provide the AuthCode/EPP code to complete the transfer process with us.")) && isUserSignedIn &&
   !message.includes("transferring") && !message.includes("Yes, you can transfer your domains to our platform.") && !message.includes("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.") // Ensure "transferring" doesn't trigger the button
 ) {
   const transferButton = document.createElement('button');
@@ -237,7 +238,7 @@ if (
   isUserSignedIn &&
   (
       message.toLowerCase().includes("renew a domain") || 
-      message.includes("To seamlessly renew your domain name, just click the button below! I'll take you straight to the domain renewal section.")
+      message.includes("To seamlessly renew your domain name, simply click the 'Renew Domain Name' button to navigate to the renewal section. Enter the domain name you wish to renew and select the desired renewal duration.")
   )
 ) {
   console.log("Renew domain button condition met."); // Debugging log
@@ -353,6 +354,70 @@ function checkDomainRegistrationResponse(response) {
 }
 
 const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
+
+let tooltip; // To keep track of the tooltip element
+
+        function fillChatInputWithPlaceholder(template) {
+            const chatInput = document.getElementById('domain-query-text');
+            const placeholder = '{yourdomain.com}';
+
+            // Fill the chat input with the template
+            chatInput.value = template;
+            chatInput.focus();
+
+            // Get the position of the placeholder and select it
+            const startPos = template.indexOf(placeholder);
+            if (startPos !== -1) {
+                chatInput.setSelectionRange(startPos, startPos + placeholder.length);
+
+                // Remove any existing tooltip
+                if (tooltip) {
+                    tooltip.remove();
+                }
+
+                // Create a new tooltip
+                tooltip = document.createElement('div');
+                tooltip.textContent = 'Enter your domain name here';
+                tooltip.className = 'tooltip';
+
+                // Measure text width up to the placeholder using a hidden span
+                const hiddenSpan = document.createElement('span');
+                hiddenSpan.style.visibility = 'hidden';
+                hiddenSpan.style.whiteSpace = 'pre';
+                hiddenSpan.style.font = window.getComputedStyle(chatInput).font;
+                hiddenSpan.textContent = template.substring(0, startPos);
+                document.body.appendChild(hiddenSpan);
+
+                const rect = chatInput.getBoundingClientRect();
+                const inputStyle = window.getComputedStyle(chatInput);
+                const paddingLeft = parseInt(inputStyle.paddingLeft);
+
+                // Position the tooltip near the placeholder
+                tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
+                tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth + paddingLeft) + 'px';
+
+                document.body.appendChild(tooltip);
+                hiddenSpan.remove();
+            }
+        }
+
+        function hideTooltipOnInput() {
+          if (tooltip) {
+              tooltip.classList.add('hidden'); // Hide tooltip smoothly
+              setTimeout(() => {
+                  if (tooltip) {
+                      tooltip.remove(); // Remove tooltip from DOM
+                      tooltip = null;
+                  }
+              }, 200);
+          }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+          const chatInput = document.getElementById('domain-query-text');
+          chatInput.addEventListener('input', hideTooltipOnInput); // Hide tooltip when user starts typing
+      });
+
 
 function toggleFAQSidebar() {
     const faqSidebar = document.getElementById('faq-sidebar');
@@ -1337,58 +1402,77 @@ function goBackToQuerySection() {
     const queryText = queryInput.value.trim();
 
     if (!queryText) {
-      updateChatLog("Please enter a valid query to proceed.", 'bot');
-      return;
+        updateChatLog("Please enter a valid query to proceed.", 'bot');
+        return;
     }
 
     updateChatLog(`${queryText}`, 'user');
-  
 
+    const domainMatch = queryText.match(/give me domain information for (.+)/i);
+    if (domainMatch) {
+        const domainName = domainMatch[1].trim();
+
+        try {
+            console.log('Fetching domain details for:', domainName);
+            const response = await fetch(`/api/domain-info?domain=${encodeURIComponent(domainName)}`);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data. Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Domain details response:', data);
+
+            if (data.success) {
+              console.log('Domain data:', data.domainData); // Added log to see the actual data
+          
+              updateChatLog(
+                  `Domain Information for ${domainName}: ${JSON.stringify(data.domainData, null, 2)}`, 
+                  'bot'
+              );
+          } else {
+              updateChatLog(`${data.message}`, 'bot');
+          }          
+
+        } catch (error) {
+            console.error("Error fetching domain details:", error);
+            updateChatLog("Unable to fetch domain details at this time.", 'bot');
+        }
+
+        return;
+    }
+
+    // Fallback to existing backend query handling
     try {
-      console.log('Sending query to backend:', queryText);
+        console.log('Sending query to backend:', queryText);
 
-      const response = await fetch('/api/domain-queries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryText }),
-      });
+        const response = await fetch('/api/domain-queries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: queryText }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data. Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Backend response:', data);
-
-      if (data.success) {
-        if (data.suggestions?.length > 0) {
-          updateChatLog("Suggested Topics:", 'bot');
-          data.suggestions.forEach(suggestion => {
-            updateChatLog(`- ${suggestion}`, 'bot');
-          });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data. Status: ${response.status}`);
         }
 
-        if (data.answer) {
-          updateChatLog(`${data.answer}`, 'bot');
+        const data = await response.json();
+        console.log('Backend response:', data);
 
-          const chatLog = document.querySelector('.chat-log');
-          const answerElement = chatLog.querySelector('.bot-message:last-child');
-          if (answerElement) {
-            answerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-          queryInput.value = "";
+        if (data.success) {
+            if (data.answer) {
+                updateChatLog(`${data.answer}`, 'bot');
+                queryInput.value = "";
+            }
+        } else {
+            updateChatLog(`Error: ${data.message}`, 'bot');
         }
-
-      } else {
-        updateChatLog(`Error: ${data.message}`, 'bot');
-      }
 
     } catch (error) {
-      console.error("Error with fetch request:", error);
-      updateChatLog("This chatbot can answer domain related questions only", 'bot');
+        console.error("Error with fetch request:", error);
+        updateChatLog("This chatbot can answer domain-related questions only", 'bot');
     }
-  }
-
+}
 
   function switchSection(newSectionId) {
     document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });
