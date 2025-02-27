@@ -783,39 +783,43 @@ async function getDomainDetails(websiteName) {
 }
 
 // 🔄 Enable/Disable Theft Protection
-async function manageTheftProtection(websiteName, enable) {
-  const domainDetails = await getDomainDetails(websiteName);
+async function manageDomainLock(domainName, lock) {
+  console.log(`🔄 Updating lock status for ${domainName} to ${lock ? 'locked' : 'unlocked'}`);
+
+  // 🔹 Fetch domain details from Firestore
+  const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails) {
-      return { success: false, message: `Domain ${websiteName} not found.` };
+      console.error(`❌ Domain ${domainName} not found in Firestore.`);
+      return { success: false, message: `Domain ${domainName} not found.` };
   }
 
   const { domainNameId } = domainDetails;
+  console.log(`🆔 Found domainNameId: ${domainNameId}`);
+
   try {
-      console.log(`🔄 Updating theft protection for domainNameId: ${domainNameId} to ${enable}`);
+      const isDomainLocked = lock ? 'true' : 'false'; // Ensure correct format
+      const apiUrl = `${BASE_URL}/ESHOP/ManageDomainLock?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${isDomainLocked}`;
 
-      const isTheftProtection = enable ? 'true' : 'false';
+      console.log(`🌍 Sending API Request: ${apiUrl}`);
+      const response = await axios.get(apiUrl);
+      console.log('📨 API Response:', response.data);
 
-      // ✅ Ensure `websiteName` is included in API call
-      const url = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&websiteName=${websiteName}&domainNameId=${domainNameId}&isTheftProtection=${isTheftProtection}`;
-
-      console.log(`🔗 API Request URL: ${url}`);
-
-      const response = await axios.get(url);
-      console.log('📨 ConnectReseller API Response:', response.data);
-
-      if (response.data?.responseMsg?.statusCode === 200) {
+      const { statusCode, message } = response.data?.responseMsg || {};
+      if (statusCode === 200) {
           return {
               success: true,
-              message: `Theft protection has been ${enable ? 'enabled' : 'disabled'} for ${websiteName}.`,
+              message: `Domain has been ${lock ? 'locked' : 'unlocked'} for ${domainName}.`,
           };
       }
 
-      return { success: false, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
+      return { success: false, message: message || 'Failed to update domain lock status.' };
+
   } catch (error) {
-      console.error('❌ Error updating theft protection:', error);
-      return { success: false, message: 'Internal server error.' };
+      console.error('❌ Error updating domain lock status:', error);
+      return { success: false, message: 'Internal server error while updating domain lock status.' };
   }
 }
+
 
 // 🚀 API Endpoint
 app.get('/api/manage-theft-protection', async (req, res) => {
@@ -826,10 +830,94 @@ app.get('/api/manage-theft-protection', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Both domain and enable (true/false) parameters are required.' });
   }
 
+  // Correctly convert to a boolean
   const enableBool = enable === 'true';
+  console.log(`✅ Parsed enable value: ${enable} => ${enableBool}`);
+
   const result = await manageTheftProtection(domain, enableBool);
   return res.json(result);
 });
+
+// Backend: Manage Domain Lock/Unlock
+async function manageDomainLock(domainName, lock) {
+  console.log(`🔄 Updating lock status for ${domainName} to ${lock ? 'locked' : 'unlocked'}`);
+
+  try {
+      // 🔹 Step 1: Get domainNameId
+      const domainInfoResponse = await axios.get(
+          `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`,
+          {
+              params: {
+                  APIKey: process.env.CONNECT_RESELLER_API_KEY,
+                  websiteName: domainName,
+              },
+          }
+      );
+
+      console.log('🌐 Domain Info Response:', domainInfoResponse.data);
+
+      const domainNameId = domainInfoResponse.data?.responseData?.domainNameId;
+      if (!domainNameId) {
+          console.error('❌ domainNameId not found for:', domainName);
+          return { success: false, message: 'Domain ID not found. Cannot update lock status.' };
+      }
+
+      // 🔹 Construct the actual request URL (GET request)
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
+
+      // ✅ Log the full URL
+      console.log(`🌍 Sending API Request: ${apiUrl}`);
+
+      // 🔹 Step 2: Make the API request (GET method)
+      const response = await axios.get(apiUrl, {
+          headers: { "Content-Type": "application/json" }
+      });
+
+      console.log('📨 API Response:', response.data);
+
+      const { statusCode, message } = response.data?.responseMsg || {};
+      if (statusCode === 200) {
+          return {
+              success: true,
+              message: `Domain has been ${lock ? 'locked' : 'unlocked'} for ${domainName}.`,
+          };
+      }
+
+      return { success: false, message: message || 'Failed to update domain lock status.' };
+
+  } catch (error) {
+      if (error.response) {
+          console.error(`❌ API Error: ${error.response.status} -`, error.response.data);
+      } else {
+          console.error('❌ Unexpected Error:', error.message);
+      }
+      return { success: false, message: 'Internal server error while updating domain lock status.' };
+  }
+}
+
+async function getDomainId(domain) {
+  const snapshot = await db.collection("DomainName").where("websiteName", "==", domain).get();
+  if (snapshot.empty) return null;
+  return snapshot.docs[0].data().domainNameId;
+}
+
+// 🚀 API Endpoint
+app.get("/api/manage-domain-lock", async (req, res) => {
+  const { domain } = req.query;
+  if (!domain) return res.status(400).json({ success: false, message: "Domain is required." });
+  
+  try {
+      const domainNameId = await getDomainId(domain);
+      if (!domainNameId) return res.status(404).json({ success: false, message: "Domain ID not found." });
+      
+      const response = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/CheckTheftProtection?domainNameId=${domainNameId}`);
+      res.json({ success: true, isLocked: response.data.responseData.isTheftProtection });
+  } catch (error) {
+      console.error("Error fetching theft protection status:", error);
+      res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
 
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
@@ -1098,6 +1186,32 @@ if (domainName && (query.toLowerCase().includes('enable theft protection') || qu
 
   const result = await manageTheftProtection(domainName, enable);
   return res.json(result);
+}
+
+// Check for Domain Lock/Unlock in Chatbot Queries
+if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().includes('unlock '))) {
+  console.log('[DOMAIN-QUERIES] 🔒 Domain lock/unlock requested for:', domainName);
+
+  const lock = query.toLowerCase().includes('lock');
+  const unlock = query.toLowerCase().includes('unlock');
+
+  if (!lock && !unlock) {
+      return res.json({
+          success: false,
+          answer: 'Please specify whether you want to lock or unlock the domain.',
+      });
+  }
+
+  try {
+      const result = await manageDomainLock(domainName, lock);
+      return res.json(result);
+  } catch (error) {
+      console.error('[DOMAIN-QUERIES] ❌ Error managing domain lock:', error.message);
+      return res.status(500).json({
+          success: false,
+          message: 'Failed to update domain lock status.',
+      });
+  }
 }
 
   // Step 3: Check if the query is domain-related using Fuse.js
