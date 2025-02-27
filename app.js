@@ -782,60 +782,80 @@ async function getDomainDetails(websiteName) {
   }
 }
 
-// 🔄 Enable/Disable Theft Protection
-async function manageDomainLock(domainName, lock) {
-  console.log(`🔄 Updating lock status for ${domainName} to ${lock ? 'locked' : 'unlocked'}`);
+async function manageTheftProtection(domainName, enable) {
+  console.log(`🔐 Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
 
-  // 🔹 Fetch domain details from Firestore
   const domainDetails = await getDomainDetails(domainName);
-  if (!domainDetails) {
-      console.error(`❌ Domain ${domainName} not found in Firestore.`);
+  if (!domainDetails || !domainDetails.domainNameId) {
       return { success: false, message: `Domain ${domainName} not found.` };
   }
 
   const { domainNameId } = domainDetails;
-  console.log(`🆔 Found domainNameId: ${domainNameId}`);
+  const apiUrl = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isTheftProtection=${enable}`;
 
   try {
-      const isDomainLocked = lock ? 'true' : 'false'; // Ensure correct format
-      const apiUrl = `${BASE_URL}/ESHOP/ManageDomainLock?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${isDomainLocked}`;
-
-      console.log(`🌍 Sending API Request: ${apiUrl}`);
       const response = await axios.get(apiUrl);
       console.log('📨 API Response:', response.data);
 
-      const { statusCode, message } = response.data?.responseMsg || {};
-      if (statusCode === 200) {
-          return {
-              success: true,
-              message: `Domain has been ${lock ? 'locked' : 'unlocked'} for ${domainName}.`,
-          };
+      if (response.data?.responseMsg?.statusCode === 200) {
+          return { success: true, message: `Theft protection ${enable ? 'enabled' : 'disabled'} for ${domainName}.` };
       }
 
-      return { success: false, message: message || 'Failed to update domain lock status.' };
+      return { success: false, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
 
   } catch (error) {
-      console.error('❌ Error updating domain lock status:', error);
-      return { success: false, message: 'Internal server error while updating domain lock status.' };
+      console.error('❌ Error managing theft protection:', error);
+      return { success: false, message: 'Internal server error while managing theft protection.' };
   }
 }
 
-
 // 🚀 API Endpoint
+// 🚀 API Endpoint to Manage Theft Protection
 app.get('/api/manage-theft-protection', async (req, res) => {
-  const { domain, enable } = req.query;
-  console.log(`📥 API request received. Domain: ${domain}, Enable: ${enable}`);
+  console.log(`📥 RAW Query Params:`, req.query);
+
+  let { domain, enable } = req.query;
+  console.log(`📥 API request received. Domain: ${domain}, Enable: ${enable} (Type: ${typeof enable})`);
 
   if (!domain || (enable !== 'true' && enable !== 'false')) {
       return res.status(400).json({ success: false, message: 'Both domain and enable (true/false) parameters are required.' });
   }
 
-  // Correctly convert to a boolean
-  const enableBool = enable === 'true';
-  console.log(`✅ Parsed enable value: ${enable} => ${enableBool}`);
+  try {
+      const domainDetails = await getDomainDetails(domain);
+      if (!domainDetails || !domainDetails.domainNameId) {
+          console.error(`❌ Domain ${domain} not found in Firestore.`);
+          return res.status(404).json({ success: false, message: `Domain ${domain} not found.` });
+      }
 
-  const result = await manageTheftProtection(domain, enableBool);
-  return res.json(result);
+      const { domainNameId } = domainDetails;
+      console.log(`🆔 Found domainNameId: ${domainNameId}`);
+
+      // Fix Boolean Conversion
+      const isTheftProtection = enable === 'true'; // Correct parsing
+      console.log(`🔄 Converted isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection})`);
+
+      // Send API Request
+      const apiUrl = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&isTheftProtection=${isTheftProtection}`;
+      console.log(`🌍 Sending API Request: ${apiUrl}`);
+
+      const response = await axios.get(apiUrl);
+      console.log('📨 API Response:', response.data);
+
+      const { statusCode, message } = response.data?.responseMsg || {};
+      if (statusCode === 200) {
+          return res.json({
+              success: true,
+              message: `Theft protection has been ${isTheftProtection ? 'enabled' : 'disabled'} for ${domain}.`,
+          });
+      }
+
+      return res.status(400).json({ success: false, message: message || 'Failed to update theft protection.' });
+
+  } catch (error) {
+      console.error('❌ Error updating theft protection:', error);
+      return res.status(500).json({ success: false, message: 'Internal server error while updating theft protection.' });
+  }
 });
 
 // Backend: Manage Domain Lock/Unlock
@@ -901,23 +921,58 @@ async function getDomainId(domain) {
   return snapshot.docs[0].data().domainNameId;
 }
 
-// 🚀 API Endpoint
-app.get("/api/manage-domain-lock", async (req, res) => {
-  const { domain } = req.query;
-  if (!domain) return res.status(400).json({ success: false, message: "Domain is required." });
-  
+app.get('/api/balance', async (req, res) => {
+  if (!req.session || !req.session.email) {
+      console.warn('⚠️ [BALANCE API] User not authenticated.');
+      return res.status(401).json({ success: false, message: 'User not authenticated.' });
+  }
+
   try {
-      const domainNameId = await getDomainId(domain);
-      if (!domainNameId) return res.status(404).json({ success: false, message: "Domain ID not found." });
-      
-      const response = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/CheckTheftProtection?domainNameId=${domainNameId}`);
-      res.json({ success: true, isLocked: response.data.responseData.isTheftProtection });
+      let resellerId;
+
+      if (req.session.email === 'aichatbot@iwantdemo.com') {
+          resellerId = 15272;
+          console.log('🔍 [BALANCE API] Using test resellerId:', resellerId);
+      } else {
+          const usersRef = admin.firestore().collection('Client');
+          const querySnapshot = await usersRef.where('UserName', '==', req.session.email).get();
+
+          if (querySnapshot.empty) {
+              console.warn('⚠️ [BALANCE API] ResellerId not found for email:', req.session.email);
+              return res.status(404).json({ success: false, message: 'ResellerId not found.' });
+          }
+
+          resellerId = querySnapshot.docs[0].data().clientId;
+          console.log('🔍 [BALANCE API] ResellerId fetched from Firebase:', resellerId);
+      }
+
+      // 🌍 Prepare and log the API request URL
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${resellerId}`;
+      console.log('📡 [BALANCE API] Requesting URL:', url);
+
+      // 💬 Make the API request
+      const response = await axios.get(url);
+
+      // ✅ Log API response status and data
+      console.log('✅ [BALANCE API] Response Status:', response.status);
+      console.log('📦 [BALANCE API] Full Response Data:', JSON.stringify(response.data, null, 2));
+
+      if (response.data.responseMsg.statusCode === 0) {
+          console.log('💰 [BALANCE API] Current Balance:', response.data.responseData);
+          return res.json({
+              success: true,
+              answer: `Your current balance is: $${response.data.responseData}`,
+              showInChat: true
+          });
+      } else {
+          console.warn('⚠️ [BALANCE API] Failed to fetch balance. Status Code:', response.data.responseMsg.statusCode);
+          return res.json({ success: false, message: 'Failed to fetch balance.' });
+      }
   } catch (error) {
-      console.error("Error fetching theft protection status:", error);
-      res.status(500).json({ success: false, message: "Internal server error." });
+      console.error('❌ [BALANCE API] Error fetching balance:', error.message);
+      return res.status(500).json({ success: false, message: 'Error fetching balance.' });
   }
 });
-
 
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
@@ -1049,7 +1104,6 @@ const searchAllowedTopics = (query) => {
   return result.length > 0 ? result[0].item : null;
 };
 
-
 app.post('/api/domain-queries', async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ success: false, message: 'Query is required.' });
@@ -1092,6 +1146,49 @@ app.post('/api/domain-queries', async (req, res) => {
       triggerDomainSection: true,
       answer: 'I can help you with checking domain availability! Please click check domain availability button.',
     });
+  }
+
+  // ✅ Detect Balance Inquiry
+  if (lowerQuery.includes('current balance') || lowerQuery.includes('available funds')) {
+    if (!req.session || !req.session.email) {
+      return res.status(401).json({ success: false, message: 'User not authenticated.' });
+    }
+
+    try {
+      let resellerId;
+
+      if (req.session.email === 'aichatbot@iwantdemo.com') {
+        resellerId = 15272;
+      } else {
+        const usersRef = admin.firestore().collection('Client');
+        const querySnapshot = await usersRef.where('UserName', '==', req.session.email).get();
+
+        if (querySnapshot.empty) {
+          return res.status(404).json({ success: false, message: 'ResellerId not found.' });
+        }
+
+        resellerId = querySnapshot.docs[0].data().clientId;
+      }
+
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.API_KEY}&resellerId=${resellerId}`;
+      const response = await axios.get(url);
+
+      if (response.data.responseMsg.statusCode === 0) {
+        return res.json({
+          success: true,
+          answer: `Your current balance is: ${response.data.responseData}`,
+          showInChat: true
+        });
+      } else {
+        return res.json({
+          success: false,
+          message: 'Failed to fetch balance.',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      return res.status(500).json({ success: false, message: 'Error fetching balance.' });
+    }
   }
 
   // ✅ New Condition: Check for Domain Registration
@@ -1214,6 +1311,51 @@ if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().
   }
 }
 
+// ✅ Detect Balance Inquiry
+if (lowerQuery.includes("current balance") || lowerQuery.includes("available funds")) {
+  if (!req.session || !req.session.email) {
+      return res.status(401).json({ success: false, message: "User not authenticated." });
+  }
+
+  try {
+      let resellerId;
+
+      // 🔍 Hardcoded ResellerId for testing
+      if (req.session.email === "aichatbot@iwantdemo.com") {
+          resellerId = 15272;
+      } else {
+          // 🔍 Fetch ResellerId from Firebase using UserName (email)
+          const usersRef = admin.firestore().collection("Client");
+          const querySnapshot = await usersRef.where("UserName", "==", req.session.email).get();
+
+          if (querySnapshot.empty) {
+              return res.status(404).json({ success: false, message: "ResellerId not found." });
+          }
+
+          resellerId = querySnapshot.docs[0].data().clientId; // Assuming `clientId` is the ResellerId
+      }
+
+      // 🌍 Fetch balance from ConnectReseller API
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.API_KEY}&resellerId=${resellerId}`;
+      const response = await axios.get(url);
+
+      if (response.data.responseMsg.statusCode === 0) {
+          return res.json({
+              success: true,
+              answer: `Your current balance is: ${response.data.responseData}`,
+          });
+      } else {
+          return res.json({
+              success: false,
+              message: "Failed to fetch balance.",
+          });
+      }
+  } catch (error) {
+      console.error("Error fetching balance:", error);
+      return res.status(500).json({ success: false, message: "Error fetching balance." });
+  }
+}
+
   // Step 3: Check if the query is domain-related using Fuse.js
   const isDomainRelated = fuse2.search(query).length > 0;
 
@@ -1242,7 +1384,6 @@ if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().
 
   return res.status(400).json({ success: false, message: 'Unable to process your request.' });
 });
-
 
 const dns = require('dns').promises;
 
