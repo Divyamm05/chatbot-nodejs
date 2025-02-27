@@ -47,13 +47,13 @@
             <li onclick="fillChatInput('Where can I register domains?')">Where can I register domains?</li>
             <li onclick="fillChatInput('How can I renew a domain?')">How can I renew a domain?</li>
             <li onclick="fillChatInput('How do I transfer IN/OUT domains?')">How do I transfer IN/OUT domains?</li>
-            <li onclick="fillChatInputWithPlaceholder('Give me domain information for {yourdomain.com}')">Give me domain information for <em>yourdomain.com</em></li>
-            <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for {yourdomain.com}')">Enable/disable theft protection for <em>yourdomain.com</em></li>
+            <li onclick="fillChatInputWithPlaceholder('Give me domain information for {mydomain.com}')">Give me domain information for <em>mydomain.com</em></li>
+            <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for {mydomain.com}')">Enable/disable theft protection for <em>mydomain.com</em></li>
+            <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock {mydomain.com}')">How do I lock/unlock <em>mydomain.com</em></li>
             <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
             <li onclick="fillChatInput('Give me a list of high-value domain TLDs?')">Give me a list of high-value domain TLDs?</li>
             <li onclick="fillChatInput('Can you suggest TLDs for a selected category?')">Can you suggest TLDs for a selected category?</li>
             <li onclick="fillChatInput('What actions can I do here on the chatbot?')">What actions can I do here on the chatbot?</li>
-            <li onclick="fillChatInput('How do I lock/unlock a domain?')">How do I lock/unlock a domain?</li>
             <li onclick="fillChatInput('How do I enable/disable privacy protection?')">How do I enable/disable privacy protection?</li>
             <li onclick="fillChatInput('How can I view the auth code for a domain?')">How can I view the auth code for a domain?</li>
             <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
@@ -128,14 +128,32 @@
     <div class="chat-input" style="display:none" id="login-chat-section">
       <input type="text" id="domain-query-text" placeholder="Enter your query...">
       
-      <!-- Toggle Switch Container -->
-      <div id="theft-protection-toggle-container" style="display:none; align-items: center; gap: 10px;">
-          <label for="theft-protection-toggle">Theft Protection:</label>
-          <label class="switch">
-              <input type="checkbox" id="theft-protection-toggle">
-              <span class="slider round"></span>
-          </label>
-      </div>
+<!-- Toggle Switch Container -->
+<div id="theft-protection-toggle-container" style="display:none; align-items: center; gap: 10px;">
+  <div id="theft-protection-wrapper">
+    <label class="switch">
+      <input type="checkbox" id="theft-protection-toggle" onchange="handleTheftProtectionToggle(this)">
+      <span class="slider round">
+        <span class="slider-text on">Theft Protection <br>
+          Enabled</span>
+        <span class="slider-text off">Theft Protection<br>
+          Disabled</span>
+      </span>
+    </label>
+  </div>
+</div>
+
+<div id="domain-lock-toggle-container" style="display:none; align-items: center; gap: 10px;">
+  <div id="domain-lock-wrapper">
+    <label class="switch">
+      <input type="checkbox" id="domain-lock-toggle">
+      <span class="slider round">
+        <span class="slider-text on">Locked</span>
+        <span class="slider-text off">Unlocked</span>
+      </span>
+    </label>
+  </div>
+</div>
   
       <button id="submitDomainQuery" onclick="submitDomainQuery()">Submit</button>
       <div id="loading-container" style="display:none;"></div>

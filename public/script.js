@@ -361,8 +361,9 @@ function fillChatInputWithPlaceholder(template) {
   const chatInput = document.getElementById('domain-query-text');
   const submitButton = document.getElementById('submitDomainQuery');
   const inputSection = document.getElementById('login-chat-section');
-  const placeholder = '{yourdomain.com}';
+  const placeholder = '{mydomain.com}';
   const toggleContainer = document.getElementById('theft-protection-toggle-container'); // Fixed reference
+  const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
 
   chatInput.value = template;
   chatInput.focus();
@@ -374,15 +375,32 @@ function fillChatInputWithPlaceholder(template) {
       chatInput.setSelectionRange(startPos, endPos);
   }
 
+
   // Show toggle container if theft protection is requested
   if (template.includes('Enable/disable theft protection')) {
     toggleContainer.style.display = 'flex'; // Show the toggle switch
     submitButton.style.width = '15%';
     submitButton.style.backgroundColor = '#f1c40f';
-    inputSection.style.gap = '50px';
   } else {
     toggleContainer.style.display = 'none';
   }
+
+  const domainMatch = template.match(/lock\/unlock (\S+)/i);
+    if (domainMatch) {
+        const domain = domainMatch[1];
+        lockToggleContainer.style.display = 'flex';
+        fetchDomainLockStatus(domain); // Fetch and update toggle state
+    } else {
+        lockToggleContainer.style.display = 'none';
+    }
+
+    if (template.includes('Enable/disable theft protection')) {
+        toggleContainer.style.display = 'flex';
+        submitButton.style.width = '15%';
+        submitButton.style.backgroundColor = '#f1c40f';
+    } else {
+        toggleContainer.style.display = 'none';
+    }
 
   // Tooltip handling
   if (startPos !== -1) {
@@ -403,7 +421,7 @@ function fillChatInputWithPlaceholder(template) {
       const paddingLeft = parseInt(inputStyle.paddingLeft);
 
       tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
-      tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth + paddingLeft) + 'px';
+      tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth - 40) + 'px';
       
       document.body.appendChild(tooltip);
       hiddenSpan.remove();
@@ -479,6 +497,81 @@ if (!window.observer) {
 
   window.observer.observe(chatLog, { childList: true });
 }
+
+const domainLockToggle = document.getElementById('domain-lock-toggle');
+domainLockToggle.addEventListener('change', async function() {
+    const domain = document.getElementById('domain-input').value.trim();
+    if (!domain) {
+        updateChatLog('Please enter a domain first.', 'bot');
+        return;
+    }
+    
+    const isLocked = this.checked;
+    console.log(`🔄 Sending lock/unlock request: Domain=${domain}, Lock=${isLocked}`);
+
+    try {
+        const response = await fetch(`/api/manage-domain-lock?domain=${domain}&lock=${isLocked}`, { method: 'GET' });
+        const result = await response.json();
+        updateChatLog(result.message, 'bot');
+    } catch (error) {
+        console.error('❌ Error updating domain lock:', error);
+        updateChatLog('Failed to update domain lock status', 'bot');
+    }
+});
+
+// Fetch domain lock status when showing the toggle
+async function fetchDomainLockStatus(domain) {
+  try {
+    const response = await fetch(`/api/manage-domain-lock?domain=${domain}`);
+    const data = await response.json();
+    if (data.success) {
+        theftProtectionToggle.checked = data.isLocked;
+        toggleContainer.style.display = "flex";
+    } else {
+        toggleContainer.style.display = "none";
+    }
+} catch (error) {
+    console.error("Error fetching domain lock status:", error);
+    toggleContainer.style.display = "none";
+}
+}
+const theftProtectionToggle = document.getElementById("theft-protection-toggle");
+
+async function handleTheftProtectionToggle() {
+  const domain = chatInput.value.trim();
+  if (!domain) return;
+
+  try {
+      const response = await fetch("/api/manage-theft-protection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain, lock: theftProtectionToggle.checked })
+      });
+      const data = await response.json();
+      if (!data.success) {
+          alert("Failed to update theft protection status.");
+          theftProtectionToggle.checked = !theftProtectionToggle.checked;
+      }
+  } catch (error) {
+      console.error("Error updating theft protection:", error);
+      theftProtectionToggle.checked = !theftProtectionToggle.checked;
+  }
+}
+
+theftProtectionToggle.addEventListener("change", handleTheftProtectionToggle);
+
+chatInput.addEventListener("input", () => {
+  const domain = chatInput.value.trim();
+  if (domain) fetchDomainLockStatus(domain);
+});
+
+theftProtectionToggle.addEventListener("change", handleTheftProtectionToggle);
+
+chatInput.addEventListener("input", () => {
+  const domain = chatInput.value.trim();
+  if (domain) fetchDomainLockStatus(domain);
+});
+
 
 function checkDomainSuggestions(response) {
   console.log("📩 checkDomainSuggestions() called with:", response); // Debug log
@@ -1453,32 +1546,64 @@ function goBackToQuerySection() {
     }
 
     const theftProtectionMatch = queryText.match(/(enable|disable) theft protection for (\S+)/i);
-    if (theftProtectionMatch) {
-        const action = theftProtectionMatch[1]; // "enable" or "disable"
-        const domain = theftProtectionMatch[2];
-        const enableTheftProtection = action === 'enable';
+if (theftProtectionMatch) {
+    const action = theftProtectionMatch[1].toLowerCase(); // "enable" or "disable"
+    const domain = theftProtectionMatch[2];
+    const enableTheftProtection = action === 'enable'; // Correctly sets enable flag
 
-        try {
-            updateChatLog(`${action.charAt(0).toUpperCase() + action.slice(1)}ing theft protection for ${domain}...`, 'bot');
+    try {
+        const actionText = enableTheftProtection ? 'Enabling' : 'Disabling';
+        updateChatLog(`${actionText} theft protection for ${domain}...`, 'bot');
+      
+        const response = await fetch(`/api/manage-theft-protection?domain=${domain}&enable=${enableTheftProtection}`, {
+            method: 'GET',
+        });
 
-            const response = await fetch(`/api/manage-theft-protection?domain=${domain}&enable=${enableTheftProtection}`, {
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to update theft protection. Status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            updateChatLog(result.message, 'bot');
-
-        } catch (error) {
-            console.error('Error managing theft protection:', error);
-            updateChatLog('Failed to update theft protection', 'bot');
+        if (!response.ok) {
+            throw new Error(`Failed to update theft protection. Status: ${response.status}`);
         }
 
-        return;
+        const result = await response.json();
+        updateChatLog(result.message, 'bot');
+
+    } catch (error) {
+        console.error('Error managing theft protection:', error);
+        updateChatLog('Failed to update theft protection', 'bot');
     }
+
+    return;
+}
+
+const domainLockMatch = queryText.match(/(lock|unlock) (.+)/i);
+if (domainLockMatch) {
+    const action = domainLockMatch[1].toLowerCase(); // "lock" or "unlock"
+    const domain = domainLockMatch[2].trim();
+    const isDomainLocked = action === 'lock';
+
+    console.log(`🔍 Detected action: ${action}, Domain: ${domain}, Lock State: ${isDomainLocked}`); // Debugging line
+
+    try {
+        const actionText = isDomainLocked ? 'Locking' : 'Unlocking';
+        updateChatLog(`${actionText} the domain ${domain}...`, 'bot');
+      
+        const response = await fetch(`/api/manage-domain-lock?domain=${domain}&lock=${isDomainLocked}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update domain lock status. Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        updateChatLog(result.message, 'bot');
+
+    } catch (error) {
+        console.error('Error managing domain lock:', error);
+        updateChatLog('Failed to update domain lock status', 'bot');
+    }
+
+    return;
+}
 
     // Fallback to existing backend query handling
     try {
@@ -1511,7 +1636,6 @@ function goBackToQuerySection() {
         updateChatLog("This chatbot can answer domain-related questions only", 'bot');
     }
 }
-
 
   function switchSection(newSectionId) {
     document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });
