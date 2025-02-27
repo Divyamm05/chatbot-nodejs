@@ -361,7 +361,7 @@ function fillChatInputWithPlaceholder(template) {
   const chatInput = document.getElementById('domain-query-text');
   const submitButton = document.getElementById('submitDomainQuery');
   const inputSection = document.getElementById('login-chat-section');
-  const placeholder = '{mydomain.com}';
+  const placeholder = 'mydomain.com';
   const toggleContainer = document.getElementById('theft-protection-toggle-container'); // Fixed reference
   const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
 
@@ -542,18 +542,28 @@ async function handleTheftProtectionToggle() {
   if (!domain) return;
 
   try {
-      const response = await fetch("/api/manage-theft-protection", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain, lock: theftProtectionToggle.checked })
+      const isChecked = theftProtectionToggle.checked; // Capture correct state
+      const enableValue = isChecked ? "true" : "false"; // Convert boolean to string
+
+      console.log(`🛡️ Sending API Request - Domain: ${domain}, Enable: ${enableValue} (Type: ${typeof enableValue})`);
+
+      const response = await fetch(`/api/manage-theft-protection?domain=${domain}&enable=${encodeURIComponent(enableValue)}&t=${Date.now()}`, {
+          method: 'GET',
       });
+
+      if (!response.ok) {
+          throw new Error(`Failed to update theft protection. Status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("🔍 API Response:", data);
+
       if (!data.success) {
           alert("Failed to update theft protection status.");
-          theftProtectionToggle.checked = !theftProtectionToggle.checked;
+          theftProtectionToggle.checked = !isChecked; // Revert toggle on failure
       }
   } catch (error) {
-      console.error("Error updating theft protection:", error);
+      console.error("❌ Error updating theft protection:", error);
       theftProtectionToggle.checked = !theftProtectionToggle.checked;
   }
 }
@@ -565,7 +575,6 @@ chatInput.addEventListener("input", () => {
   if (domain) fetchDomainLockStatus(domain);
 });
 
-theftProtectionToggle.addEventListener("change", handleTheftProtectionToggle);
 
 chatInput.addEventListener("input", () => {
   const domain = chatInput.value.trim();
@@ -1545,6 +1554,32 @@ function goBackToQuerySection() {
         return;
     }
 
+    const balanceMatch = queryText.match(/what is my current balance in my account/i);
+if (balanceMatch) {
+    try {
+        updateChatLog(`Fetching your current balance...`, 'bot');
+        
+        const response = await fetch(`/api/balance`, { method: 'GET' });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch balance. Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            updateChatLog(`${result.answer}`, 'bot');
+        } else {
+            updateChatLog(`Error: ${result.message}`, 'bot');
+        }
+
+    } catch (error) {
+        console.error('Error fetching balance:', error);
+        updateChatLog('Failed to retrieve balance information', 'bot');
+    }
+
+    return;
+}
+
     const theftProtectionMatch = queryText.match(/(enable|disable) theft protection for (\S+)/i);
 if (theftProtectionMatch) {
     const action = theftProtectionMatch[1].toLowerCase(); // "enable" or "disable"
@@ -1693,36 +1728,58 @@ if (domainLockMatch) {
     document.getElementById('domain-query-section').style.display = 'none';
   }
 
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        document.getElementById("submit-question").click();
+    }
+  });
+
   document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
+
+document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault(); 
-    
-        console.log("Active Element ID: ", document.activeElement.id);
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            
+            console.log("Active Element ID: ", document.activeElement.id);
 
-        if (document.activeElement.id === "get-domain-suggestions-btn") {
-          console.log("Get Domain Suggestions clicked...");
-          document.getElementById("get-domain-suggestions-btn").click();
-        } else if (document.activeElement.id === "more-options-btn") {
-          console.log("More Options clicked...");
-          document.getElementById("more-options-btn").click();
+            // 🆕 Submit Chat Question
+            if (document.activeElement.classList.contains('chat-input')) {
+                console.log("Chat Input - Enter key pressed");
+                document.getElementById("submit-question").click();
+                return;
+            }
+
+            // 🆕 Submit Email for OTP
+            if (document.activeElement.classList.contains('email-input')) {
+                console.log("Email Input - Enter key pressed");
+                document.getElementById("submit-email").click();
+                return;
+            }
+
+            if (document.activeElement.id === "get-domain-suggestions-btn") {
+                console.log("Get Domain Suggestions clicked...");
+                document.getElementById("get-domain-suggestions-btn").click();
+            } else if (document.activeElement.id === "more-options-btn") {
+                console.log("More Options clicked...");
+                document.getElementById("more-options-btn").click();
+            }
         }
-      }
 
-      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-        const buttons = Array.from(document.querySelectorAll("#domain-options button"));
-        let currentIndex = buttons.findIndex((el) => el === document.activeElement);
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            const buttons = Array.from(document.querySelectorAll("#domain-options button"));
+            let currentIndex = buttons.findIndex((el) => el === document.activeElement);
 
-        if (event.key === "ArrowDown") {
-          currentIndex = (currentIndex + 1) % buttons.length;
-        } else if (event.key === "ArrowUp") {
-          currentIndex = (currentIndex - 1 + buttons.length) % buttons.length; 
+            if (event.key === "ArrowDown") {
+                currentIndex = (currentIndex + 1) % buttons.length;
+            } else if (event.key === "ArrowUp") {
+                currentIndex = (currentIndex - 1 + buttons.length) % buttons.length; 
+            }
+
+            console.log("Focusing element: ", buttons[currentIndex].id); 
+            buttons[currentIndex].focus();  
         }
-
-        console.log("Focusing element: ", buttons[currentIndex].id); 
-        buttons[currentIndex].focus();  
-      }
     });
-  });
+});
