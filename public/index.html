@@ -51,6 +51,7 @@
             <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for mydomain.com')">Enable/disable theft protection for <em>mydomain.com</em></li>
             <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock mydomain.com')">How do I lock/unlock <em>mydomain.com</em></li>
             <li onclick="fillChatInput('What is my current balance in my account?')">What is my current balance in my account?</li>
+            <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com')">Suspend/Unsuspend <em>mydomain.com</em></li>
             <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
             <li onclick="fillChatInput('Give me a list of high-value domain TLDs?')">Give me a list of high-value domain TLDs?</li>
             <li onclick="fillChatInput('Can you suggest TLDs for a selected category?')">Can you suggest TLDs for a selected category?</li>
@@ -74,7 +75,6 @@
             <li onclick="fillChatInput('How can I download the WHMCS module?')">How can I download the WHMCS module?</li>
             <li onclick="fillChatInput('How do I export List Name?')">How do I export 'List Name'?</li>
             <li onclick="fillChatInput('How do I suspend/unsuspend a domain?')">How do I suspend/unsuspend a domain?</li>
-            <li onclick="fillChatInput('Suspend/Unsuspend domain name for me')">Suspend/Unsuspend 'domain name' for me</li>
             <li onclick="fillChatInput('How can I move a domain?')">How can I move a domain?</li>
             <li onclick="fillChatInput('How can I add a child nameserver?')">How can I add a child nameserver?</li>
             <li onclick="fillChatInput('How do I pull a domain?')">How do I pull a domain?</li>
@@ -150,6 +150,18 @@
       <span class="slider round">
         <span class="slider-text on">Locked</span>
         <span class="slider-text off">Unlocked</span>
+      </span>
+    </label>
+  </div>
+</div>
+
+<div id="domain-suspend-toggle-container" style="display:none; align-items: center; gap: 10px;">
+  <div id="domain-suspend-wrapper">
+    <label class="switch">
+      <input type="checkbox" id="domain-suspend-toggle" onchange="handleDomainSuspendToggle(this)">
+      <span class="slider round">
+        <span class="slider-text on" id="slider-text-on">Suspend</span>
+        <span class="slider-text off" id="slider-text-off">Unsuspend</span>
       </span>
     </label>
   </div>

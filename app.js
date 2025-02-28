@@ -974,6 +974,83 @@ app.get('/api/balance', async (req, res) => {
   }
 });
 
+async function manageDomainSuspension(domainName, suspend) {
+  try {
+      console.log('[SUSPEND-DOMAIN] 🔍 Checking for domain:', domainName);
+
+      const domainRef = admin.firestore().collection('DomainName');
+      const domainSnapshot = await domainRef
+          .where('websiteName', '==', domainName)
+          .get();
+
+      if (domainSnapshot.empty) {
+          console.warn('[SUSPEND-DOMAIN] ⚠️ No documents found for domain:', domainName);
+          return {
+              success: false,
+              message: `domainNameId not found for the domain ${domainName}.`,
+          };
+      }
+
+      console.log('[SUSPEND-DOMAIN] 📝 Found documents:');
+      domainSnapshot.forEach(doc => {
+          console.log('Document ID:', doc.id, 'Data:', doc.data());
+      });
+
+      const domainData = domainSnapshot.docs[0].data();
+      const domainNameId = domainData?.domainNameId;
+
+      if (!domainNameId) {
+          console.warn('[SUSPEND-DOMAIN] ⚠️ domainNameId is missing or invalid for domain:', domainName);
+          return {
+              success: false,
+              message: `domainNameId not found or invalid for the domain ${domainName}.`,
+          };
+      }
+
+      console.log('[SUSPEND-DOMAIN] ✅ Fetched domainNameId:', domainNameId);
+
+      // API Call to suspend/unsuspend domain
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainSuspend?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainSuspend=${suspend}`;
+      
+      // 📢 Log the API URL request
+      console.log('[SUSPEND-DOMAIN] 🌐 API Request URL:', apiUrl);
+
+      const response = await axios.get(apiUrl);
+      console.log('[SUSPEND-DOMAIN] 🌐 API Response:', response.data);
+
+      if (response.data.responseMsg?.statusCode === 200) {
+          const actionText = suspend ? 'suspended' : 'unsuspended';
+          return {
+              success: true,
+              answer: `The domain ${domainName} has been successfully ${actionText}.`,
+          };
+      } else {
+          return {
+              success: false,
+              message: response.data.responseMsg?.message || `Failed to ${suspend ? 'suspend' : 'unsuspend'} the domain ${domainName}.`,
+          };
+      }
+  } catch (error) {
+      console.error('[SUSPEND-DOMAIN] ❌ Error managing domain suspension:', error.message);
+      return {
+          success: false,
+          message: 'Failed to update domain suspension status.',
+      };
+  }
+}
+
+app.get('/api/suspend-domain', async (req, res) => {
+  const { domainName, suspend } = req.query;
+  console.log('[BACKEND] Received parameters:', { domainName, suspend, type: typeof suspend });
+
+  const isSuspend = suspend === 'true';
+  console.log('[BACKEND] Computed isSuspend:', isSuspend);
+
+  const result = await manageDomainSuspension(domainName, isSuspend);
+  return res.json(result);
+});
+
+
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
@@ -1046,10 +1123,6 @@ const predefinedAnswers = {
   "How can I download the WHMCS module?": "You can download the WHMCS module from our developer tools section.",
 //
   "How do I export 'List Name'?": "You can export domain-related lists from your account dashboard under the reports or export section.",
-//
-  "How do I suspend/unsuspend a domain?": "You can suspend or unsuspend a domain from the domain management section by selecting the suspension settings.",
-//
-  "Suspend/Unsuspend 'domain name' for me": "You can suspend or unsuspend a domain from the domain management section by selecting the suspension settings.",
 //
   "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process.",
 //
@@ -1267,6 +1340,7 @@ app.post('/api/domain-queries', async (req, res) => {
     }
 }
 
+
 // Check for Theft Protection Management in Chatbot Queries
 if (domainName && (query.toLowerCase().includes('enable theft protection') || query.toLowerCase().includes('disable theft protection'))) {
   console.log('[DOMAIN-QUERIES] 🔐 Theft protection management requested for:', domainName);
@@ -1354,6 +1428,13 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
       console.error("Error fetching balance:", error);
       return res.status(500).json({ success: false, message: "Error fetching balance." });
   }
+}
+
+if (domainName && (lowerQuery.includes('suspend ') || lowerQuery.includes('unsuspend '))) {
+  console.log('[DOMAIN-QUERIES] 🚦 Domain suspend/unsuspend requested for:', domainName);
+  const isSuspend = lowerQuery.includes('suspend');
+  const result = await manageDomainSuspension(domainName, isSuspend);
+  return res.json(result);
 }
 
   // Step 3: Check if the query is domain-related using Fuse.js

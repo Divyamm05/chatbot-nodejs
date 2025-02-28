@@ -126,147 +126,112 @@ function updateChatLog(message, sender) {
 
   chatLog.appendChild(newMessage);
 
-   // Check if user is signed in
-   const isUserSignedIn = localStorage.getItem('isSignedIn') === 'true';
+  // Check if user is signed in
+  const isUserSignedIn = localStorage.getItem('isSignedIn') === 'true';
 
   // Ensure CSS for buttons is added only once
   if (!document.getElementById('register-domain-css')) {
       const style = document.createElement('style');
       style.id = 'register-domain-css';
       style.innerHTML = `
-        .register-button, .transfer-button {
-          padding: 10px 10px;
-          font-family: 'Inter', sans-serif;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          border: none;
-          color: #2c3e50;
-          border-radius: 20px;
-          background-color: #f1c40f;
-          transition: background-color 0.3s ease;
-          margin-top: 12px;
-          display: block;  /* Ensures button is on a new line */
-          width: 100%;  /* Makes button full width */
-          text-align: center;  /* Centers text */
-        }
-        .register-button:hover, .transfer-button:hover {
-          background-color: #d4ac0d;
-        }
-        .button-container {
-          width: 100%;  /* Ensures it takes the full width */
-          display: block;  /* Forces new line */
-          margin-top: 10px; /* Adds spacing */
-        }
+          .register-button, .transfer-button, .available-button, .update-button, .renew-button {
+              padding: 10px 10px;
+              font-family: 'Inter', sans-serif;
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              border: none;
+              color: #2c3e50;
+              border-radius: 20px;
+              background-color: #f1c40f;
+              transition: background-color 0.3s ease;
+              margin-top: 12px;
+              display: block;
+              width: 100%;
+              text-align: center;
+          }
+          .register-button:hover, .transfer-button:hover, .available-button:hover, .update-button:hover, .renew-button:hover {
+              background-color: #d4ac0d;
+          }
+          .button-container {
+              width: 100%;
+              display: block;
+              margin-top: 10px;
+          }
       `;
       document.head.appendChild(style);
   }
-  
-  // Check for "register a domain" message
-  if (sender === 'bot' && message.includes("register a domain") || message.includes("To register a domain, navigate to the 'Register Domain' section, enter the desired domain name, select your preferred TLD, choose the registration duration, and complete the process by clicking the 'Register' button.") || message.includes("You can register domains directly through this chatbot via the 'Register Domain' section by entering the desired domain name and selecting the desired registration duration.") && isUserSignedIn && !message.includes("To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.")) {
-      const registerButton = document.createElement('button');
-      registerButton.textContent = "Register a Domain";
-      registerButton.classList.add('register-button');
-  
-      registerButton.onclick = () => {
-          const registrationSection = document.getElementById('domain-registration-section');
-          const loginchatsection = document.getElementById('login-chat-section');
-          if (registrationSection) {
-              registrationSection.style.display = "block";
-              loginchatsection.style.display = "none";
+
+  function addButton(buttonText, className, sectionId) {
+      const button = document.createElement('button');
+      button.textContent = buttonText;
+      button.classList.add(className);
+
+      button.onclick = () => {
+          const section = document.getElementById(sectionId);
+          const loginChatSection = document.getElementById('login-chat-section');
+          if (section) {
+              section.style.display = "block";
+              loginChatSection.style.display = "none";
           }
       };
-  
-      // Ensure the button is always on a new line
+
       const buttonContainer = document.createElement('div');
       buttonContainer.classList.add('button-container');
-      buttonContainer.appendChild(registerButton);
-  
+      buttonContainer.appendChild(button);
+
       newMessage.appendChild(buttonContainer);
-  }  
-
-// Check for "transfer a domain" message
-if (
-  sender === 'bot' &&
-  (message.includes("transfer") || message.includes("domain transfer") || message.includes("To transfer a domain to us, unlock it at your current registrar and obtain the AuthCode/EPP code. Then, navigate to the 'Transfer Domain Name' section, enter the domain name you wish to transfer, and provide the AuthCode/EPP code to complete the transfer process with us.")) && isUserSignedIn &&
-  !message.includes("transferring") && !message.includes("Yes, you can transfer your domains to our platform.") && !message.includes("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.") // Ensure "transferring" doesn't trigger the button
-) {
-  const transferButton = document.createElement('button');
-  transferButton.textContent = "Transfer a Domain";
-  transferButton.classList.add('transfer-button');
-
-  transferButton.onclick = () => {
-      const transferSection = document.getElementById('domain-transfer-section');
-      const loginchatsection = document.getElementById('login-chat-section');
-      if (transferSection) {
-          transferSection.style.display = "block";
-          loginchatsection.style.display = "none";
-      }
-  };
-
-  newMessage.appendChild(transferButton);
-}
-
-  // Check for "domain availability" message
-  if (
-    sender === 'bot' &&
-    (message.includes("Check domain availability") || message.includes("domain availability") || message.includes("I can help you with checking domain availability! Please click check domain availability button.")) && !message.includes("This platform helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.")&&isUserSignedIn // Ensure "transferring" doesn't trigger the button
-  ) {
-    const availableButton = document.createElement('button');
-    availableButton.textContent = "Check Domain Availability";
-    availableButton.classList.add('available-button');
-  
-    availableButton.onclick = () => {
-        const availabilitySection = document.getElementById('domain-availability-section');
-        const loginchatsection = document.getElementById('login-chat-section');
-        if (availabilitySection) {
-            availabilitySection.style.display = "block";
-            loginchatsection.style.display = "none";
-        }
-    };
-
-    const buttonContainer = document.createElement('div');
-    buttonContainer.classList.add('button-container');
-    buttonContainer.appendChild(availableButton);
-  
-    newMessage.appendChild(buttonContainer);
   }
 
-// Check for "renew a domain" message
-if (
-  sender === 'bot' &&
-  isUserSignedIn &&
-  (
-      message.toLowerCase().includes("renew a domain") || 
-      message.includes("To seamlessly renew your domain name, simply click the 'Renew Domain Name' button to navigate to the renewal section. Enter the domain name you wish to renew and select the desired renewal duration.")
-  )
-) {
-  console.log("Renew domain button condition met."); // Debugging log
+  // Register a domain
+  if (
+      sender === 'bot' && isUserSignedIn &&
+      (message.includes("register a domain") ||
+       message.includes("To register a domain, navigate to the 'Register Domain' section") ||
+       message.includes("You can register domains directly through this chatbot")) &&
+      !message.includes("To register a domain, you need to provide the domain name")
+  ) {
+      addButton("Register a Domain", "register-button", "domain-registration-section");
+  }
 
-  const renewButton = document.createElement('button');
-  renewButton.textContent = "Renew a Domain";
-  renewButton.classList.add('renew-button');
+  // Transfer a domain
+  if (
+      sender === 'bot' && isUserSignedIn &&
+      (message.includes("transfer a domain") || message.includes("domain transfer") || message.includes("To transfer a domain to us")) &&
+      !message.includes("Yes, you can transfer your domains") &&
+      !message.includes("Thank you for signing in!")
+  ) {
+      addButton("Transfer a Domain", "transfer-button", "domain-transfer-section");
+  }
 
-  renewButton.onclick = () => {
-      const renewalSection = document.getElementById('domain-renewal-section');
-      const loginChatSection = document.getElementById('login-chat-section');
-      if (renewalSection) {
-          renewalSection.style.display = "block";
-          loginChatSection.style.display = "none";
-      }
-  };
+  // Check domain availability
+  if (
+      sender === 'bot' && isUserSignedIn &&
+      (message.includes("Check domain availability") || message.includes("domain availability") || message.includes("I can help you with checking domain availability!")) &&
+      !message.includes("This platform helps with domain registration, transferring domain name")
+  ) {
+      addButton("Check Domain Availability", "available-button", "domain-availability-section");
+  }
 
-  // Ensure the button is always on a new line
-  const buttonContainer = document.createElement('div');
-  buttonContainer.classList.add('button-container');
-  buttonContainer.appendChild(renewButton);
+  // Update name servers
+  if (
+      sender === 'bot' && isUserSignedIn &&
+      (message.includes("update the name servers") || message.includes("update name servers") || message.includes("I can help you update your name servers!"))
+  ) {
+      addButton("Update Name Servers", "update-button", "name-server-update-section");
+  }
 
-  newMessage.appendChild(buttonContainer);
-}
+  // Renew a domain
+  if (
+      sender === 'bot' && isUserSignedIn &&
+      (message.toLowerCase().includes("renew a domain") || message.includes("To seamlessly renew your domain name"))
+  ) {
+      addButton("Renew a Domain", "renew-button", "domain-renewal-section");
+  }
 
   // Show auth buttons if response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
-      if (typeof authButtonsContainer !== 'undefined' && authButtonsContainer) {
+      if (authButtonsContainer) {
           chatLog.appendChild(authButtonsContainer);
           authButtonsContainer.style.display = 'flex';
           scrollToAuthButtons();
@@ -279,7 +244,7 @@ if (
 
   // Show suggest buttons if response matches domain suggestions
   if (sender === 'bot' && checkDomainSuggestions(message)) {
-      if (typeof suggestButtonsContainer !== 'undefined' && suggestButtonsContainer) {
+      if (suggestButtonsContainer) {
           chatLog.appendChild(suggestButtonsContainer);
           suggestButtonsContainer.style.display = 'flex';
       } else {
@@ -292,6 +257,7 @@ if (
   // Call scrollToBottom only once
   scrollToBottom();
 }
+
 
 window.onload = updateAuthUI;
 
@@ -364,6 +330,7 @@ function fillChatInputWithPlaceholder(template) {
   const placeholder = 'mydomain.com';
   const toggleContainer = document.getElementById('theft-protection-toggle-container'); // Fixed reference
   const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
+  const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
 
   chatInput.value = template;
   chatInput.focus();
@@ -400,6 +367,16 @@ function fillChatInputWithPlaceholder(template) {
         submitButton.style.backgroundColor = '#f1c40f';
     } else {
         toggleContainer.style.display = 'none';
+    }
+
+    // Toggle visibility for Domain Suspend/Unsuspend
+    const domainSuspendMatch = template.match(/suspend\/unsuspend (\S+)/i);
+    if (domainSuspendMatch) {
+        const domain = domainSuspendMatch[1];
+        suspendToggleContainer.style.display = 'flex';
+        fetchDomainSuspendStatus(domain); // Placeholder function to fetch suspend status
+    } else {
+        suspendToggleContainer.style.display = 'none';
     }
 
   // Tooltip handling
@@ -497,6 +474,8 @@ if (!window.observer) {
 
   window.observer.observe(chatLog, { childList: true });
 }
+
+
 
 const domainLockToggle = document.getElementById('domain-lock-toggle');
 domainLockToggle.addEventListener('change', async function() {
@@ -1507,7 +1486,61 @@ function goBackToQuerySection() {
     }
   }
 
-  async function submitDomainQuery() {
+// Store the suspension state and domain globally
+let domainToSuspend = null;
+let isDomainSuspend = false;
+
+// Function to handle the toggle switch for domain suspension
+function handleDomainSuspendToggle(toggleElement) {
+    let domain = document.getElementById('domain-query-text').value.trim();
+    isDomainSuspend = toggleElement.checked;
+
+    if (!domain) {
+        updateChatLog('Please enter a valid domain before managing suspension.', 'bot');
+        toggleElement.checked = !isDomainSuspend;
+        return;
+    }
+
+    // Sanitize input to avoid "suspend domain.com" format issues
+    const match = domain.match(/(?:suspend|unsuspend)\s+(\S+)/i);
+    if (match) {
+        domain = match[1]; // Extract only the domain name
+    }
+
+    console.log('🛠️ Toggle state updated:', { domain, isDomainSuspend });
+
+    // Store the domain and toggle state for later submission
+    domainToSuspend = domain;
+}
+
+// Function to make the API request for domain suspension/unsuspension
+async function submitDomainSuspendRequest(domain, isDomainSuspend) {
+    try {
+        console.log(`Submitting suspension request for ${domain}. Suspend: ${isDomainSuspend}`);
+
+        const response = await fetch(`/api/suspend-domain?domainName=${encodeURIComponent(domain)}&suspend=${isDomainSuspend}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update domain suspend status. Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        updateChatLog(result.message || 'Operation completed.', 'bot');
+
+        const togglesuspendContainer = document.getElementById('domain-suspend-toggle-container');
+        if (togglesuspendContainer) {
+            togglesuspendContainer.style.display = 'none';
+        }
+
+    } catch (error) {
+        console.error('Error with domain suspension request:', error);
+        updateChatLog('An error occurred while processing your request.', 'bot');
+    }
+}
+
+async function submitDomainQuery() {
     console.log("submitDomainQuery called"); 
 
     const queryInput = document.getElementById('domain-query-text');
@@ -1519,6 +1552,72 @@ function goBackToQuerySection() {
     }
 
     updateChatLog(`${queryText}`, 'user');
+
+        // List of predefined domain-related queries
+        const predefinedQueries = [
+          "How do I register a domain?",
+          "Where can I register domains?",
+          "How can I renew a domain?",
+          "How do I transfer IN/OUT domains?",
+          "What is my current balance in my account?",
+          "Give me the list of domain registrars.",
+          "Give me a list of high-value domain TLDs?",
+          "Can you suggest TLDs for a selected category?",
+          "What actions can I do here on the chatbot?",
+          "How do I enable/disable privacy protection?",
+          "How can I view the auth code for a domain?",
+          "What are the name servers for this domain?",
+          "When was this domain registered?",
+          "How can I check available funds?",
+          "How can I update the name servers for a domain?",
+          "Where can I find the API documentation?",
+          "Where can I find API for action name?",
+          "How can I get a transaction report for a selected month?",
+          "Which domains are getting expired?",
+          "Which domains are getting deleted on a selected date/month?",
+          "Which domains were registered on this domain?",
+          "Which domain was registered on a selected date/month?",
+          "How can I contact support?",
+          "What types of SSL are available?",
+          "Where can I sign up?",
+          "How can I download the WHMCS module?",
+          "How do I export List Name?",
+          "How do I suspend/unsuspend a domain?",
+          "How can I move a domain?",
+          "How can I add a child nameserver?",
+          "How do I pull a domain?",
+          "What types of reports can I get?"
+      ];
+  
+      // If user query matches predefined questions, send it directly to /api/domain-queries
+      if (predefinedQueries.includes(queryText)) {
+          try {
+              console.log('Sending predefined query to backend:', queryText);
+              const response = await fetch('/api/domain-queries', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ query: queryText }),
+              });
+  
+              if (!response.ok) {
+                  throw new Error(`Failed to fetch data. Status: ${response.status}`);
+              }
+  
+              const data = await response.json();
+              console.log('Backend response:', data);
+  
+              if (data.success) {
+                  updateChatLog(`${data.answer}`, 'bot');
+                  queryInput.value = "";
+              } else {
+                  updateChatLog(`Error: ${data.message}`, 'bot');
+              }
+          } catch (error) {
+              console.error("Error with fetch request:", error);
+              updateChatLog("This chatbot can answer domain-related questions only", 'bot');
+          }
+          return;
+      }
 
     // Handle domain information request
     const domainInfoMatch = queryText.match(/give me domain information for (.+)/i);
@@ -1607,6 +1706,13 @@ if (theftProtectionMatch) {
     }
 
     return;
+}
+
+// Handle domain suspension request if the toggle was changed
+if (domainToSuspend !== null) {
+  await submitDomainSuspendRequest(domainToSuspend, isDomainSuspend);
+  domainToSuspend = null; // Reset after submission
+  return;
 }
 
 const domainLockMatch = queryText.match(/(lock|unlock) (.+)/i);
