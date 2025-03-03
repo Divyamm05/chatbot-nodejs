@@ -1,3 +1,149 @@
+function requestOTP() {
+    const email = document.getElementById("user-email").value.trim();
+
+    if (!email) {
+        updateChatLog('Please enter a valid email address.', 'bot');
+        return;
+    }
+
+    fetch('/api/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("email-section").style.display = "none";
+
+            if (data.otpRequired) {
+                // Show OTP input section if OTP is required
+                document.getElementById("otp-section").style.display = "block";
+                updateChatLog('OTP has been sent to your email address. Please check your inbox.', 'bot');
+            } else {
+                // Directly handle authenticated state (No message shown)
+                handleAuthenticatedUser();
+            }
+        } else {
+            updateChatLog(data.message, 'bot');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        updateChatLog('An error occurred while requesting OTP. Please try again.', 'bot');
+    });
+}
+
+function handleAuthenticatedUser() {
+    // Show the User Query Section without any message
+    document.getElementById('otp-section').style.display = 'none';
+    document.getElementById('login-chat-section').style.display = 'flex';
+    document.getElementById('sidebar-content').style.display = 'none';
+    document.getElementById('faq-post-login').style.display = 'flex';
+    
+    isSignedIn = true;
+    localStorage.setItem('isSignedIn', 'true');
+    localStorage.setItem('customerId', '223855'); // Fixed ID for bypassed test users
+    updateAuthUI();
+}
+
+  
+  // Resend OTP 
+  async function resendOTP() {
+    const email = document.getElementById('user-email').value.trim();
+    if (!email) {
+      updateChatLog('Please enter a valid email to resend the OTP.', 'bot');
+      return;
+    }
+  
+    updateChatLog(`Resending OTP to ${email}...`, 'bot');
+  
+    try {
+      const response = await fetch('/api/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+  
+      if (data.success) {
+        updateChatLog('OTP has been resent successfully. Please check your email.', 'bot');
+      } else {
+        updateChatLog(`Failed to resend OTP: ${data.message || 'Unknown error'}`, 'bot');
+      }
+    } catch (error) {
+      console.error('Error during OTP resend:', error);
+      updateChatLog('An error occurred while resending OTP. Please try again later.', 'bot');
+    }
+  }
+  
+
+  // Verify OTP and proceed to domain section
+  let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; // Ensure it's stored persistently
+
+// OTP Verification Function
+async function verifyOTP() {
+const email = document.getElementById('user-email').value.trim();
+const otpInput = document.getElementById('otp-code');
+const otp = otpInput ? otpInput.value.trim() : '';
+
+if (!email) {
+    updateChatLog('Please enter your email to proceed.', 'bot');
+    return;
+}
+
+// Prepare request payload
+const bodyData = { email, otp };
+
+if (email !== 'aichatbot@iwantdemo.com' && !otp) {
+    updateChatLog('Please enter the OTP to proceed.', 'bot');
+    return;
+}
+
+try {
+    const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyData),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        isSignedIn = true;
+        localStorage.setItem('isSignedIn', 'true');
+
+        // Use customerId (resellerId) from the response
+        if (data.customerId) {
+            localStorage.setItem('customerId', data.customerId);
+            console.log("💾 Customer ID stored:", data.customerId);
+        } else {
+            console.error("⚠️ No customer ID received in response");
+            localStorage.removeItem('customerId');
+        }
+
+        clearchatlog();
+
+        updateChatLog(data.message || 'OTP verified successfully!', 'bot');
+
+        document.getElementById('otp-section').style.display = 'none';
+        document.getElementById('login-chat-section').style.display = 'flex';
+        document.getElementById('sidebar-content').style.display = 'none';
+        document.getElementById('faq-post-login').style.display = 'flex';
+
+        updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
+
+        updateAuthUI();
+    } else {
+        console.error("❌ OTP Verification Failed:", data.message);
+        updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
+    }
+} catch (error) {
+    console.error("❗ Error during OTP verification:", error);
+    updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
+}
+}
+
 function toggleAssistantLogo(show) {
   const assistantLogo = document.getElementById("assistant-logo");
   
@@ -105,6 +251,7 @@ function closeChatbox() {
         emailSection.style.display = 'none';
     }
 }
+const chatInput = document.getElementById("domain-query-text");
 
 function updateChatLog(message, sender) {
   console.log("updateChatLog called:", message);
@@ -345,12 +492,14 @@ function fillChatInputWithPlaceholder(template) {
 
   // Show toggle container if theft protection is requested
   if (template.includes('Enable/disable theft protection')) {
-    toggleContainer.style.display = 'flex'; // Show the toggle switch
+    toggleContainer.style.display = 'flex'; // Show toggle switch
     submitButton.style.width = '15%';
     submitButton.style.backgroundColor = '#f1c40f';
-  } else {
-    toggleContainer.style.display = 'none';
-  }
+} else {
+    toggleContainer.style.display = 'none'; // Correct way to hide
+}
+console.log("Toggle Container:", toggleContainer);
+console.log("Current Display Style:", toggleContainer.style.display);
 
   const domainMatch = template.match(/lock\/unlock (\S+)/i);
     if (domainMatch) {
@@ -516,38 +665,60 @@ async function fetchDomainLockStatus(domain) {
 }
 const theftProtectionToggle = document.getElementById("theft-protection-toggle");
 
-async function handleTheftProtectionToggle() {
-  const domain = chatInput.value.trim();
-  if (!domain) return;
+let domainForTheftProtection = null;
+let isTheftProtectionEnabled = false;
+function handleTheftProtectionToggle(toggleElement) {
+    let domain = document.getElementById('domain-query-text').value.trim();
+    isTheftProtectionEnabled = toggleElement.checked;
 
-  try {
-      const isChecked = theftProtectionToggle.checked; // Capture correct state
-      const enableValue = isChecked ? "true" : "false"; // Convert boolean to string
+    if (!domain) {
+        updateChatLog('Please enter a valid domain before managing theft protection.', 'bot');
+        toggleElement.checked = !isTheftProtectionEnabled;
+        return;
+    }
 
-      console.log(`🛡️ Sending API Request - Domain: ${domain}, Enable: ${enableValue} (Type: ${typeof enableValue})`);
+    // Sanitize input to avoid "Enable theft protection for domain.com" format issues
+    const match = domain.match(/(?:enable|disable) theft protection for (\S+)/i);
+    if (match) domain = match[1];
 
-      const response = await fetch(`/api/manage-theft-protection?domain=${domain}&enable=${encodeURIComponent(enableValue)}&t=${Date.now()}`, {
-          method: 'GET',
-      });
+    console.log('🔒 Theft Protection Toggle:', { domain, isTheftProtectionEnabled });
 
-      if (!response.ok) {
-          throw new Error(`Failed to update theft protection. Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("🔍 API Response:", data);
-
-      if (!data.success) {
-          alert("Failed to update theft protection status.");
-          theftProtectionToggle.checked = !isChecked; // Revert toggle on failure
-      }
-  } catch (error) {
-      console.error("❌ Error updating theft protection:", error);
-      theftProtectionToggle.checked = !theftProtectionToggle.checked;
-  }
+    // Store domain and toggle state for later submission
+    domainForTheftProtection = domain;
 }
 
-theftProtectionToggle.addEventListener("change", handleTheftProtectionToggle);
+async function submitTheftProtectionRequest(domain, isEnabled) {
+    try {
+        console.log(`🔒 Submitting theft protection request for ${domain}. Enable: ${isEnabled}`);
+
+        updateChatLog(`Requesting to ${isEnabled ? 'enable' : 'disable'} theft protection for ${domain}...`, 'bot');
+
+        const response = await fetch(`/api/manage-theft-protection?domain=${encodeURIComponent(domain)}&enable=${isEnabled}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) throw new Error(`Failed to update theft protection. Status: ${response.status}`);
+
+        const result = await response.json();
+        console.log('📨 Theft Protection API Response:', result);
+
+        // Check for specific status codes
+        if (result.responseMsg?.statusCode === 2306) {
+            updateChatLog(`ℹ️ Theft protection is already enabled for ${domain}.`, 'bot');
+            return;
+        }
+        if (result.responseMsg?.statusCode === 2305) {
+            updateChatLog(`ℹ️ Theft protection is already disabled for ${domain}.`, 'bot');
+            return;
+        }
+
+        updateChatLog(result.message || '✅ Operation completed.', 'bot');
+
+    } catch (error) {
+        console.error('❌ Error managing theft protection:', error);
+        updateChatLog('⚠️ An error occurred while updating theft protection. Please try again.', 'bot');
+    }
+}
 
 chatInput.addEventListener("input", () => {
   const domain = chatInput.value.trim();
@@ -619,6 +790,13 @@ function processUserQuestion() {
       }
   }
 }
+
+document.getElementById("user-question").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Prevent form submission (if inside a form)
+        processUserQuestion();  // Trigger the button click function
+    }
+});
 
 document.getElementById("domain-name").addEventListener("input", function () {
   const domain = this.value.toLowerCase();
@@ -1019,151 +1197,6 @@ function showAuthButtons() {
 }
 
     let userEmail = '';
-    function requestOTP() {
-      const email = document.getElementById("user-email").value.trim();
-  
-      if (!email) {
-          updateChatLog('Please enter a valid email address.', 'bot');
-          return;
-      }
-  
-      fetch('/api/check-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-      })
-      .then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              document.getElementById("email-section").style.display = "none";
-  
-              if (data.otpRequired) {
-                  // Show OTP input section if OTP is required
-                  document.getElementById("otp-section").style.display = "block";
-                  updateChatLog('OTP has been sent to your email address. Please check your inbox.', 'bot');
-              } else {
-                  // Directly handle authenticated state (No message shown)
-                  handleAuthenticatedUser();
-              }
-          } else {
-              updateChatLog(data.message, 'bot');
-          }
-      })
-      .catch(error => {
-          console.error('Error:', error);
-          updateChatLog('An error occurred while requesting OTP. Please try again.', 'bot');
-      });
-  }
-  
-  function handleAuthenticatedUser() {
-      // Show the User Query Section without any message
-      document.getElementById('otp-section').style.display = 'none';
-      document.getElementById('login-chat-section').style.display = 'flex';
-      document.getElementById('sidebar-content').style.display = 'none';
-      document.getElementById('faq-post-login').style.display = 'flex';
-      
-      isSignedIn = true;
-      localStorage.setItem('isSignedIn', 'true');
-      localStorage.setItem('customerId', '223855'); // Fixed ID for bypassed test users
-      updateAuthUI();
-  }
-  
-    
-    // Resend OTP 
-    async function resendOTP() {
-      const email = document.getElementById('user-email').value.trim();
-      if (!email) {
-        updateChatLog('Please enter a valid email to resend the OTP.', 'bot');
-        return;
-      }
-    
-      updateChatLog(`Resending OTP to ${email}...`, 'bot');
-    
-      try {
-        const response = await fetch('/api/resend-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        const data = await response.json();
-    
-        if (data.success) {
-          updateChatLog('OTP has been resent successfully. Please check your email.', 'bot');
-        } else {
-          updateChatLog(`Failed to resend OTP: ${data.message || 'Unknown error'}`, 'bot');
-        }
-      } catch (error) {
-        console.error('Error during OTP resend:', error);
-        updateChatLog('An error occurred while resending OTP. Please try again later.', 'bot');
-      }
-    }
-    
-
-    // Verify OTP and proceed to domain section
-    let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; // Ensure it's stored persistently
-
-// OTP Verification Function
-async function verifyOTP() {
-  const email = document.getElementById('user-email').value.trim();
-  const otpInput = document.getElementById('otp-code');
-  const otp = otpInput ? otpInput.value.trim() : '';
-
-  if (!email) {
-      updateChatLog('Please enter your email to proceed.', 'bot');
-      return;
-  }
-
-  // Prepare request payload
-  const bodyData = { email, otp };
-
-  if (email !== 'aichatbot@iwantdemo.com' && !otp) {
-      updateChatLog('Please enter the OTP to proceed.', 'bot');
-      return;
-  }
-
-  try {
-      const response = await fetch('/api/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-          isSignedIn = true;
-          localStorage.setItem('isSignedIn', 'true');
-
-          // Use customerId (resellerId) from the response
-          if (data.customerId) {
-              localStorage.setItem('customerId', data.customerId);
-              console.log("💾 Customer ID stored:", data.customerId);
-          } else {
-              console.error("⚠️ No customer ID received in response");
-              localStorage.removeItem('customerId');
-          }
-
-          clearchatlog();
-
-          updateChatLog(data.message || 'OTP verified successfully!', 'bot');
-
-          document.getElementById('otp-section').style.display = 'none';
-          document.getElementById('login-chat-section').style.display = 'flex';
-          document.getElementById('sidebar-content').style.display = 'none';
-          document.getElementById('faq-post-login').style.display = 'flex';
-
-          updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
-
-          updateAuthUI();
-      } else {
-          console.error("❌ OTP Verification Failed:", data.message);
-          updateChatLog(data.message || 'OTP verification failed. Please try again.', 'bot');
-      }
-  } catch (error) {
-      console.error("❗ Error during OTP verification:", error);
-      updateChatLog('An error occurred during OTP verification. Please try again later.', 'bot');
-  }
-}
 
 // Function to clear the chat log
 function clearchatlog() {
@@ -1210,8 +1243,86 @@ function clearchatlog() {
         infoBox.remove();
       }
     }
-    
 
+// Global variables
+let nameServerCount = 1;
+const maxNameServers = 13;
+
+// Function to dynamically add name servers (up to 13)
+function addNameServer() {
+    if (nameServerCount >= maxNameServers) {
+        alert("You can add up to 13 name servers only.");
+        return;
+    }
+
+    nameServerCount++;
+    const container = document.getElementById("nameserver-container");
+
+    const inputDiv = document.createElement("div");
+    inputDiv.className = "ns-input"; 
+    inputDiv.innerHTML = `<input type="text" id="nameserver${nameServerCount}" placeholder="Enter Name Server ${nameServerCount}" required>`;
+
+    container.appendChild(inputDiv);
+}
+
+// Function to update name servers
+async function updateNameServers() {
+    const domainName = document.getElementById("domain-name-input").value;
+    if (!domainName) {
+        document.getElementById("update-status").innerHTML = "❌ Please enter a domain name.";
+        return;
+    }
+
+    let nameServers = [];
+    for (let i = 1; i <= nameServerCount; i++) {
+        const ns = document.getElementById(`nameserver${i}`).value;
+        if (ns) nameServers.push(ns);
+    }
+
+    if (nameServers.length === 0) {
+        document.getElementById("update-status").innerHTML = "❌ Please enter at least one name server.";
+        return;
+    }
+
+    const domainNameId = await getDomainId(domainName);
+    if (!domainNameId) {
+        document.getElementById("update-status").innerHTML = "❌ Domain not found.";
+        return;
+    }
+
+    const apiKey = "<Your_API_Key>"; 
+    let apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/UpdateNameServer?APIKey=${apiKey}&domainNameId=${domainNameId}&websiteName=${domainName}`;
+
+    nameServers.forEach((ns, index) => {
+        apiUrl += `&nameServer${index + 1}=${ns}`;
+    });
+
+    try {
+        const response = await fetch(apiUrl, { method: "GET" });
+        const data = await response.json();
+
+        document.getElementById("update-status").innerHTML = data.statusCode === 200 
+            ? "✅ Name servers updated successfully!" 
+            : "❌ Failed: " + data.message;
+
+    } catch (error) {
+        document.getElementById("update-status").innerHTML = "❌ Error updating name servers.";
+        console.error(error);
+    }
+}
+
+// Dummy function to simulate fetching domain ID
+async function getDomainId(domainName) {
+    return 1; // Replace with actual API call if needed
+}
+
+// Function to handle "Back" button
+function goBackToQuerySection() {
+    document.getElementById("name-server-update-section").style.display = "none";
+    alert("Going back to the previous section...");
+}
+
+  
     // Show domain section for domain input
     function showDomainSection() {
       document.getElementById('domain-options').style.display = 'none'; 
@@ -1650,6 +1761,8 @@ async function submitDomainQuery() {
             updateChatLog("Unable to fetch domain details at this time.", 'bot');
         }
 
+        document.getElementById("domain-query-text").value = "";
+
         return;
     }
 
@@ -1679,34 +1792,13 @@ if (balanceMatch) {
     return;
 }
 
-    const theftProtectionMatch = queryText.match(/(enable|disable) theft protection for (\S+)/i);
-if (theftProtectionMatch) {
-    const action = theftProtectionMatch[1].toLowerCase(); // "enable" or "disable"
-    const domain = theftProtectionMatch[2];
-    const enableTheftProtection = action === 'enable'; // Correctly sets enable flag
-
-    try {
-        const actionText = enableTheftProtection ? 'Enabling' : 'Disabling';
-        updateChatLog(`${actionText} theft protection for ${domain}...`, 'bot');
-      
-        const response = await fetch(`/api/manage-theft-protection?domain=${domain}&enable=${enableTheftProtection}`, {
-            method: 'GET',
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to update theft protection. Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        updateChatLog(result.message, 'bot');
-
-    } catch (error) {
-        console.error('Error managing theft protection:', error);
-        updateChatLog('Failed to update theft protection', 'bot');
-    }
-
+    // Handle theft protection request only if stored domain exists
+if (domainForTheftProtection !== null) {
+    await submitTheftProtectionRequest(domainForTheftProtection, isTheftProtectionEnabled);
+    domainForTheftProtection = null; // Reset after submission
     return;
 }
+
 
 // Handle domain suspension request if the toggle was changed
 if (domainToSuspend !== null) {
@@ -1797,6 +1889,32 @@ if (domainLockMatch) {
       }
     }
   });
+
+document.addEventListener("keydown", function (event) {
+    const authButtonsContainer = document.getElementById("auth-buttons-container");
+
+    // Check if auth-buttons-container is visible
+    if (authButtonsContainer.style.display !== "none") {
+        const buttons = authButtonsContainer.querySelectorAll("button");
+
+        // Find the currently focused button
+        let currentIndex = Array.from(buttons).findIndex(btn => document.activeElement === btn);
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault(); // Prevent scrolling
+            let nextIndex = (currentIndex + 1) % buttons.length;
+            buttons[nextIndex].focus();
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault(); // Prevent scrolling
+            let prevIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+            buttons[prevIndex].focus();
+        } else if (event.key === "Enter" && currentIndex !== -1) {
+            event.preventDefault(); // Prevent default form behavior
+            buttons[currentIndex].click(); // Trigger button click
+        }
+    }
+});
+
 
     function goBackToDomainSection() {
       const inputFieldContainer = document.querySelector('.query-input-container');

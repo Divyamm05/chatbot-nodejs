@@ -52,6 +52,7 @@
             <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock mydomain.com')">How do I lock/unlock <em>mydomain.com</em></li>
             <li onclick="fillChatInput('What is my current balance in my account?')">What is my current balance in my account?</li>
             <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com')">Suspend/Unsuspend <em>mydomain.com</em></li>
+            <li onclick="fillChatInput('How can I update the name servers for a domain?')">How can I update the name servers for a domain?</li>
             <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
             <li onclick="fillChatInput('Give me a list of high-value domain TLDs?')">Give me a list of high-value domain TLDs?</li>
             <li onclick="fillChatInput('Can you suggest TLDs for a selected category?')">Can you suggest TLDs for a selected category?</li>
@@ -61,7 +62,6 @@
             <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
             <li onclick="fillChatInput('When was this domain registered?')">When was this domain registered?</li>
             <li onclick="fillChatInput('How can I check available funds?')">How can I check available funds?</li>
-            <li onclick="fillChatInput('How can I update the name servers for a domain?')">How can I update the name servers for a domain?</li>
             <li onclick="fillChatInput('Where can I find the API documentation?')">Where can I find the API documentation?</li>
             <li onclick="fillChatInput('Where can I find API for action name?')">Where can I find API for 'action name'?</li>
             <li onclick="fillChatInput('How can I get a transaction report for a selected month?')">How can I get a transaction report for a selected month?</li>
@@ -200,17 +200,29 @@
       </div>
     </div>
 
-    <!-- Domain Query Section -->
-    <div class="chat-input" style="display:none" id="domain-query-section">
-      <div id="domain-query-wrapper">
-        <input type="text" id="domain-query-text" placeholder="Enter domain-related query...">
-        <button onclick="submitDomainQuery()">Submit</button>
+<!-- Name Server Update Section -->
+<div id="name-server-update-section" class="chat-input" style="display: none;">
+    
+  <div class="input-group">
+      <input type="text" id="domain-name-input" placeholder="Enter Domain Name" required>
+  </div>
+
+  <!-- Name Server Inputs Container -->
+  <div id="nameserver-container" class="ns-wrapper">
+      <div class="ns-input">
+          <input type="text" id="nameserver1" placeholder="Enter Name Server 1" required>
       </div>
-      <div id="loading-container" style="display:none;">
-        <div class="loading-spinner"></div>
-      </div>   
-      <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
-    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="button-group">
+      <button onclick="addNameServer()">➕ Add Name Server</button>
+      <button onclick="updateNameServers()">Update Name Servers</button>
+      <button onclick="goBackToQuerySection()">Back</button>
+  </div>
+
+  <div id="update-status"></div>
+</div>
 
     <!-- Domain Options Section after OTP verification -->
     <div id="domain-options" style="display:none;">
@@ -386,6 +398,6 @@
 
 </div>
   <!-- JavaScript -->
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>

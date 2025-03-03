@@ -747,7 +747,7 @@ app.get('/api/domain-info', async (req, res) => {
           console.warn('[DOMAIN-INFO] ⚠️ Domain not found in records:', domainName);
           return res.json({
               success: false,
-              message: `Domain ${domainName} is not registered with us`,
+              message: `Domain ${domainName} is not registered with us.`,
           });
       }
   } catch (error) {
@@ -783,7 +783,7 @@ async function getDomainDetails(websiteName) {
 }
 
 async function manageTheftProtection(domainName, enable) {
-  console.log(`🔐 Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
+  console.log(`🔐 [${new Date().toISOString()}] Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
 
   const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails || !domainDetails.domainNameId) {
@@ -792,6 +792,8 @@ async function manageTheftProtection(domainName, enable) {
 
   const { domainNameId } = domainDetails;
   const apiUrl = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isTheftProtection=${enable}`;
+  
+  console.log(`🌍 Sending API Request: ${apiUrl}`);
 
   try {
       const response = await axios.get(apiUrl);
@@ -800,60 +802,38 @@ async function manageTheftProtection(domainName, enable) {
       if (response.data?.responseMsg?.statusCode === 200) {
           return { success: true, message: `Theft protection ${enable ? 'enabled' : 'disabled'} for ${domainName}.` };
       }
+      if (response.data?.responseMsg?.statusCode === 2306) {
+        return { success: false, message: `Theft protection is already enabled for ${domainName}.` };
+    }
+    if (response.data?.responseMsg?.statusCode === 2305) {
+        return { success: false, message: `Theft protection is already disabled for ${domainName}.` };
+    }    
 
       return { success: false, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
-
   } catch (error) {
       console.error('❌ Error managing theft protection:', error);
       return { success: false, message: 'Internal server error while managing theft protection.' };
   }
 }
 
-// 🚀 API Endpoint
 // 🚀 API Endpoint to Manage Theft Protection
 app.get('/api/manage-theft-protection', async (req, res) => {
-  console.log(`📥 RAW Query Params:`, req.query);
+  console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
   let { domain, enable } = req.query;
-  console.log(`📥 API request received. Domain: ${domain}, Enable: ${enable} (Type: ${typeof enable})`);
-
-  if (!domain || (enable !== 'true' && enable !== 'false')) {
-      return res.status(400).json({ success: false, message: 'Both domain and enable (true/false) parameters are required.' });
+  
+  if (!domain || enable === undefined) {
+      return res.status(400).json({ success: false, message: "Missing required parameters: domain and enable." });
   }
 
+  const isTheftProtection = enable === 'true'; // Converts to boolean
+  console.log(`🔄 Parsed isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection})`);
+
   try {
-      const domainDetails = await getDomainDetails(domain);
-      if (!domainDetails || !domainDetails.domainNameId) {
-          console.error(`❌ Domain ${domain} not found in Firestore.`);
-          return res.status(404).json({ success: false, message: `Domain ${domain} not found.` });
-      }
-
-      const { domainNameId } = domainDetails;
-      console.log(`🆔 Found domainNameId: ${domainNameId}`);
-
-      // Fix Boolean Conversion
-      const isTheftProtection = enable === 'true'; // Correct parsing
-      console.log(`🔄 Converted isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection})`);
-
-      // Send API Request
-      const apiUrl = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&isTheftProtection=${isTheftProtection}`;
-      console.log(`🌍 Sending API Request: ${apiUrl}`);
-
-      const response = await axios.get(apiUrl);
-      console.log('📨 API Response:', response.data);
-
-      const { statusCode, message } = response.data?.responseMsg || {};
-      if (statusCode === 200) {
-          return res.json({
-              success: true,
-              message: `Theft protection has been ${isTheftProtection ? 'enabled' : 'disabled'} for ${domain}.`,
-          });
-      }
-
-      return res.status(400).json({ success: false, message: message || 'Failed to update theft protection.' });
-
+      const result = await manageTheftProtection(domain, isTheftProtection);
+      return res.json(result);
   } catch (error) {
-      console.error('❌ Error updating theft protection:', error);
+      console.error('❌ API error:', error);
       return res.status(500).json({ success: false, message: 'Internal server error while updating theft protection.' });
   }
 });
@@ -1285,21 +1265,6 @@ app.post('/api/domain-queries', async (req, res) => {
     });
   }
 
-  // Step 2: Check WHOIS-related Queries if No Predefined Answer
-  if (domainName) {
-    try {
-      const whoisData = await whois(domainName);
-      if (lowerQuery.includes('name servers')) {
-        return res.json({ success: true, answer: `Name servers for ${domainName}: ${whoisData.nameServers || 'Not available'}` });
-      }
-      if (lowerQuery.includes('registration date')) {
-        return res.json({ success: true, answer: `Domain ${domainName} was registered on: ${whoisData.creationDate || 'Not available'}` });
-      }
-    } catch (error) {
-      console.error('WHOIS lookup failed:', error);
-    }
-  }
-
   // Check for Domain Information Query
   // Check for Domain Information
   if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain'))) {
@@ -1341,23 +1306,14 @@ app.post('/api/domain-queries', async (req, res) => {
 }
 
 
-// Check for Theft Protection Management in Chatbot Queries
-if (domainName && (query.toLowerCase().includes('enable theft protection') || query.toLowerCase().includes('disable theft protection'))) {
-  console.log('[DOMAIN-QUERIES] 🔐 Theft protection management requested for:', domainName);
+if (domainName && (lowerQuery.includes('enable theft protection') || lowerQuery.includes('disable theft protection'))) {
+  console.log(`🔐 [${new Date().toISOString()}] Theft protection request detected for: ${domainName}`);
 
-  const enable = query.toLowerCase().includes('enable') || query.toLowerCase().includes('turn on') || query.toLowerCase().includes('activate');
-  const disable = query.toLowerCase().includes('disable') || query.toLowerCase().includes('turn off') || query.toLowerCase().includes('deactivate');
-
-  if (!enable && !disable) {
-      return res.json({
-          success: false,
-          answer: 'Please specify whether you want to enable or disable theft protection.',
-      });
-  }
-
+  const enable = lowerQuery.includes('enable');
   const result = await manageTheftProtection(domainName, enable);
   return res.json(result);
 }
+
 
 // Check for Domain Lock/Unlock in Chatbot Queries
 if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().includes('unlock '))) {
@@ -1435,6 +1391,20 @@ if (domainName && (lowerQuery.includes('suspend ') || lowerQuery.includes('unsus
   const isSuspend = lowerQuery.includes('suspend');
   const result = await manageDomainSuspension(domainName, isSuspend);
   return res.json(result);
+}
+
+if (domainName) {
+  try {
+    const whoisData = await whois(domainName);
+    if (lowerQuery.includes('name servers')) {
+      return res.json({ success: true, answer: `Name servers for ${domainName}: ${whoisData.nameServers || 'Not available'}` });
+    }
+    if (lowerQuery.includes('registration date')) {
+      return res.json({ success: true, answer: `Domain ${domainName} was registered on: ${whoisData.creationDate || 'Not available'}` });
+    }
+  } catch (error) {
+    console.error('WHOIS lookup failed:', error);
+  }
 }
 
   // Step 3: Check if the query is domain-related using Fuse.js

@@ -607,7 +607,7 @@ body {
 #email-section button {
   padding: 12px 18px;
   background-color: #f1c40f;
-  color: #ffffff;
+  color: #2c3e50;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -1146,6 +1146,24 @@ body {
   background-color: #16a085;
 }
 
+        /* Basic Styling */
+        .ns-wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+      }
+      .ns-input {
+          flex: 1 1 calc(20% - 10px); /* 5 inputs per row */
+          min-width: 180px;
+      }
+      .input-group, .ns-input input {
+          width: 100%;
+          padding: 5px;
+      }
+      #update-status {
+          margin-top: 10px;
+          font-weight: bold;
+      }
 /* Response Message */
 #response-message {
   margin-top: 20px;
