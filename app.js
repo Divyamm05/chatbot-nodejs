@@ -840,66 +840,80 @@ app.get('/api/manage-theft-protection', async (req, res) => {
 
 // Backend: Manage Domain Lock/Unlock
 async function manageDomainLock(domainName, lock) {
-  console.log(`🔄 Updating lock status for ${domainName} to ${lock ? 'locked' : 'unlocked'}`);
-
   try {
-      // 🔹 Step 1: Get domainNameId
-      const domainInfoResponse = await axios.get(
-          `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`,
-          {
-              params: {
-                  APIKey: process.env.CONNECT_RESELLER_API_KEY,
-                  websiteName: domainName,
-              },
-          }
-      );
+      console.log('[LOCK-DOMAIN] 🔍 Checking for domain:', domainName);
 
-      console.log('🌐 Domain Info Response:', domainInfoResponse.data);
+      const domainRef = admin.firestore().collection('DomainName');
+      const domainSnapshot = await domainRef
+          .where('websiteName', '==', domainName)
+          .get();
 
-      const domainNameId = domainInfoResponse.data?.responseData?.domainNameId;
-      if (!domainNameId) {
-          console.error('❌ domainNameId not found for:', domainName);
-          return { success: false, message: 'Domain ID not found. Cannot update lock status.' };
-      }
-
-      // 🔹 Construct the actual request URL (GET request)
-      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
-
-      // ✅ Log the full URL
-      console.log(`🌍 Sending API Request: ${apiUrl}`);
-
-      // 🔹 Step 2: Make the API request (GET method)
-      const response = await axios.get(apiUrl, {
-          headers: { "Content-Type": "application/json" }
-      });
-
-      console.log('📨 API Response:', response.data);
-
-      const { statusCode, message } = response.data?.responseMsg || {};
-      if (statusCode === 200) {
+      if (domainSnapshot.empty) {
+          console.warn('[LOCK-DOMAIN] ⚠️ No documents found for domain:', domainName);
           return {
-              success: true,
-              message: `Domain has been ${lock ? 'locked' : 'unlocked'} for ${domainName}.`,
+              success: false,
+              message: `domainNameId not found for the domain ${domainName}.`,
           };
       }
 
-      return { success: false, message: message || 'Failed to update domain lock status.' };
+      console.log('[LOCK-DOMAIN] 📝 Found documents:');
+      domainSnapshot.forEach(doc => {
+          console.log('Document ID:', doc.id, 'Data:', doc.data());
+      });
 
-  } catch (error) {
-      if (error.response) {
-          console.error(`❌ API Error: ${error.response.status} -`, error.response.data);
-      } else {
-          console.error('❌ Unexpected Error:', error.message);
+      const domainData = domainSnapshot.docs[0].data();
+      const domainNameId = domainData?.domainNameId;
+
+      if (!domainNameId) {
+          console.warn('[LOCK-DOMAIN] ⚠️ domainNameId is missing or invalid for domain:', domainName);
+          return {
+              success: false,
+              message: `domainNameId not found or invalid for the domain ${domainName}.`,
+          };
       }
-      return { success: false, message: 'Internal server error while updating domain lock status.' };
+
+      console.log('[LOCK-DOMAIN] ✅ Fetched domainNameId:', domainNameId);
+
+      // API Call to lock/unlock domain
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
+      
+      // 📢 Log the API URL request
+      console.log('[LOCK-DOMAIN] 🌐 API Request URL:', apiUrl);
+
+      const response = await axios.get(apiUrl);
+      console.log('[LOCK-DOMAIN] 🌐 API Response:', response.data);
+
+      if (response.data.responseMsg?.statusCode === 200) {
+          const actionText = lock ? 'locked' : 'unlocked';
+          return {
+              success: true,
+              answer: `The domain ${domainName} has been successfully ${actionText}.`,
+          };
+      } else {
+          return {
+              success: false,
+              message: response.data.responseMsg?.message || `Failed to ${lock ? 'lock' : 'unlock'} the domain ${domainName}.`,
+          };
+      }
+  } catch (error) {
+      console.error('[LOCK-DOMAIN] ❌ Error managing domain lock:', error.message);
+      return {
+          success: false,
+          message: 'Failed to update domain lock status.',
+      };
   }
 }
 
-async function getDomainId(domain) {
-  const snapshot = await db.collection("DomainName").where("websiteName", "==", domain).get();
-  if (snapshot.empty) return null;
-  return snapshot.docs[0].data().domainNameId;
-}
+app.get('/api/lock-domain', async (req, res) => {
+  const { domainName, lock } = req.query;
+  console.log('[BACKEND] Received parameters:', { domainName, lock });
+
+  const isLock = lock === 'true';
+  console.log('[BACKEND] Computed isLock:', isLock);
+
+  const result = await manageDomainLock(domainName, isLock);
+  return res.json(result);
+});
 
 app.get('/api/balance', async (req, res) => {
   if (!req.session || !req.session.email) {
@@ -1030,6 +1044,84 @@ app.get('/api/suspend-domain', async (req, res) => {
   return res.json(result);
 });
 
+//----------------------------------------------------- Privacy Protection Management --------------------------------------------------------//
+
+async function managePrivacyProtection(domainName, enable) {
+  try {
+      console.log('[PRIVACY-PROTECTION] 🔍 Checking for domain:', domainName);
+
+      const domainRef = admin.firestore().collection('DomainName');
+      const domainSnapshot = await domainRef
+          .where('websiteName', '==', domainName)
+          .get();
+
+      if (domainSnapshot.empty) {
+          console.warn('[PRIVACY-PROTECTION] ⚠️ No documents found for domain:', domainName);
+          return {
+              success: false,
+              message: `domainNameId not found for the domain ${domainName}.`,
+          };
+      }
+
+      console.log('[PRIVACY-PROTECTION] 📝 Found documents:');
+      domainSnapshot.forEach(doc => {
+          console.log('Document ID:', doc.id, 'Data:', doc.data());
+      });
+
+      const domainData = domainSnapshot.docs[0].data();
+      const domainNameId = domainData?.domainNameId;
+
+      if (!domainNameId) {
+          console.warn('[PRIVACY-PROTECTION] ⚠️ domainNameId is missing or invalid for domain:', domainName);
+          return {
+              success: false,
+              message: `domainNameId not found or invalid for the domain ${domainName}.`,
+          };
+      }
+
+      console.log('[PRIVACY-PROTECTION] ✅ Fetched domainNameId:', domainNameId);
+
+      // API Call to enable/disable privacy protection
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainPrivacyProtection?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&iswhoisprotected=${enable}`;
+      
+      // 📢 Log the API URL request
+      console.log('[PRIVACY-PROTECTION] 🌐 API Request URL:', apiUrl);
+
+      const response = await axios.get(apiUrl);
+      console.log('[PRIVACY-PROTECTION] 🌐 API Response:', response.data);
+
+      if (response.data.responseMsg?.statusCode === 200) {
+          const actionText = enable ? 'enabled' : 'disabled';
+          return {
+              success: true,
+              answer: `Privacy protection has been successfully ${actionText} for ${domainName}.`,
+          };
+      } else {
+          return {
+              success: false,
+              message: response.data.responseMsg?.message || `Failed to ${enable ? 'enable' : 'disable'} privacy protection for ${domainName}.`,
+          };
+      }
+  } catch (error) {
+      console.error('[PRIVACY-PROTECTION] ❌ Error managing privacy protection:', error.message);
+      return {
+          success: false,
+          message: 'Failed to update privacy protection status.',
+      };
+  }
+}
+
+// API Route to handle privacy protection requests
+app.get('/api/privacy-protection', async (req, res) => {
+  const { domainName, enable } = req.query;
+  console.log('[BACKEND] Received parameters:', { domainName, enable, type: typeof enable });
+
+  const isEnable = enable === 'true';
+  console.log('[BACKEND] Computed isEnable:', isEnable);
+
+  const result = await managePrivacyProtection(domainName, isEnable);
+  return res.json(result);
+});
 
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
@@ -1065,8 +1157,6 @@ const predefinedAnswers = {
   "Can you suggest TLDs for a selected category?": "Popular TLDs vary by category. For tech, use .tech or .ai. For businesses, use .biz or .company. For personal use, try .me or .name.",
 //
   "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions, and ask domain-related queries.",
-//
-  "How do I lock/unlock a domain?": "Go to your domain management panel, find the lock settings, and toggle between lock and unlock.",
 //
   "How can I view the auth code for a domain?": "You can find the auth code in your domain management panel under transfer settings.",
 //
@@ -1265,7 +1355,6 @@ app.post('/api/domain-queries', async (req, res) => {
     });
   }
 
-  // Check for Domain Information Query
   // Check for Domain Information
   if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain'))) {
     console.log('[DOMAIN-QUERIES] 📝 Domain information requested for:', domainName);
@@ -1314,6 +1403,13 @@ if (domainName && (lowerQuery.includes('enable theft protection') || lowerQuery.
   return res.json(result);
 }
 
+if (domainName && (lowerQuery.includes('enable privacy protection') || lowerQuery.includes('disable privacy protection'))) {
+  console.log(`🛡️ [${new Date().toISOString()}] Privacy protection request detected for: ${domainName}`);
+
+  const enable = lowerQuery.includes('enable');
+  const result = await managePrivacyProtection(domainName, enable);
+  return res.json(result);
+}
 
 // Check for Domain Lock/Unlock in Chatbot Queries
 if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().includes('unlock '))) {

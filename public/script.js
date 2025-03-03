@@ -1,3 +1,53 @@
+//---------------------------------------------------- Defining constants section ------------------------------------------------------//
+
+const chatLog = document.getElementById('chat-log');
+const authButtonsContainer = document.getElementById('auth-buttons-container');
+
+const observer = new MutationObserver(() => {
+const botMessages = chatLog.querySelectorAll('.bot-message');
+const lastBotMessage = botMessages[botMessages.length - 1]?.textContent;
+
+  // Check if the last bot message matches any of the predefined responses
+checkBotResponse(lastBotMessage);
+});
+
+window.onload = updateAuthUI;
+observer.observe(chatLog, { childList: true });
+const chatInput = document.getElementById("domain-query-text");
+const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
+const domainAvailabilitySection = document.getElementById('domain-availability-section');
+let userEmail = '';
+const loadingContainer = document.getElementById('loading-container');
+
+//------------------------------------------- Request OTP, Resend and Verification Section --------------------------------------------//
+
+// Show email verification section
+function taketosigninsection() {
+    const emailSection = document.getElementById('email-section');
+    const userinputSection = document.getElementById('user-input-section');
+    const chatLog = document.getElementById('chat-log'); 
+
+    // Toggle the visibility of the email section
+    if (emailSection.style.display === 'none' || emailSection.style.display === '') {
+        // Show the email section
+        emailSection.style.display = 'flex';
+        userinputSection.style.display = 'none';
+
+        // Clear the chat log
+        chatLog.innerHTML = ''; 
+        
+        // Add a new message asking for email ID
+        const emailMessage = document.createElement('div');
+        emailMessage.classList.add('message', 'bot-message');
+        emailMessage.textContent = 'Please enter your registered email id to continue. ';
+        chatLog.appendChild(emailMessage);
+    } else {
+        // Hide the email section
+        emailSection.style.display = 'none';
+    }
+}
+
+// Request OTP
 function requestOTP() {
     const email = document.getElementById("user-email").value.trim();
 
@@ -34,21 +84,7 @@ function requestOTP() {
     });
 }
 
-function handleAuthenticatedUser() {
-    // Show the User Query Section without any message
-    document.getElementById('otp-section').style.display = 'none';
-    document.getElementById('login-chat-section').style.display = 'flex';
-    document.getElementById('sidebar-content').style.display = 'none';
-    document.getElementById('faq-post-login').style.display = 'flex';
-    
-    isSignedIn = true;
-    localStorage.setItem('isSignedIn', 'true');
-    localStorage.setItem('customerId', '223855'); // Fixed ID for bypassed test users
-    updateAuthUI();
-}
-
-  
-  // Resend OTP 
+// Resend OTP 
   async function resendOTP() {
     const email = document.getElementById('user-email').value.trim();
     if (!email) {
@@ -77,11 +113,9 @@ function handleAuthenticatedUser() {
     }
   }
   
+let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; 
 
-  // Verify OTP and proceed to domain section
-  let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; // Ensure it's stored persistently
-
-// OTP Verification Function
+// Verify OTP
 async function verifyOTP() {
 const email = document.getElementById('user-email').value.trim();
 const otpInput = document.getElementById('otp-code');
@@ -144,6 +178,48 @@ try {
 }
 }
 
+// Function to verify OTP and auto-populate customerId
+async function verifyOtpAndSetCustomerId(otp) {
+    try {
+        const response = await fetch('/api/verify-otp', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp })
+        });
+  
+        const data = await response.json();
+        console.log(data); // Debug: check if the response has resellerId
+  
+        if (data.success) {
+            const customerIdInput = document.getElementById('customerId');
+            if (customerIdInput) {
+                customerIdInput.value = data.resellerId; // Set the value to resellerId
+                customerIdInput.readOnly = true; // Make the input read-only
+            }
+        } else {
+            console.error('OTP verification failed:', data.message);
+        }
+    } catch (error) {
+        console.error('Error fetching customer ID:', error);
+    }
+}
+
+//Show sections after successful verification
+function handleAuthenticatedUser() {
+    document.getElementById('otp-section').style.display = 'none';
+    document.getElementById('login-chat-section').style.display = 'flex';
+    document.getElementById('sidebar-content').style.display = 'none';
+    document.getElementById('faq-post-login').style.display = 'flex';
+    
+    isSignedIn = true;
+    localStorage.setItem('isSignedIn', 'true');
+    localStorage.setItem('customerId', '223855'); // Fixed ID for bypassed test users
+    updateAuthUI();
+}
+
+//---------------------------------------------- Show and hide Chatbot, Sidebar Section -----------------------------------------------//
+
+// Show chatbot
 function toggleAssistantLogo(show) {
   const assistantLogo = document.getElementById("assistant-logo");
   
@@ -154,10 +230,10 @@ function toggleAssistantLogo(show) {
   }
 }
 
+// Show/hide sidebar
 document.getElementById('toggle-sidebar').addEventListener('click', function () {
   document.getElementById('sidebar').classList.toggle('active');
 });
-
 
 // Function to toggle the chatbox visibility
 function toggleChatbox() {
@@ -184,8 +260,6 @@ function toggleChatbox() {
   }
 }
 
-
-
 // Function to close the chatbox
 function closeChatbox() {
   const chatbox = document.getElementById('chatbox');
@@ -198,60 +272,19 @@ function closeChatbox() {
   chatContainer.classList.remove('visible');
 
 }
-
-
-    window.addEventListener('load', () => {
+window.addEventListener('load', () => {
       const emailVerified = localStorage.getItem('emailVerified');
       if (emailVerified === 'true') {
         document.getElementById('resend-otp').style.display = 'block';
       }
-    });
+});
 
-    function updateChatLog(message, sender) {
-      console.log("updateChatLog called:", message);
-      const chatLog = document.querySelector('.chat-log');
-
-      const lastMessage = chatLog.lastElementChild?.textContent;
-      if (lastMessage === message) return;
-
-      const newMessage = document.createElement('div');
-      newMessage.className = sender === 'bot' ? 'bot-message message' : 'user-message message';
-
-      if (message === "Generating domain names...") {
-          newMessage.innerHTML = `<span>${message}</span> <div class="loading-spinner"></div>`;
-      } else {
-          newMessage.innerHTML = message.replace(/\n/g, "<br>");
-      }
-
-      chatLog.appendChild(newMessage);
-
-  }
-
-  function taketosigninsection() {
-    const emailSection = document.getElementById('email-section');
-    const userinputSection = document.getElementById('user-input-section');
-    const chatLog = document.getElementById('chat-log'); // Get the chat log element
-
-    // Toggle the visibility of the email section
-    if (emailSection.style.display === 'none' || emailSection.style.display === '') {
-        // Show the email section
-        emailSection.style.display = 'flex';
-        userinputSection.style.display = 'none';
-
-        // Clear the chat log
-        chatLog.innerHTML = ''; // This will remove all messages in the chat log
-        
-        // Add a new message asking for email ID
-        const emailMessage = document.createElement('div');
-        emailMessage.classList.add('message', 'bot-message');
-        emailMessage.textContent = 'Please enter your registered email id to continue. ';
-        chatLog.appendChild(emailMessage);
-    } else {
-        // Hide the email section
-        emailSection.style.display = 'none';
-    }
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("collapsed");
 }
-const chatInput = document.getElementById("domain-query-text");
+
+//------------------------------------------ Update Chatlog for each functionality section --------------------------------------------//
 
 function updateChatLog(message, sender) {
   console.log("updateChatLog called:", message);
@@ -405,8 +438,7 @@ function updateChatLog(message, sender) {
   scrollToBottom();
 }
 
-
-window.onload = updateAuthUI;
+//------------------------------- Retrieve predefined response and format/show button if applicable section----------------------------//
 
 function getBotResponse(userInput) {
   const response = predefinedAnswers[userInput];
@@ -421,20 +453,7 @@ function getBotResponse(userInput) {
   }
 }
 
-
-  const chatLog = document.getElementById('chat-log');
-const authButtonsContainer = document.getElementById('auth-buttons-container');
-
-const observer = new MutationObserver(() => {
-  const botMessages = chatLog.querySelectorAll('.bot-message');
-  const lastBotMessage = botMessages[botMessages.length - 1]?.textContent;
-
-  // Check if the last bot message matches any of the predefined responses
-  checkBotResponse(lastBotMessage);
-});
-
-observer.observe(chatLog, { childList: true });
-
+//--------------------------------------------- Show auth buttons(Signup and login buttons) ------------------------------------------//
 function scrollToAuthButtons() {
   const authButtonsContainer = document.getElementById("auth-buttons-container");
   if (authButtonsContainer) {
@@ -442,6 +461,7 @@ function scrollToAuthButtons() {
   }
 }
 
+// Checks if the given bot response requires the need to show auth buttons(sign up or log in).
 function checkBotResponse(response) {
   const botMessages = [
       "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
@@ -460,16 +480,43 @@ function checkBotResponse(response) {
   return botMessages.includes(response);
 }
 
+function showAuthButtons() {
+    const container = document.getElementById("auth-buttons-container");
+
+    if (container) {
+        container.style.display = "block"; // Show the container
+        setTimeout(scrollToBottom, 100); // Ensure chat scrolls after rendering
+    }
+}
+
+// Function to update UI after authentication
+function updateAuthUI() {
+        const authContainer = document.getElementById('auth-buttons-container');
+        if (isSignedIn && authContainer) {
+            authContainer.style.display = 'none';
+        }
+}
+
+//--------------------------------------------------- Domain registration Section -----------------------------------------------------//
 function checkDomainRegistrationResponse(response) {
   const expectedResponse = "I can assist you with domain registration. Please visit the register domain name section to proceed.";
 
   return botMessages.includes(response);
 }
 
-const suggestButtonsContainer = document.getElementById('suggest-buttons-container');
+//------------ Prefills chat input with a domain query, highlights the domain name placeholder, and show a tooltip section ------------//
 
-let tooltip; // To keep track of the tooltip element
+// Fill Chat Input with FAQ Question
+function fillChatInput(question) {
+    const userInput = document.getElementById("user-question");
+    const userInput2 = document.getElementById("domain-query-text");
+    userInput.value = question;
+    userInput2.value = question;
+    userInput.focus();
+  }  
 
+//Highlight domain name placeholder for required functionalities
+let tooltip;
 function fillChatInputWithPlaceholder(template) {
   const chatInput = document.getElementById('domain-query-text');
   const submitButton = document.getElementById('submitDomainQuery');
@@ -478,6 +525,7 @@ function fillChatInputWithPlaceholder(template) {
   const toggleContainer = document.getElementById('theft-protection-toggle-container'); // Fixed reference
   const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
   const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
+  const privacyContainer = document.getElementById('domain-privacy-toggle-container')
 
   chatInput.value = template;
   chatInput.focus();
@@ -528,6 +576,16 @@ console.log("Current Display Style:", toggleContainer.style.display);
         suspendToggleContainer.style.display = 'none';
     }
 
+    // Toggle visibility for Privacy Protection
+    const privacyMatch = template.match(/privacy protection (\S+)/i);
+    if (privacyMatch) {
+    const domain = privacyMatch[1];
+    privacyContainer.style.display = 'flex';
+    fetchPrivacyProtectionStatus(domain); // Fetch privacy protection status
+    } else {
+    privacyContainer.style.display = 'none'; // Hide privacy protection toggle
+    }
+
   // Tooltip handling
   if (startPos !== -1) {
       if (tooltip) tooltip.remove();
@@ -554,8 +612,7 @@ console.log("Current Display Style:", toggleContainer.style.display);
   }
 }
 
-
-    function hideTooltipOnInput() {
+function hideTooltipOnInput() {
         if (tooltip) {
             tooltip.classList.add('hidden');
             setTimeout(() => {
@@ -565,105 +622,14 @@ console.log("Current Display Style:", toggleContainer.style.display);
                 }
             }, 200);
         }
-    }
+}
 
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
         const chatInput = document.getElementById('domain-query-text');
         chatInput.addEventListener('input', hideTooltipOnInput);
-    });
-
-
-function toggleFAQSidebar() {
-    const faqSidebar = document.getElementById('faq-sidebar');
-    const chatbox = document.getElementById('chatbox');
-
-    if (faqSidebar.classList.contains('faq-expanded')) {
-        // Collapse the sidebar
-        faqSidebar.classList.remove('faq-expanded');
-        faqSidebar.classList.add('faq-collapsed');
-        
-        // Reset chatbox to full width and original position
-        chatbox.style.maxWidth = '850px';
-
-    } else {
-        // Expand the sidebar
-        faqSidebar.classList.add('faq-expanded');
-        faqSidebar.classList.remove('faq-collapsed');
-        
-        // Narrow chatbox and shift it left to make room for sidebar
-        chatbox.style.maxWidth = '650px';
-        chatbox.style.transform = 'translateX(-200px)';
-    }
-}
-
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("collapsed");
-}
-
-// Fill Chat Input with FAQ Question
-function fillChatInput(question) {
-  const userInput = document.getElementById("user-question");
-  const userInput2 = document.getElementById("domain-query-text");
-  userInput.value = question;
-  userInput2.value = question;
-  userInput.focus();
-}
-
-
-// Check if MutationObserver is already initialized
-if (!window.observer) {
-  window.observer = new MutationObserver(() => {
-    const botMessages = chatLog.querySelectorAll('.bot-message');
-    const lastBotMessage = botMessages[botMessages.length - 1]?.textContent;
-
-    // Check if the last bot message matches any of the predefined responses
-    checkdomainsuggestions(lastBotMessage);
-  });
-
-  window.observer.observe(chatLog, { childList: true });
-}
-
-
-
-const domainLockToggle = document.getElementById('domain-lock-toggle');
-domainLockToggle.addEventListener('change', async function() {
-    const domain = document.getElementById('domain-input').value.trim();
-    if (!domain) {
-        updateChatLog('Please enter a domain first.', 'bot');
-        return;
-    }
-    
-    const isLocked = this.checked;
-    console.log(`🔄 Sending lock/unlock request: Domain=${domain}, Lock=${isLocked}`);
-
-    try {
-        const response = await fetch(`/api/manage-domain-lock?domain=${domain}&lock=${isLocked}`, { method: 'GET' });
-        const result = await response.json();
-        updateChatLog(result.message, 'bot');
-    } catch (error) {
-        console.error('❌ Error updating domain lock:', error);
-        updateChatLog('Failed to update domain lock status', 'bot');
-    }
 });
 
-// Fetch domain lock status when showing the toggle
-async function fetchDomainLockStatus(domain) {
-  try {
-    const response = await fetch(`/api/manage-domain-lock?domain=${domain}`);
-    const data = await response.json();
-    if (data.success) {
-        theftProtectionToggle.checked = data.isLocked;
-        toggleContainer.style.display = "flex";
-    } else {
-        toggleContainer.style.display = "none";
-    }
-} catch (error) {
-    console.error("Error fetching domain lock status:", error);
-    toggleContainer.style.display = "none";
-}
-}
-const theftProtectionToggle = document.getElementById("theft-protection-toggle");
+//------------------------------------------------------ Domain Theft Section --------------------------------------------------------//
 
 let domainForTheftProtection = null;
 let isTheftProtectionEnabled = false;
@@ -702,13 +668,19 @@ async function submitTheftProtectionRequest(domain, isEnabled) {
         const result = await response.json();
         console.log('📨 Theft Protection API Response:', result);
 
-        // Check for specific status codes
-        if (result.responseMsg?.statusCode === 2306) {
+        // Check for specific status codes (Use responseData instead of responseMsg)
+        if (result.responseData?.statusCode === 2306) {
             updateChatLog(`ℹ️ Theft protection is already enabled for ${domain}.`, 'bot');
             return;
         }
-        if (result.responseMsg?.statusCode === 2305) {
+        if (result.responseData?.statusCode === 2305) {
             updateChatLog(`ℹ️ Theft protection is already disabled for ${domain}.`, 'bot');
+            return;
+        }
+
+        // Handle "Domain Theif Manage Failed" error with a clearer message
+        if (result.responseMsg?.message === 'Domain Theif Manage Failed') {
+            updateChatLog(`⚠️ Failed to update theft protection for ${domain}. Please check the domain status or try again later.`, 'bot');
             return;
         }
 
@@ -720,17 +692,7 @@ async function submitTheftProtectionRequest(domain, isEnabled) {
     }
 }
 
-chatInput.addEventListener("input", () => {
-  const domain = chatInput.value.trim();
-  if (domain) fetchDomainLockStatus(domain);
-});
-
-
-chatInput.addEventListener("input", () => {
-  const domain = chatInput.value.trim();
-  if (domain) fetchDomainLockStatus(domain);
-});
-
+//------------------------------------------------- Get Domain Suggestions Section ---------------------------------------------------//
 
 function checkDomainSuggestions(response) {
   console.log("📩 checkDomainSuggestions() called with:", response); // Debug log
@@ -751,27 +713,117 @@ function checkDomainSuggestions(response) {
   return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
 }
 
-const domainAvailabilitySection = document.getElementById('domain-availability-section');
+// Get domain suggestions from the API
+async function getDomainSuggestions() {
+    const email = document.getElementById('user-email').value.trim();
+    const domain = document.getElementById('domain-name-suggestions').value.trim();
 
-function checkDomainAvailability(response) {
+    if (!domain) {
+        updateChatLog('Please enter a domain name.', 'bot');
+        return;
+    }
 
-  const botMessages = [
-      "I can help you with checking domain availability! Please click check domain availability button."
-  ];
+    updateChatLog(`Domain entered: ${domain}`, 'user');
+    updateChatLog('Generating domain names...', 'bot'); 
 
-  // Normalize response
-  const responseText = response ? response.toString().toLowerCase().trim().replace(/\s+/g, " ") : "";
+    try {
+        const response = await fetch('/api/domain-suggestions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, domain }),
+        });
+        const data = await response.json();
 
-  // Check if bot response includes the trigger message
-  return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
+        const chatLog = document.querySelector('.chat-log');
+        const lastMessage = chatLog.lastElementChild;
+        if (lastMessage && lastMessage.textContent.includes("Generating domain names...")) {
+            chatLog.removeChild(lastMessage);
+        }
+
+        if (!data.success) {
+            updateChatLog(data.message || 'An error occurred while fetching domain suggestions. Please try again.', 'bot');
+            return;
+        }
+
+        updateChatLog(data.domains, 'bot');
+
+        // Hide domain input section
+        document.getElementById('domain-section').style.display = 'none';
+
+        // Append domain options next section to chat log
+        const domainOptions = document.getElementById('domain-options-next');
+        domainOptions.style.display = 'flex'; // Make it visible
+        document.getElementById('login-chat-section').style.display = 'flex'; 
+        chatLog.appendChild(domainOptions); // Add to chat log
+
+        scrollToBottom();
+    } catch (error) {
+        updateChatLog('An error occurred while fetching domain suggestions. Please try again.', 'bot');
+    }
 }
 
+// Get suggestions for a different domain
+function getNewDomainSuggestions() {
+    logButtonPress('Get New Domain Suggestions');
+    document.getElementById('domain-name-suggestions').value = ''; 
+    document.getElementById('domain-section').style.display = 'flex'; 
+    document.getElementById('domain-options-next').style.display = 'none';
+    document.getElementById('login-chat-section').style.display = 'none'; 
+    updateChatLog('Please enter a new domain name for suggestions.', 'bot');
+}
+
+function getMoreSuggestions() {
+    logButtonPress('More Suggestions');
+    updateChatLog('Fetching more suggestions for the same domain...', 'bot');
+    getDomainSuggestions(); 
+}
+
+//-------------------------------------------------- Domain Availability Section ----------------------------------------------------//
+
+function checkDomainAvailability() {
+    const domainAvailabilitySection = document.getElementById('domain-availability-section');
+    const domainAvailabilityInput = document.getElementById('domain-query-input'); // Corrected ID
+    const checkDomainButton = document.getElementById('check-domain-availability'); // Corrected ID
+    const backToDomainButton = document.getElementById('back-to-domain-section');
+
+    domainAvailabilitySection.style.display = 'block';
+
+    const domainToCheck = domainAvailabilityInput.value.trim();
+
+    if (!domainToCheck) {
+        updateChatLog('Please enter a domain name to check its availability.', 'bot');
+        return;
+    }
+
+    updateChatLog(`Domain to check: ${domainToCheck}`, 'user');
+
+    fetch('/api/check-domain-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: domainToCheck }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.success) {
+            updateChatLog(`✅ Domain is available: ${data.message}`, 'bot');
+        } else {
+            updateChatLog(`❌ Domain is not available: ${data.message}`, 'bot');
+        }
+    })
+    .catch(() => {
+        updateChatLog('An error occurred while checking domain availability. Please try again.', 'bot');
+    });
+
+    backToDomainButton.style.display = 'inline-block';
+
+    domainAvailabilityInput.value = '';
+}
+
+//------------------------- Processes user input for questions without verification and update chatlog Section -----------------------//
 function processUserQuestion() {
   const userQuestion = document.getElementById("user-question").value.trim();
 
   if (userQuestion) {
-      // ✅ REMOVED: No more `faq-sidebar` in HTML, so this line is gone
-
       const chatLog = document.getElementById("chat-log");
 
       const userMessage = document.createElement('div');
@@ -790,6 +842,8 @@ function processUserQuestion() {
       }
   }
 }
+
+//-------------------------------------------------- Domain Registration Section -----------------------------------------------------//
 
 document.getElementById("user-question").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
@@ -846,7 +900,7 @@ async function registerDomain() {
   confirmationBox.appendChild(content);
   document.body.appendChild(confirmationBox);
 
-  disableChat(); // 🛑 Disable chat when the confirmation box is open
+  disableChat(); 
 }
 
 function confirmRegistration(domainName, duration) {
@@ -880,11 +934,7 @@ function confirmRegistration(domainName, duration) {
       });
 }
 
-function closeConfirmationBox() {
-  const box = document.querySelector('.chat-confirmation-box');
-  if (box) box.remove();
-  enableChat(); // 🟢 Re-enable chat when the confirmation box is closed
-}
+//------------------------------------------------- Enable/Disable Chatbox Section ---------------------------------------------------//
 
 function disableChat() {
   const chatContainer = document.getElementById("chat-container");
@@ -902,7 +952,8 @@ function enableChat() {
   }
 }
 
-/* Add CSS for the confirmation box to match chatbot theme */
+//------------------------------------------ Confirmation box, popup and display Section --------------------------------------------//
+
 const style = document.createElement('style');
 style.textContent = `
 .chat-confirmation-box {
@@ -934,34 +985,39 @@ margin: 5px;
 `;
 document.head.appendChild(style);
 
-
-// Function to verify OTP and auto-populate customerId
-async function verifyOtpAndSetCustomerId(otp) {
-  try {
-      const response = await fetch('/api/verify-otp', { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ otp })
-      });
-
-      const data = await response.json();
-      console.log(data); // Debug: check if the response has resellerId
-
-      if (data.success) {
-          const customerIdInput = document.getElementById('customerId');
-          if (customerIdInput) {
-              customerIdInput.value = data.resellerId; // Set the value to resellerId
-              customerIdInput.readOnly = true; // Make the input read-only
-          }
-      } else {
-          console.error('OTP verification failed:', data.message);
-      }
-  } catch (error) {
-      console.error('Error fetching customer ID:', error);
-  }
+function closeConfirmationBox() {
+    const box = document.querySelector('.chat-confirmation-box');
+    if (box) box.remove();
+    enableChat(); 
 }
 
-// Function to handle domain transfer
+// Function to show a popup message in the chatbox
+function showChatPopup(message, isSuccess = true, isProcessing = false) {
+    const existingPopup = document.querySelector('.chat-popup-box');
+    if (existingPopup) existingPopup.remove();
+  
+    const popupBox = document.createElement('div');
+    popupBox.className = 'chat-popup-box';
+    popupBox.classList.add(isSuccess ? 'success-popup' : 'error-popup');
+  
+    const popupContent = document.createElement('div');
+    popupContent.className = 'popup-content';
+    popupContent.innerHTML = `<p>${message}</p>`;
+  
+    if (!isProcessing) {
+        const closeButton = document.createElement('button');
+        closeButton.innerText = 'OK';
+        closeButton.className = 'popup-close-btn';
+        closeButton.addEventListener('click', () => popupBox.remove());
+        popupContent.appendChild(closeButton);
+    }
+  
+    popupBox.appendChild(popupContent);
+    document.body.appendChild(popupBox);
+  }  
+
+//---------------------------------------------------- Transfer Domain Section ------------------------------------------------------//
+
 // Function to handle domain transfer
 async function transferDomain() {
   const domainName = document.getElementById('transfer-domain-name').value.trim();
@@ -1044,6 +1100,8 @@ async function confirmDomainTransfer(domainName, authCode, isWhoisProtection, cu
   }
 }
 
+//----------------------------------------------------- Renew Domain Section --------------------------------------------------------//
+
 async function renewDomain() {
   const domainName = document.getElementById("renew-domain-name").value.trim();
   const duration = document.getElementById("renew-duration").value;
@@ -1081,69 +1139,45 @@ async function renewDomain() {
   document.body.appendChild(confirmationBox);
 }
 
-// Function to show a popup message in the chatbox
-function showChatPopup(message, isSuccess = true, isProcessing = false) {
-  const existingPopup = document.querySelector('.chat-popup-box');
-  if (existingPopup) existingPopup.remove();
-
-  const popupBox = document.createElement('div');
-  popupBox.className = 'chat-popup-box';
-  popupBox.classList.add(isSuccess ? 'success-popup' : 'error-popup');
-
-  const popupContent = document.createElement('div');
-  popupContent.className = 'popup-content';
-  popupContent.innerHTML = `<p>${message}</p>`;
-
-  if (!isProcessing) {
-      const closeButton = document.createElement('button');
-      closeButton.innerText = 'OK';
-      closeButton.className = 'popup-close-btn';
-      closeButton.addEventListener('click', () => popupBox.remove());
-      popupContent.appendChild(closeButton);
-  }
-
-  popupBox.appendChild(popupContent);
-  document.body.appendChild(popupBox);
-}
-
 function confirmRenewal(domainName, duration) {
-  closeConfirmationBox();
-
-  disableChat();
-  showChatPopup("Renewing your domain, please wait...", false, true);
-
-  setTimeout(() => {
-      fetch(`/api/renew-domain?Websitename=${domainName}&Duration=${duration}&OrderType=2&IsWhoisProtection=false`, { method: "GET" })
-          .then(response => response.json())
-          .then(result => {
-              enableChat(); 
-              console.log("✅ Domain Renewal Response:", result);
-
-              // 🟢 Using the 'success' field from the backend response directly
-              if (result?.success) {
-                  showChatPopup(`Domain <strong>${domainName}</strong> renewed successfully!`, true);
-              } else {
-                  showChatPopup(`Error: ${result?.message || 'Could not renew domain successfully.'}`, false);
-              }
-
-              // 🆕 Close the domain renewal section
-              document.getElementById('domain-renewal-section').style.display = 'none';
-              document.getElementById('login-chat-section').style.display = 'flex';
-          })
-          .catch(error => {
-              enableChat(); 
-              console.error("❗ Unexpected error:", error);
-              showChatPopup("Internal Server Error", false);
-
-              // 🆕 Same behavior on error
-              document.getElementById('domain-renewal-section').style.display = 'none';
-              document.getElementById('login-chat-section').style.display = 'flex';
-          });
-  }, 100); 
+    closeConfirmationBox();
+  
+    disableChat();
+    showChatPopup("Renewing your domain, please wait...", false, true);
+  
+    setTimeout(() => {
+        fetch(`/api/renew-domain?Websitename=${domainName}&Duration=${duration}&OrderType=2&IsWhoisProtection=false`, { method: "GET" })
+            .then(response => response.json())
+            .then(result => {
+                enableChat(); 
+                console.log("✅ Domain Renewal Response:", result);
+  
+                // 🟢 Using the 'success' field from the backend response directly
+                if (result?.success) {
+                    showChatPopup(`Domain <strong>${domainName}</strong> renewed successfully!`, true);
+                } else {
+                    showChatPopup(`Error: ${result?.message || 'Could not renew domain successfully.'}`, false);
+                }
+  
+                // 🆕 Close the domain renewal section
+                document.getElementById('domain-renewal-section').style.display = 'none';
+                document.getElementById('login-chat-section').style.display = 'flex';
+            })
+            .catch(error => {
+                enableChat(); 
+                console.error("❗ Unexpected error:", error);
+                showChatPopup("Internal Server Error", false);
+  
+                // 🆕 Same behavior on error
+                document.getElementById('domain-renewal-section').style.display = 'none';
+                document.getElementById('login-chat-section').style.display = 'flex';
+            });
+    }, 100); 
 }
 
+//---------------------------------------- Question to answers before verification Section --------------------------------------------//
 
-  async function handleBotResponse(userQuestion) {
+async function handleBotResponse(userQuestion) {
     try {
       const response = await fetch('/ask-question', {
         method: 'POST',
@@ -1164,85 +1198,9 @@ function confirmRenewal(domainName, duration) {
       console.error("Error sending question to backend:", error);
       updateChatLog("There was an error processing your question. Please try again.", 'bot');
     }
-  }
-  const loadingContainer = document.getElementById('loading-container');
-  if (loadingContainer) {
-      loadingContainer.style.display = 'none';  
-  }
-
-  function scrollToBottom() {
-    const chatLog = document.querySelector('.chat-log');
-    const container = document.getElementById("auth-buttons-container");
-
-    if (!chatLog) {
-        console.error("Chat log element not found.");
-        return;
-    }
-
-    if (container && window.getComputedStyle(container).display !== "none") {
-        // Small delay to ensure rendering updates
-        setTimeout(() => {
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }, 100);
-    }
 }
 
-function showAuthButtons() {
-    const container = document.getElementById("auth-buttons-container");
-
-    if (container) {
-        container.style.display = "block"; // Show the container
-        setTimeout(scrollToBottom, 100); // Ensure chat scrolls after rendering
-    }
-}
-
-    let userEmail = '';
-
-// Function to clear the chat log
-function clearchatlog() {
-  const chatContainer = document.getElementById('chat-log');
-  if (chatContainer) {
-      chatContainer.innerHTML = ''; // Clear all chat messages
-  }
-}
-  
-    // Function to update UI after login
-    function updateAuthUI() {
-        const authContainer = document.getElementById('auth-buttons-container');
-        if (isSignedIn && authContainer) {
-            authContainer.style.display = 'none';
-        }
-    }
-  
-
-    function showInfo() {
-      // Check if info box already exists
-      let existingInfoBox = document.getElementById("info-box");
-      if (existingInfoBox) {
-        existingInfoBox.remove(); // Remove existing info box if clicked again
-        return;
-      }
-    
-    // Create info box
-    let infoBox = document.createElement("div");
-    infoBox.id = "info-box";
-    infoBox.innerHTML = `
-      <p>This chatbot helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.</p>
-      <button onclick="closeInfo()">OK</button>
-    `;
-
-    // Position the box near the info button
-    let header = document.querySelector(".header");
-    header.appendChild(infoBox);
-  }
-    
-    // Function to close info box
-    function closeInfo() {
-      let infoBox = document.getElementById("info-box");
-      if (infoBox) {
-        infoBox.remove();
-      }
-    }
+//---------------------------------------------------- Add Name Server Section --------------------------------------------------------//
 
 // Global variables
 let nameServerCount = 1;
@@ -1311,317 +1269,32 @@ async function updateNameServers() {
     }
 }
 
-// Dummy function to simulate fetching domain ID
-async function getDomainId(domainName) {
-    return 1; // Replace with actual API call if needed
-}
-
-// Function to handle "Back" button
-function goBackToQuerySection() {
-    document.getElementById("name-server-update-section").style.display = "none";
-    alert("Going back to the previous section...");
-}
-
-  
-    // Show domain section for domain input
-    function showDomainSection() {
-      document.getElementById('domain-options').style.display = 'none'; 
-      document.getElementById('login-chat-section').style.display = 'none';
-      document.getElementById('domain-section').style.display = 'flex';
-      document.getElementById('domain-options-next').style.display = 'none'; 
-      document.getElementById('more-options').style.display = 'none'; 
-      updateChatLog('Please enter a domain name for suggestions.', 'bot');
-    }
-
-    // Get domain suggestions from the API
-    async function getDomainSuggestions() {
-    const email = document.getElementById('user-email').value.trim();
-    const domain = document.getElementById('domain-name-suggestions').value.trim();
-
-    if (!domain) {
-        updateChatLog('Please enter a domain name.', 'bot');
-        return;
-    }
-
-    updateChatLog(`Domain entered: ${domain}`, 'user');
-    updateChatLog('Generating domain names...', 'bot'); 
-
-    try {
-        const response = await fetch('/api/domain-suggestions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, domain }),
-        });
-        const data = await response.json();
-
-        const chatLog = document.querySelector('.chat-log');
-        const lastMessage = chatLog.lastElementChild;
-        if (lastMessage && lastMessage.textContent.includes("Generating domain names...")) {
-            chatLog.removeChild(lastMessage);
-        }
-
-        if (!data.success) {
-            updateChatLog(data.message || 'An error occurred while fetching domain suggestions. Please try again.', 'bot');
-            return;
-        }
-
-        updateChatLog(data.domains, 'bot');
-
-        // Hide domain input section
-        document.getElementById('domain-section').style.display = 'none';
-
-        // Append domain options next section to chat log
-        const domainOptions = document.getElementById('domain-options-next');
-        domainOptions.style.display = 'flex'; // Make it visible
-        document.getElementById('login-chat-section').style.display = 'flex'; 
-        chatLog.appendChild(domainOptions); // Add to chat log
-
-        scrollToBottom();
-    } catch (error) {
-        updateChatLog('An error occurred while fetching domain suggestions. Please try again.', 'bot');
-    }
-}
-
-function goBackToQuerySection() {
-  console.log("Navigating back to query section...");
-
-  // Show the query section
-  document.getElementById('login-chat-section').style.display = 'flex';
-  console.log("login-chat-section is now visible");
-
-  // Hide the other sections
-  const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , ];
-
-  sectionsToHide.forEach(sectionId => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.style.display = 'none';
-      console.log(`Hid section: ${sectionId}`);
-    } else {
-      console.log(`Element not found: ${sectionId}`);
-    }
-  });
-}
-
-
-  // Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
-  function scrollToBottom() {
-      const lastMessage = document.querySelector('.message:last-child');  
-      if (lastMessage) {
-          lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });  
-      }
-  }
-
-  function goBackToPreviousSection() {
-      document.getElementById('domain-section').style.display = 'none';
-
-      document.getElementById('domain-options').style.display = 'flex'; 
-  }
-
-  function goBackTouserinputsection() {
-    document.getElementById('email-section').style.display = 'none';
-    
-
-    document.getElementById('user-input-section').style.display = 'flex';
-    document.getElementById('initial-message').style.display = 'flex';  
-  }
-
-    function getMoreSuggestions() {
-      logButtonPress('More Suggestions');
-      updateChatLog('Fetching more suggestions for the same domain...', 'bot');
-      getDomainSuggestions(); 
-    }
-
-    // Get suggestions for a different domain
-    function getNewDomainSuggestions() {
-      logButtonPress('Get New Domain Suggestions');
-      document.getElementById('domain-name-suggestions').value = ''; 
-      document.getElementById('domain-section').style.display = 'flex'; 
-      document.getElementById('domain-options-next').style.display = 'none';
-      document.getElementById('login-chat-section').style.display = 'none'; 
-      updateChatLog('Please enter a new domain name for suggestions.', 'bot');
-    }
-
-    // Check Domain Availability
-    function submitDomainCheck() {
-      logButtonPress('Check Domain Availability');
-      document.getElementById("more-options").style.display = "none";
-      document.getElementById("domain-options").style.display = "none";
-      const domainSection = document.getElementById('domain-availability-section');
-      const domainInput = document.getElementById('domain-name-availability');
-      const submitDomainButton = document.getElementById('check-domain-availability');
-
-  if (domainSection.style.display === 'none') {
-    domainSection.style.display = 'flex';
-    domainInput.focus(); 
-    updateChatLog('Please enter a domain name to check its availability.', 'bot');
-    return;
-  }
-
-      const domain = domainInput.value.trim();
-
-      if (!domain) {
-        updateChatLog('Please enter a valid domain name.', 'bot');
-        return;
-      }
-
-      updateChatLog(`Domain entered: ${domain}`, 'user');
-
-      fetch('/api/check-domain-availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            updateChatLog(`✅ Domain is available: ${data.message}`, 'bot');
-          } else {
-            updateChatLog(`❌ Domain is not available: ${data.message}`, 'bot');
-          }
-        })
-        .catch(() => {
-          updateChatLog('An error occurred while checking domain availability. Please try again.', 'bot');
-        });
-
-      domainInput.value = '';
-    }
-
-    function checkDomainAvailability() {
-      const domainAvailabilitySection = document.getElementById('domain-availability-section');
-      const domainAvailabilityInput = document.getElementById('domain-query-input'); // Corrected ID
-      const checkDomainButton = document.getElementById('check-domain-availability'); // Corrected ID
-      const backToDomainButton = document.getElementById('back-to-domain-section');
-
-      domainAvailabilitySection.style.display = 'block';
-
-      const domainToCheck = domainAvailabilityInput.value.trim();
-
-      if (!domainToCheck) {
-          updateChatLog('Please enter a domain name to check its availability.', 'bot');
-          return;
-      }
-
-      updateChatLog(`Domain to check: ${domainToCheck}`, 'user');
-
-      fetch('/api/check-domain-availability', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ domain: domainToCheck }),
-      })
-      .then((response) => response.json())
-      .then((data) => {
-          if (data.success) {
-              updateChatLog(`✅ Domain is available: ${data.message}`, 'bot');
-          } else {
-              updateChatLog(`❌ Domain is not available: ${data.message}`, 'bot');
-          }
-      })
-      .catch(() => {
-          updateChatLog('An error occurred while checking domain availability. Please try again.', 'bot');
-      });
-
-      backToDomainButton.style.display = 'inline-block';
-
-      domainAvailabilityInput.value = '';
-  }
-
-    
-    function goBackToMoreOptions() {
-      document.getElementById('domain-availability-section').style.display = 'none';
-      document.getElementById('more-options').style.display = 'flex'; 
-    }
-
-    // Ask for more options
-    function askMoreOptions() {
-      logButtonPress('Ask More Options');
-      document.getElementById("domain-options").style.display = "none";
-      document.getElementById("domain-options-next").style.display = "none";
-      document.getElementById("get-domain-suggestions-btn").style.display = "none";
-      document.getElementById("more-options-btn").style.display = "none";
-      document.getElementById("more-options").style.display = "flex"; // Show more options
-      updateChatLog('Please choose one of the following options:', 'bot');
-    }
-
-    // Close "More Options" and reset buttons
-  function closeMoreOptions() {
-      document.getElementById("more-options").style.display = "none";
-      document.getElementById("domain-section").style.display = "none";
-      document.getElementById("domain-options").style.display = "flex"; 
-      
-      document.getElementById("get-domain-suggestions-btn").style.display = "block";
-      document.getElementById("more-options-btn").style.display = "block";
-
-      const domainAvailabilitySection = document.getElementById('domain-availability-section');
-      const domainNameAvailability = document.getElementById('domain-name-availability');
-
-      if (domainAvailabilitySection) {
-          domainAvailabilitySection.style.display = 'none'; 
-      }
-      
-      if (domainNameAvailability) {
-          domainNameAvailability.value = ''; 
-      }
-
-      updateChatLog('What would you like to do next?', 'bot');
-  }
-
-
-  function showDomainQueries() {
-    const elementsToHide = ["domain-options", "domain-options-next", "more-options", "more-options-btn"];
-    elementsToHide.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = "none";
-    });
-
-    const chatLog = document.querySelector('.chat-log');
-    if (!chatLog) {
-      console.log("Chat log not found");
-      return;
-    }
-
-    const queryMessage = document.createElement('div');
-    queryMessage.className = 'bot-message message';
-    queryMessage.innerHTML = 'Please enter your domain-related question:';
-    chatLog.appendChild(queryMessage);
-    chatLog.scrollTop = chatLog.scrollHeight;
-
-    const domainQuerySection = document.getElementById('domain-query-section');
-    if (domainQuerySection.style.display === 'none' || domainQuerySection.style.display === '') {
-      domainQuerySection.style.display = 'flex';
-    }
-
-    const domainQueryInput = document.getElementById('domain-query-text');
-    if (domainQueryInput) {
-      domainQueryInput.focus();
-    }
-  }
+//----------------------------------------------------- Suspend Domain Section --------------------------------------------------------//
 
 // Store the suspension state and domain globally
 let domainToSuspend = null;
-let isDomainSuspend = false;
+let isDomainSuspend = null;
 
 // Function to handle the toggle switch for domain suspension
 function handleDomainSuspendToggle(toggleElement) {
     let domain = document.getElementById('domain-query-text').value.trim();
-    isDomainSuspend = toggleElement.checked;
+    
+    // Ensure the latest toggle state is properly read
+    const newState = toggleElement.checked;
+    if (isDomainSuspend === newState) {
+        return; // Prevent unnecessary API calls if the state hasn't changed
+    }
+
+    isDomainSuspend = newState; // Update global state
+    console.log('🛠️ Toggle state updated:', { domain, isDomainSuspend });
 
     if (!domain) {
         updateChatLog('Please enter a valid domain before managing suspension.', 'bot');
-        toggleElement.checked = !isDomainSuspend;
+        toggleElement.checked = !isDomainSuspend; // Revert toggle
         return;
     }
 
-    // Sanitize input to avoid "suspend domain.com" format issues
-    const match = domain.match(/(?:suspend|unsuspend)\s+(\S+)/i);
-    if (match) {
-        domain = match[1]; // Extract only the domain name
-    }
-
-    console.log('🛠️ Toggle state updated:', { domain, isDomainSuspend });
-
-    // Store the domain and toggle state for later submission
-    domainToSuspend = domain;
+    domainToSuspend = domain; // Store domain for API call
 }
 
 // Function to make the API request for domain suspension/unsuspension
@@ -1650,6 +1323,113 @@ async function submitDomainSuspendRequest(domain, isDomainSuspend) {
         updateChatLog('An error occurred while processing your request.', 'bot');
     }
 }
+
+//--------------------------------------------------- Privacy Protection Section ------------------------------------------------------//
+
+// Store the privacy protection state and domain globally
+let domainForPrivacyProtection = null;
+let isPrivacyProtectionEnabled = null;
+
+// Function to handle the toggle switch for privacy protection
+function handlePrivacyProtectionToggle(toggleElement) {
+    let domain = document.getElementById('domain-query-text').value.trim();
+    
+    if (!domain) {
+        updateChatLog('Please enter a valid domain before managing privacy protection.', 'bot');
+        toggleElement.checked = !toggleElement.checked; // Revert toggle
+        return;
+    }
+
+    isPrivacyProtectionEnabled = toggleElement.checked;
+    domainForPrivacyProtection = domain;
+
+    console.log('🔒 Privacy Protection toggle updated:', { domainForPrivacyProtection, isPrivacyProtectionEnabled });
+}
+
+
+// Function to make the API request for enabling/disabling privacy protection
+async function submitPrivacyProtectionRequest(domain, isPrivacyEnabled) {
+    try {
+        console.log(`Submitting privacy protection request for ${domain}. Enable: ${isPrivacyEnabled}`);
+
+        const response = await fetch(`/api/privacy-protection?domainName=${encodeURIComponent(domain)}&enable=${isPrivacyEnabled}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update privacy protection status. Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        updateChatLog(result.message || 'Operation completed.', 'bot');
+
+        const togglePrivacyContainer = document.getElementById('privacy-protection-toggle-container');
+        if (togglePrivacyContainer) {
+            togglePrivacyContainer.style.display = 'none';
+        }
+
+    } catch (error) {
+        console.error('Error with privacy protection request:', error);
+        updateChatLog('An error occurred while processing your request.', 'bot');
+    }
+}
+
+//----------------------------------------------------- Lock Domain Section --------------------------------------------------------//
+
+let domainToLock = null;
+let isDomainLocked = false;
+
+// Function to handle the toggle switch for domain lock/unlock
+function handleDomainLockToggle(toggleElement) {
+    let domain = document.getElementById('domain-query-text').value.trim();
+    isDomainLocked = toggleElement.checked;
+
+    if (!domain) {
+        updateChatLog('Please enter a valid domain before managing lock status.', 'bot');
+        toggleElement.checked = !isDomainLocked;
+        return;
+    }
+
+    // Sanitize input to extract domain name only
+    const match = domain.match(/(?:lock|unlock)\s+(\S+)/i);
+    if (match) {
+        domain = match[1]; // Extract only the domain name
+    }
+
+    console.log('🔒 Toggle state updated:', { domain, isDomainLocked });
+
+    // Store the domain and toggle state for submission
+    domainToLock = domain;
+}
+
+// Function to submit the lock/unlock request
+async function submitDomainLockRequest(domain, isDomainLocked) {
+    try {
+        console.log(`Submitting lock request for ${domain}. Lock: ${isDomainLocked}`);
+
+        const response = await fetch(`/api/lock-domain?domainName=${encodeURIComponent(domain)}&lock=${isDomainLocked}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update domain lock status. Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        updateChatLog(result.message || 'Operation completed.', 'bot');
+
+        const toggleLockContainer = document.getElementById('domain-lock-toggle-container');
+        if (toggleLockContainer) {
+            toggleLockContainer.style.display = 'none';
+        }
+
+    } catch (error) {
+        console.error('Error with domain lock request:', error);
+        updateChatLog('An error occurred while processing your request.', 'bot');
+    }
+}
+
+//------------------------------------------- Submit Domain query after login Section ----------------------------------------------//
 
 async function submitDomainQuery() {
     console.log("submitDomainQuery called"); 
@@ -1799,6 +1579,12 @@ if (domainForTheftProtection !== null) {
     return;
 }
 
+// Handle domain lock/unlock request if the toggle was changed
+if (domainToLock !== null) {
+    await submitDomainLockRequest(domainToLock, isDomainLocked);
+    domainToLock = null; // Reset after submission
+    return;
+}
 
 // Handle domain suspension request if the toggle was changed
 if (domainToSuspend !== null) {
@@ -1807,34 +1593,9 @@ if (domainToSuspend !== null) {
   return;
 }
 
-const domainLockMatch = queryText.match(/(lock|unlock) (.+)/i);
-if (domainLockMatch) {
-    const action = domainLockMatch[1].toLowerCase(); // "lock" or "unlock"
-    const domain = domainLockMatch[2].trim();
-    const isDomainLocked = action === 'lock';
-
-    console.log(`🔍 Detected action: ${action}, Domain: ${domain}, Lock State: ${isDomainLocked}`); // Debugging line
-
-    try {
-        const actionText = isDomainLocked ? 'Locking' : 'Unlocking';
-        updateChatLog(`${actionText} the domain ${domain}...`, 'bot');
-      
-        const response = await fetch(`/api/manage-domain-lock?domain=${domain}&lock=${isDomainLocked}`, {
-            method: 'GET',
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to update domain lock status. Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        updateChatLog(result.message, 'bot');
-
-    } catch (error) {
-        console.error('Error managing domain lock:', error);
-        updateChatLog('Failed to update domain lock status', 'bot');
-    }
-
+if (domainForPrivacyProtection !== null) {
+    await submitPrivacyProtectionRequest(domainForPrivacyProtection, isPrivacyProtectionEnabled);
+    domainForPrivacyProtection = null; // Reset after submission
     return;
 }
 
@@ -1870,14 +1631,32 @@ if (domainLockMatch) {
     }
 }
 
-  function switchSection(newSectionId) {
-    document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });
-    updateChatLog(`Switched to ${newSectionId}`, 'bot'); 
+//----------------------------------------------- Back button after verification --------------------------------------------------//
+
+function goBackToQuerySection() {
+    console.log("Navigating back to query section...");
+  
+    // Show the query section
+    document.getElementById('login-chat-section').style.display = 'flex';
+    console.log("login-chat-section is now visible");
+  
+    // Hide the other sections
+    const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , ];
+  
+    sectionsToHide.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.style.display = 'none';
+        console.log(`Hid section: ${sectionId}`);
+      } else {
+        console.log(`Element not found: ${sectionId}`);
+      }
+    });
   }
 
+//--------------------------------------------------- Event Listeners Section ------------------------------------------------------//
 
-
-  document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
       const activeElement = document.activeElement;
 
@@ -1888,7 +1667,7 @@ if (domainLockMatch) {
         }
       }
     }
-  });
+});
 
 document.addEventListener("keydown", function (event) {
     const authButtonsContainer = document.getElementById("auth-buttons-container");
@@ -1915,52 +1694,15 @@ document.addEventListener("keydown", function (event) {
     }
 });
 
-
-    function goBackToDomainSection() {
-      const inputFieldContainer = document.querySelector('.query-input-container');
-      if (inputFieldContainer) {
-          inputFieldContainer.remove();
-      }
-
-      const domainAvailabilitySection = document.getElementById('domain-availability-section');
-      if (domainAvailabilitySection) {
-          domainAvailabilitySection.style.display = 'none';
-      }
-
-      const domainquerySection = document.getElementById('domain-query-section');
-      if (domainquerySection) {
-          domainquerySection.style.display = 'none';
-      }
-
-      const moreOptions = document.getElementById('more-options');
-      if (moreOptions) {
-          moreOptions.style.display = 'block';
-          moreOptions.scrollIntoView({ behavior: 'smooth' }); 
-      }
-  }
-
-  function goToOTPSection() {
-    switchSection('otp-section'); 
-    updateChatLog("Now in OTP section", 'bot');
-  }
-
-  function showDomainQuerySection() {
-    document.getElementById('domain-query-section').style.display = 'flex';
-  }
-
-  function hideDomainQuerySection() {
-    document.getElementById('domain-query-section').style.display = 'none';
-  }
-
-  document.addEventListener("keydown", function(event) {
+document.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         document.getElementById("submit-question").click();
     }
-  });
+});
 
-  document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
+document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
 
-  document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
+document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
 
 document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("keydown", function (event) {
@@ -2007,3 +1749,99 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+//-------------------------------------------------- Extra  functions Section ------------------------------------------------------//
+
+function switchSection(newSectionId) {
+    document.getElementById(newSectionId).scrollIntoView({ behavior: 'smooth' });
+    updateChatLog(`Switched to ${newSectionId}`, 'bot'); 
+}
+
+function scrollToBottom() {
+    const chatLog = document.querySelector('.chat-log');
+    const container = document.getElementById("auth-buttons-container");
+
+    if (!chatLog) {
+        console.error("Chat log element not found.");
+        return;
+    }
+
+    if (container && window.getComputedStyle(container).display !== "none") {
+        // Small delay to ensure rendering updates
+        setTimeout(() => {
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }, 100);
+    }
+}
+
+// Function to clear the chat log
+function clearchatlog() {
+    const chatContainer = document.getElementById('chat-log');
+    if (chatContainer) {
+        chatContainer.innerHTML = ''; // Clear all chat messages
+    }
+}    
+
+function showInfo() {
+      // Check if info box already exists
+      let existingInfoBox = document.getElementById("info-box");
+      if (existingInfoBox) {
+        existingInfoBox.remove(); // Remove existing info box if clicked again
+        return;
+      }
+    
+    // Create info box
+    let infoBox = document.createElement("div");
+    infoBox.id = "info-box";
+    infoBox.innerHTML = `
+      <p>This chatbot helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.</p>
+      <button onclick="closeInfo()">OK</button>
+    `;
+
+    // Position the box near the info button
+    let header = document.querySelector(".header");
+    header.appendChild(infoBox);
+}
+    
+// Function to close info box
+function closeInfo() {
+      let infoBox = document.getElementById("info-box");
+      if (infoBox) {
+        infoBox.remove();
+      }
+}
+
+if (loadingContainer) {
+    loadingContainer.style.display = 'none';  
+}
+
+// Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
+function scrollToBottom() {
+    const lastMessage = document.querySelector('.message:last-child');  
+    if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });  
+    }
+}
+
+function goBackToPreviousSection() {
+    document.getElementById('domain-section').style.display = 'none';
+
+    document.getElementById('domain-options').style.display = 'flex'; 
+}
+
+function goBackTouserinputsection() {
+  document.getElementById('email-section').style.display = 'none';
+  
+
+  document.getElementById('user-input-section').style.display = 'flex';
+  document.getElementById('initial-message').style.display = 'flex';  
+}
+
+async function getDomainId(domainName) {
+    return 1; // Replace with actual API call if needed
+}
+
+function goBackToQuerySection() {
+    document.getElementById("name-server-update-section").style.display = "none";
+    alert("Going back to the previous section...");
+}
