@@ -54,6 +54,7 @@
             <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com')">Suspend/Unsuspend <em>mydomain.com</em></li>
             <li onclick="fillChatInput('How can I update the name servers for a domain?')">How can I update the name servers for a domain?</li>
             <li onclick="fillChatInputWithPlaceholder('Enable/disable privacy protection for mydomain.com')">Enable/disable privacy protection for <em>mydomain.com</em></li>
+            <li onclick="fillChatInput('How can I add a child nameserver?')">How can I add a child nameserver?</li>
             <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
             <li onclick="fillChatInput('Give me a list of high-value domain TLDs?')">Give me a list of high-value domain TLDs?</li>
             <li onclick="fillChatInput('Can you suggest TLDs for a selected category?')">Can you suggest TLDs for a selected category?</li>
@@ -75,7 +76,6 @@
             <li onclick="fillChatInput('How can I download the WHMCS module?')">How can I download the WHMCS module?</li>
             <li onclick="fillChatInput('How do I export List Name?')">How do I export 'List Name'?</li>
             <li onclick="fillChatInput('How can I move a domain?')">How can I move a domain?</li>
-            <li onclick="fillChatInput('How can I add a child nameserver?')">How can I add a child nameserver?</li>
             <li onclick="fillChatInput('How do I pull a domain?')">How do I pull a domain?</li>
             <li onclick="fillChatInput('What types of reports can I get?')">What types of reports can I get?</li>
         </ul>
@@ -220,12 +220,37 @@
 
   <!-- Buttons -->
   <div class="button-group">
-      <button onclick="addNameServer()">➕ Add Name Server</button>
+      <button onclick="addNameServerInput()">➕ Add Name Server</button>
       <button onclick="updateNameServers()">Update Name Servers</button>
       <button onclick="goBackToQuerySection()">Back</button>
   </div>
 
   <div id="update-status"></div>
+</div>
+
+
+<!-- Add Child Name Server Section -->
+<div id="add-child-name-server-section" class="chat-input" style="display: none;">
+    
+  <div class="input-group">
+      <input type="text" id="child-domain-name" placeholder="Enter Domain Name" required>
+  </div>
+
+  <div id="childnameserver-container" class="ns-wrapper">
+      <div class="childns-input">
+          <input type="text" id="childnameserver1" placeholder="Enter Hostname (e.g., ns1.example.com)" required>
+          <input type="text" id="child-ip-address1" placeholder="Enter IP Address" required>
+      </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="button-group">
+      <button onclick="addChildNameServerInput()">➕ Add Child Name Server</button>
+      <button onclick="registerChildNameServer()">Register Child Name Server</button>
+      <button onclick="goBackToQuerySection()">Back</button>
+  </div>
+
+  <div id="child-ns-status"></div>
 </div>
 
     <!-- Domain Options Section after OTP verification -->

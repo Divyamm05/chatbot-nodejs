@@ -1123,6 +1123,140 @@ app.get('/api/privacy-protection', async (req, res) => {
   return res.json(result);
 });
 
+// Function to Update Name Servers
+async function updateNameServer(domainName, nameServers) {
+  try {
+      console.log(`[UPDATE-NS] 🔍 Checking domain: ${domainName}`);
+
+      // Fetch domainNameId from Firestore
+      const domainRef = db.collection('DomainName');
+      const domainSnapshot = await domainRef.where('websiteName', '==', domainName).get();
+
+      if (domainSnapshot.empty) {
+          console.warn(`[UPDATE-NS] ⚠️ No domain found for: ${domainName}`);
+          return { success: false, message: `Domain ${domainName} not found.` };
+      }
+
+      const domainData = domainSnapshot.docs[0].data();
+      const domainId = domainData?.domainNameId;
+      
+      if (!domainId) {
+          console.warn(`[UPDATE-NS] ⚠️ domainNameId missing for ${domainName}`);
+          return { success: false, message: `Invalid domain ID for ${domainName}.` };
+      }
+
+      console.log(`[UPDATE-NS] ✅ Found domainId: ${domainId}`);
+
+      if (!Array.isArray(nameServers) || nameServers.length === 0 || nameServers.length > 13) {
+          return { success: false, message: "Invalid number of name servers. You must provide 1 to 13 name servers." };
+      }
+
+      // Construct API URL with all name servers dynamically
+      let apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/UpdateNameServer?APIKey=${API_KEY}&domainNameId=${domainId}&websiteName=${domainName}`;
+      
+      nameServers.forEach((ns, index) => {
+          apiUrl += `&nameServer${index + 1}=${ns}`;
+      });
+
+      console.log(`[UPDATE-NS] 🌐 API Request: ${apiUrl}`);
+
+      // Send API Request
+      const response = await axios.get(apiUrl);
+
+      console.log(`[UPDATE-NS] 🌐 API Response:`, response.data);
+
+      if (response.data.responseMsg?.statusCode === 200) {
+          return { success: true, message: `Name Servers updated successfully!` };
+      } else {
+          return { success: false, message: response.data.responseMsg?.message || "Failed to update name servers." };
+      }
+  } catch (error) {
+      console.error(`[UPDATE-NS] ❌ Error:`, error);
+      return { success: false, message: "Error processing name servers update." };
+  }
+}
+
+// API Endpoint for Updating Name Servers
+app.get('/update-name-servers', async (req, res) => {
+  const { domainName, nameServers } = req.query;
+
+  if (!domainName || !nameServers) {
+      return res.status(400).json({ success: false, message: "Missing required parameters." });
+  }
+
+  try {
+      const parsedNameServers = JSON.parse(nameServers);
+
+      if (!Array.isArray(parsedNameServers) || parsedNameServers.length === 0 || parsedNameServers.length > 13) {
+          return res.status(400).json({ success: false, message: "Invalid number of name servers. You must provide 1 to 13 name servers." });
+      }
+
+      const result = await updateNameServer(domainName, parsedNameServers);
+      res.json(result);
+  } catch (error) {
+      return res.status(400).json({ success: false, message: "Invalid nameServers JSON format." });
+  }
+});
+
+
+
+// 📌 Function to Add Child Name Server (Correct Order)
+async function addChildNameServer(domainName, ipAddress, hostname) {
+  try {
+      console.log(`[ADD-CHILD-NS] 🔍 Checking domain: ${domainName}`);
+
+      // Fetch domainNameId from Firestore
+      const domainRef = db.collection('DomainName');
+      const domainSnapshot = await domainRef.where('websiteName', '==', domainName).get();
+
+      if (domainSnapshot.empty) {
+          console.warn(`[ADD-CHILD-NS] ⚠️ No domain found for: ${domainName}`);
+          return { success: false, message: `Domain ${domainName} not found.` };
+      }
+
+      const domainData = domainSnapshot.docs[0].data();
+      const domainNameId = domainData?.domainNameId;
+      
+      if (!domainNameId) {
+          console.warn(`[ADD-CHILD-NS] ⚠️ domainNameId missing for ${domainName}`);
+          return { success: false, message: `Invalid domain ID for ${domainName}.` };
+      }
+
+      console.log(`[ADD-CHILD-NS] ✅ Found domainNameId: ${domainNameId}`);
+
+      // Prepare API Request (Correct Order: ipAddress FIRST, then hostName)
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/AddChildNameServer?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&ipAddress=${ipAddress}&hostName=${hostname}`;
+
+      console.log(`[ADD-CHILD-NS] 🌐 API Request: ${apiUrl}`);
+
+      // Send API Request
+      const response = await axios.get(apiUrl);
+
+      console.log(`[ADD-CHILD-NS] 🌐 API Response for ${hostname}:`, response.data);
+
+      if (response.data.responseMsg?.statusCode === 200) {
+          return { success: true, message: `Child Name Server ${hostname} added successfully!` };
+      } else {
+          return { success: false, message: response.data.responseMsg?.message || "Failed to add child name server." };
+      }
+  } catch (error) {
+      console.error(`[ADD-CHILD-NS] ❌ Error:`, error);
+      return { success: false, message: "Error processing child name server." };
+  }
+}
+
+// 📌 API Endpoint (Now Uses GET, Correct Parameter Order)
+app.get('/add-child-ns', async (req, res) => {
+  const { domainName, ipAddress, hostname } = req.query;
+
+  if (!domainName || !hostname || !ipAddress) {
+      return res.status(400).json({ success: false, message: "Missing required parameters." });
+  }
+
+  const result = await addChildNameServer(domainName, ipAddress, hostname);
+  res.json(result);
+});
+
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
@@ -1196,7 +1330,7 @@ const predefinedAnswers = {
 //
   "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process.",
 //
-  "How can I add a child nameserver?": "Navigate to your DNS settings and add a child nameserver by specifying the IP address and hostname.",
+  "How can I add a child nameserver?": "To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers.",
 //
   "How do I pull a domain?": "A domain pull can be initiated from your registrar account under the transfer or migration section.",
 //
