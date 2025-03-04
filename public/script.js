@@ -314,7 +314,7 @@ function updateChatLog(message, sender) {
       const style = document.createElement('style');
       style.id = 'register-domain-css';
       style.innerHTML = `
-          .register-button, .transfer-button, .available-button, .update-button, .renew-button {
+          .register-button, .transfer-button, .available-button, .update-button, .renew-button, .child-ns-button {
               padding: 10px 10px;
               font-family: 'Inter', sans-serif;
               font-size: 14px;
@@ -330,7 +330,7 @@ function updateChatLog(message, sender) {
               width: 100%;
               text-align: center;
           }
-          .register-button:hover, .transfer-button:hover, .available-button:hover, .update-button:hover, .renew-button:hover {
+          .register-button:hover, .transfer-button:hover, .available-button:hover, .update-button:hover, .renew-button:hover, .child-ns-button:hover {
               background-color: #d4ac0d;
           }
           .button-container {
@@ -396,9 +396,9 @@ function updateChatLog(message, sender) {
   // Update name servers
   if (
       sender === 'bot' && isUserSignedIn &&
-      (message.includes("update the name servers") || message.includes("update name servers") || message.includes("I can help you update your name servers!"))
+      (message.includes("update the name servers") || message.includes("update name servers") || message.includes("Go to your domain management panel, find DNS settings, and update the name servers accordingly."))
   ) {
-      addButton("Update Name Servers", "update-button", "name-server-update-section");
+      addButton("Add Name Servers", "update-button", "name-server-update-section");
   }
 
   // Renew a domain
@@ -408,6 +408,15 @@ function updateChatLog(message, sender) {
   ) {
       addButton("Renew a Domain", "renew-button", "domain-renewal-section");
   }
+
+  // Add child name servers
+  if (
+    sender === 'bot' && isUserSignedIn &&
+    (message.includes("add a child name server") || message.includes("register child name server") || message.includes("To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers.")) &&
+    !message.includes("Thank you for signing in!")
+) {
+    addButton("Add Child Nameservers", "child-ns-button", "add-child-name-server-section");
+}
 
   // Show auth buttons if response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
@@ -1202,70 +1211,252 @@ async function handleBotResponse(userQuestion) {
 
 //---------------------------------------------------- Add Name Server Section --------------------------------------------------------//
 
-// Global variables
 let nameServerCount = 1;
 const maxNameServers = 13;
 
-// Function to dynamically add name servers (up to 13)
-function addNameServer() {
+function addNameServerInput() {
     if (nameServerCount >= maxNameServers) {
         alert("You can add up to 13 name servers only.");
         return;
     }
 
     nameServerCount++;
+
     const container = document.getElementById("nameserver-container");
 
     const inputDiv = document.createElement("div");
-    inputDiv.className = "ns-input"; 
-    inputDiv.innerHTML = `<input type="text" id="nameserver${nameServerCount}" placeholder="Enter Name Server ${nameServerCount}" required>`;
+    inputDiv.className = "ns-input";
+    inputDiv.innerHTML = `
+        <input type="text" id="nameserver${nameServerCount}" placeholder="Enter Name Server ${nameServerCount}" required>
+    `;
 
     container.appendChild(inputDiv);
+
+    // Ensure new inputs fit inside the fixed height
+    adjustNameServerInputSizes();
 }
 
-// Function to update name servers
-async function updateNameServers() {
-    const domainName = document.getElementById("domain-name-input").value;
-    if (!domainName) {
-        document.getElementById("update-status").innerHTML = "❌ Please enter a domain name.";
-        return;
-    }
+function adjustNameServerInputSizes() {
+    const totalInputs = document.querySelectorAll(".ns-input").length;
+    const maxHeight = 150; // Total space allocated to inputs
+    const newHeight = maxHeight / totalInputs;
 
-    let nameServers = [];
-    for (let i = 1; i <= nameServerCount; i++) {
-        const ns = document.getElementById(`nameserver${i}`).value;
-        if (ns) nameServers.push(ns);
-    }
+    document.querySelectorAll(".ns-input input").forEach(input => {
+        input.style.height = `${newHeight}px`;
+        input.style.fontSize = "12px"; // Adjust font size slightly if needed
+    });
+}
 
-    if (nameServers.length === 0) {
-        document.getElementById("update-status").innerHTML = "❌ Please enter at least one name server.";
-        return;
-    }
+// Function to show a popup message
+function showNameServerPopup(message, isSuccess) {
+    disableChat(); // Disable chat interactions
 
-    const domainNameId = await getDomainId(domainName);
-    if (!domainNameId) {
-        document.getElementById("update-status").innerHTML = "❌ Domain not found.";
-        return;
-    }
+    // Create the popup box
+    const popup = document.createElement('div');
+    popup.className = 'chat-popup-box';
 
-    const apiKey = "<Your_API_Key>"; 
-    let apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/UpdateNameServer?APIKey=${apiKey}&domainNameId=${domainNameId}&websiteName=${domainName}`;
+    const content = document.createElement('div');
+    content.className = 'popup-content';
+    content.innerHTML = `<p>${message}</p>`;
 
-    nameServers.forEach((ns, index) => {
-        apiUrl += `&nameServer${index + 1}=${ns}`;
+    const closeButton = document.createElement('button');
+    closeButton.className = 'popup-close-btn';
+    closeButton.innerText = 'OK';
+    closeButton.addEventListener('click', () => {
+        popup.remove();
+        enableChat(); // Re-enable chat when popup is closed
     });
 
+    content.appendChild(closeButton);
+    popup.appendChild(content);
+    document.body.appendChild(popup);
+
+    // Auto-hide popup after 5 seconds and re-enable chat
+    setTimeout(() => {
+        popup.remove();
+        enableChat();
+    }, 5000);
+}
+
+// Function to fetch domain ID from Firebase
+async function getDomainId(domainName) {
     try {
-        const response = await fetch(apiUrl, { method: "GET" });
-        const data = await response.json();
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            console.error("User not authenticated.");
+            return null;
+        }
 
-        document.getElementById("update-status").innerHTML = data.statusCode === 200 
-            ? "✅ Name servers updated successfully!" 
-            : "❌ Failed: " + data.message;
+        const db = firebase.firestore();
+        const domainRef = db.collection("domains").where("domainName", "==", domainName).limit(1);
+        const snapshot = await domainRef.get();
 
+        if (snapshot.empty) {
+            console.log(`❌ Domain ID not found for ${domainName}`);
+            return null;
+        }
+
+        const domainData = snapshot.docs[0].data();
+        console.log(`✅ Domain ID found: ${domainData.domainId}`);
+        return domainData.domainId;
     } catch (error) {
-        document.getElementById("update-status").innerHTML = "❌ Error updating name servers.";
-        console.error(error);
+        console.error("❌ Error fetching domain ID:", error);
+        return null;
+    }
+}
+
+// Function to update Name Servers
+async function updateNameServers() {
+    let domain = document.getElementById("domain-name-input").value.trim();
+    let nameServers = [];
+
+    for (let i = 1; i <= nameServerCount; i++) {
+        let ns = document.getElementById(`nameserver${i}`).value.trim();
+        if (ns) {
+            nameServers.push(ns);
+        }
+    }
+
+    if (!domain || nameServers.length === 0) {
+        showNameServerPopup("Please enter the domain and at least one name server.", false);
+        return;
+    }
+
+    console.log(`🔍 Fetching domain ID for ${domain}...`);
+    const domainId = await getDomainId(domain);
+
+    if (!domainId) {
+        showNameServerPopup("Domain ID not found in Firebase.", false);
+        return;
+    }
+
+    let apiUrl = `/update-name-servers?domainName=${encodeURIComponent(domain)}&domainId=${domainId}&nameServers=${encodeURIComponent(JSON.stringify(nameServers))}`;
+
+    console.log("[FRONTEND] 📡 Sending request:", apiUrl);
+
+    try {
+        const response = await fetch(apiUrl);
+        const result = await response.json();
+        console.log("[FRONTEND] 🌐 Server Response:", result);
+
+        if (result.success) {
+            showNameServerPopup("Name Servers updated successfully!", true);
+        } else {
+            showNameServerPopup("Failed to update Name Servers: " + (result.message || "Unknown error."), false);
+        }
+    } catch (error) {
+        console.error("[FRONTEND] ❌ Error:", error);
+        showNameServerPopup("Error connecting to server.", false);
+    }
+}
+
+//------------------------------------------------- Add Child Nameservers Section -----------------------------------------------------//
+
+let childNameServerCount = 1;
+const maxChildNameServers = 4;
+
+function addChildNameServerInput() {
+    if (childNameServerCount >= maxChildNameServers) {
+        alert("You can add up to 4 child nameservers only.");
+        return;
+    }
+
+    childNameServerCount++;
+
+    const container = document.getElementById("childnameserver-container");
+
+    const inputDiv = document.createElement("div");
+    inputDiv.className = "childns-input";
+    inputDiv.innerHTML = `
+        <input type="text" id="childnameserver${childNameServerCount}" placeholder="Enter Hostname (e.g., ns${childNameServerCount}.example.com)" required>
+        <input type="text" id="child-ip-address${childNameServerCount}" placeholder="Enter IP Address" required>
+    `;
+
+    container.appendChild(inputDiv);
+
+    // Ensure new inputs fit inside the fixed height
+    adjustInputSizes();
+}
+
+function adjustInputSizes() {
+    const totalInputs = document.querySelectorAll(".childns-input").length;
+    const maxHeight = 150; // Total space allocated to inputs
+    const newHeight = maxHeight / totalInputs;
+
+    document.querySelectorAll(".childns-input input").forEach(input => {
+        input.style.height = `${newHeight}px`;
+        input.style.fontSize = "12px"; // Adjust font size slightly if needed
+    });
+}
+
+// Function to show a popup message and disable chat
+function showChildNSPopup(message, isSuccess) {
+    disableChat(); // Disable chat interactions
+
+    // Create the popup box
+    const popup = document.createElement('div');
+    popup.className = 'chat-popup-box';
+
+    const content = document.createElement('div');
+    content.className = 'popup-content';
+    content.innerHTML = `<p>${message}</p>`;
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'popup-close-btn';
+    closeButton.innerText = 'OK';
+    closeButton.addEventListener('click', () => {
+        popup.remove();
+        enableChat(); // Re-enable chat when popup is closed
+    });
+
+    content.appendChild(closeButton);
+    popup.appendChild(content);
+    document.body.appendChild(popup);
+
+    // Auto-hide popup after 5 seconds and re-enable chat
+    setTimeout(() => {
+        popup.remove();
+        enableChat();
+    }, 5000);
+}
+
+// Function to handle child name server registration
+async function registerChildNameServer() {
+    let domain = document.getElementById("child-domain-name").value.trim();
+    let nameServers = [];
+    
+    for (let i = 1; i <= childNameServerCount; i++) {
+        let ns = document.getElementById(`childnameserver${i}`).value.trim();
+        let ip = document.getElementById(`child-ip-address${i}`).value.trim();
+        
+        if (ns && ip) {
+            nameServers.push({ hostname: ns, ip: ip });
+        }
+    }
+
+    if (!domain || nameServers.length === 0) {
+        showChildNSPopup("Please enter the domain and at least one child name server.", false);
+        return;
+    }
+
+    for (const ns of nameServers) {
+        const apiUrl = `/add-child-ns?domainName=${encodeURIComponent(domain)}&ipAddress=${encodeURIComponent(ns.ip)}&hostname=${encodeURIComponent(ns.hostname)}`;
+
+        console.log("[FRONTEND] 📡 Sending request:", apiUrl);
+
+        try {
+            const response = await fetch(apiUrl);
+            const result = await response.json();
+            console.log("[FRONTEND] 🌐 Server Response:", result);
+
+            showChildNSPopup(
+                result.success ? "Child Name Server added successfully!" : "Failed to add Child Name Server.",
+                result.success
+            );
+        } catch (error) {
+            console.error("[FRONTEND] ❌ Error:", error);
+            showChildNSPopup("Error connecting to server.", false);
+        }
     }
 }
 
@@ -1839,9 +2030,4 @@ function goBackTouserinputsection() {
 
 async function getDomainId(domainName) {
     return 1; // Replace with actual API call if needed
-}
-
-function goBackToQuerySection() {
-    document.getElementById("name-server-update-section").style.display = "none";
-    alert("Going back to the previous section...");
 }

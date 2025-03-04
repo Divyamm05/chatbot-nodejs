@@ -1373,9 +1373,136 @@ input:not(:checked) + .slider .on {
   background-color: #d4ac0d;
 }
 
-
 .button-container {
   margin-top: 10px;
+}
+
+#add-child-name-server-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%; /* Fixed height */
+  padding: 10px;
+  overflow: hidden;
+}
+
+/* Full width for domain name input */
+.input-group {
+  width: 100%;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Container for name server and IP inputs */
+.ns-wrapper {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-right: 5px; /* Avoid text cutoff when scrolling */
+}
+
+/* Name server and IP input on same line */
+.childns-input {
+  display: flex;
+  gap: 10px;
+}
+
+/* Make both inputs equal in size */
+.childns-input input {
+  flex: 1;
+  padding: 6px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Buttons section */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Buttons should shrink if needed */
+.button-group button {
+  flex: 1;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #f1c40f;
+  transition: background-color 0.3s ease;
+}
+
+.button-group button:hover {
+  background-color: #d4ac0d;
+}
+
+/* Add a scrollbar if too many inputs */
+.ns-wrapper::-webkit-scrollbar {
+  width: 5px;
+}
+
+.ns-wrapper::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 10px;
+}
+
+/* Chat Popup Box */
+.chat-popup-box {
+  position: fixed;
+  bottom: 45%;
+  right: 15%;
+  background-color: #2d2d2d;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 250px;
+  max-width: 300px;
+  text-align: center;
+  animation: fadeInOut 5s ease-in-out;
+}
+
+/* Popup Content */
+.popup-content p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Popup Button */
+.popup-close-btn {
+  margin: 5px;
+  padding: 5px 10px;
+  background-color: #f1c40f;
+  color: #000000;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-close-btn:hover {
+  background-color: #45a049;
+}
+
+/* Animation */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(10px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(10px); }
 }
 
 /* Chat Popup Box */
