@@ -133,6 +133,7 @@ body {
   opacity: 1;
   overflow: hidden;
 }
+
 .header {
   font-size: 18px;
   font-weight: 600;
@@ -141,7 +142,6 @@ body {
   text-align: center;
   justify-content: center;
   padding: 12px;
-  border-bottom: 1px solid #1abc9c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,14 +161,14 @@ body {
 /* Show hamburger icon in header when sidebar is collapsed */
 #sidebar.collapsed + #chatbox .header #header-menu-icon {
   display: inline-block;
-  left: 3%;
+  left: 2%;
 }
 
 
 .info-btn {
   cursor: pointer;
   position: absolute;
-  left: 85%;
+  left: 8%;
   font-size: 20px;
   color: #007bff;
   display: inline-block;
@@ -181,8 +181,8 @@ body {
 #info-box {
   position: absolute;
   top: 34%;
-  left: 60%;
-  width: 29%;
+  left: 17%;
+  width: 40%;
   background: #fff;
   padding: 10px;
   border-radius: 8px;
