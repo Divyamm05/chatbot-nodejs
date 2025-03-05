@@ -147,6 +147,7 @@ body {
   justify-content: center;
   position: relative;
   height: 4%;
+  justify-content: flex-end;
 }
 
 /* Hamburger icon in header */
@@ -164,6 +165,62 @@ body {
   left: 2%;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.profile-icon {
+  width: 30px;
+    height: 30px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.profile-icon::before, 
+.profile-icon::after {
+  content: "";
+  position: absolute;
+  background-color: #8b8b8b;
+  border-radius: 50%;
+}
+
+/* Head */
+.profile-icon::before {
+  width: 30%;
+  height: 30%;
+  top: 20%;
+}
+
+/* Body */
+.profile-icon::after {
+  width: 50%;
+  height: 30%;
+  bottom: 20%;
+}
+
+.login-text {
+  font-size: 16px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-text:hover {
+  text-decoration: underline;
+}
+
+.profile-icon {
+  font-size: 20px;
+  cursor: pointer;
+}
 
 .info-btn {
   cursor: pointer;
@@ -243,7 +300,6 @@ body {
   opacity: 1;
   visibility: visible;
   animation: fadeIn 0.5s forwards;
-  border-bottom: 2px solid #1abc9c;
   height: 65%;
 }
 
@@ -418,12 +474,12 @@ body {
   padding-right: 10px;
   padding-left: 0px;
   font-size: 13px;
-  max-height: calc(100vh - 200px); /* Adjust the 200px based on header/footer */
+  max-height: calc(90vh - 200px); /* Adjust the 200px based on header/footer */
   overflow-y: auto; /* Enables scrolling when needed */
 }
 
 .faq-list li:hover {
-  background: #066;
+  background: black;
   color: white;
 }
 
@@ -444,7 +500,7 @@ body {
 /* FAQ Items */
 .faq-list li {
   padding: 8px;
-  background: #797979;
+  background: #066;
   margin: 5px 0;
   border-radius: 5px;
   cursor: pointer;
@@ -461,17 +517,16 @@ body {
   z-index: 20; /* Ensure chatbox is below the sidebar */
 }
 
-
-
 .chat-input {
-  padding: 15px;
+  padding: 8px;
   background-color: #34495e;
   display: flex;
   align-items: center;
   border-radius: 0 0 20px 20px;
   box-sizing: border-box;
   bottom: 0%;
-  gap: 10px;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
 .chat-input.hidden {
@@ -480,7 +535,7 @@ body {
 
 .chat-input input {
   flex-grow: 1;
-  padding: 12px;
+  padding: 8px;
   border-radius: 30px;
   border: 1px solid #1abc9c;
   background-color: #2c3e50;
@@ -489,7 +544,7 @@ body {
   font-size: 14px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
-  
+  width: 100%;
 }
 
 .chat-input input::placeholder {
@@ -502,7 +557,7 @@ body {
 
 /* Styling for all buttons */
 .chat-input button {
-  padding: 12px 18px;
+  padding: 8px;
   background-color: #066;
   color: white;
   border: none;
@@ -510,10 +565,11 @@ body {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 100%;
 }
 
 .chat-input button:hover {
-  background-color: #16a085;
+  background-color: black;
 }
 
 /* Specific styling for the third button if needed, remove if not */
@@ -583,9 +639,9 @@ body {
 }
 
 #otp-section button {
-  width: 13%;
+  width: 24%;
   margin-left: 10px;
-  background-color: #f1c40f;
+  background-color: #066;
   color: #ffffff;
   border: none;
   border-radius: 20px;
@@ -598,7 +654,7 @@ body {
 }
 
 #otp-section button:hover {
-  background-color: #1abc9c;
+  background-color: #000000;
 }
 
 #otp-section button:disabled {
@@ -606,8 +662,10 @@ body {
   cursor: not-allowed;
 }
 
-#email-section{
-  display: none;
+#email-buttons{
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
 
 #email-section {
@@ -617,32 +675,32 @@ body {
 }
 
 #email-section input {
-  padding: 12px;
+  padding: 8px;
   border-radius: 30px;
   border: 1px solid #1abc9c;
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
-  font-size: 14px;
+  font-size: 12px;
   flex-grow: 1;
-  width: 10%;
+  width: 100%;
 }
 
 #email-section button {
-  padding: 12px 18px;
-  background-color: #f1c40f;
-  color: #2c3e50;
+  padding: 8px;
+  background-color: #066;
+  color: white;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
   transition: background-color 0.3s ease;
-  width: 25%;
+  width: 100%;
 }
 
 #email-section button:hover {
-  background-color: #1abc9c;
+  background-color: #000000;
 }
 
 /* Domain Options and Button Container */
@@ -880,7 +938,7 @@ body {
   justify-content: center; /* Centering the two visible inputs initially */
   align-items: flex-start;
   width: 100%;
-  gap: 10px;
+  row-gap: 8px;
 }
 
 /* Input Fields - Only Two Initially Visible */
@@ -972,10 +1030,14 @@ body {
   height: auto;
   background-color: #34495e;
   border-radius: 0 0 20px 20px;
-  padding: 8px;
+  padding: 5px;
   box-sizing: border-box;
   color: #ecf0f1;
   width: 100%;
+}
+
+.domain-transfer-input{
+  display: flex;
 }
 
 /* Wrapper for input fields */
@@ -985,7 +1047,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  gap: 10px;
+  gap: 5px;
 }
 
 /* Input Fields & Select Box */
@@ -1047,6 +1109,7 @@ body {
   cursor: pointer;
   border-radius: 8px;
   transition: background-color 0.3s ease;
+  width: 97%;
 }
 
 .button-group button:hover {
@@ -1059,15 +1122,15 @@ body {
   border-radius: 5px;
   border: 1px solid #1abc9c;
   background-color: #2c3e50;
-  color: #ecf0f1;
+  color: #adb8bb;
   outline: none;
 }
 
 /* Button Styling */
 #domain-registration-section button {
   padding: 12px;
-  background-color: #f1c40f;
-  color: #2c3e50;
+  background-color: #066;
+  color: white;
   border: none;
   border-radius: 20px;
   justify-content: center;
@@ -1082,7 +1145,7 @@ body {
 
 /* Button Hover Effect */
 #domain-registration-section button:hover {
-  background-color: #16a085;
+  background-color: black;
 }
 
 /* Disabled Button */
@@ -1099,8 +1162,7 @@ body {
   justify-content: flex-start;
   height: auto;
   background-color: #34495e;
-  border-radius: 0 0 20px 20px;
-  padding: 16px;
+  border-radius: 20px;
   box-sizing: border-box;
   color: #ecf0f1;
   width: 100%;
@@ -1114,6 +1176,7 @@ body {
   align-items: flex-start;
   width: 100%;
   gap: 10px;
+  row-gap: 8px;
 }
 
 /* Input Fields */
@@ -1217,6 +1280,13 @@ body {
   border-width: 5px;
   border-style: solid;
   border-color: #fff transparent transparent transparent;
+}
+
+/* Hide tooltip smoothly */
+.tooltip.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
 }
 
 .switch {
@@ -1405,48 +1475,116 @@ input:not(:checked) + .slider .on {
 #add-child-name-server-section {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%; /* Fixed height */
+  justify-content: flex-start;
+  height: auto;
   padding: 10px;
-  overflow: hidden;
-}
-
-/* Full width for domain name input */
-.input-group {
-  width: 100%;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-/* Container for name server and IP inputs */
-.ns-wrapper {
-  flex-grow: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding-right: 5px; /* Avoid text cutoff when scrolling */
-}
-
-/* Name server and IP input on same line */
-.childns-input {
-  display: flex;
   gap: 10px;
 }
 
-/* Make both inputs equal in size */
-.childns-input input {
-  flex: 1;
-  padding: 6px;
+/* Ensure all input fields are the same width */
+.input-group,
+.ns-input {
+  display: flex;
+  width: 100%;
+}
+
+/* Style for all input fields */
+.input-group input,
+.ns-input input {
+  flex: 1; /* Makes all inputs take up equal space */
+  padding: 8px;
   font-size: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid #1abc9c;
   border-radius: 5px;
+  box-sizing: border-box; /* Prevents width issues */
+}
+
+/* Container for Name Server Inputs */
+.ns-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Dynamic grid */
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Each Name Server input block */
+.ns-input {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Ensure uniform input styling */
+.ns-input input {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #1abc9c;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* Button section - Keep buttons in one row */
+.button-group-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Button Styling */
+.button-group-name button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  background-color: #1abc9c;
+  color: white;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Button Hover Effect */
+.button-group-name button:hover {
+  background-color: #16a085;
+}
+
+/* Ensure buttons are in one row and properly aligned */
+.button-group-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Button Styling */
+.button-group-name button {
+  flex: 1; /* Makes all buttons take equal width */
+  padding: 10px; /* Ensures uniform padding */
+  border: none;
+  border-radius: 5px;
+  background-color: #1abc9c;
+  color: white;
+  cursor: pointer;
+  height: 40px; /* Fixed height to prevent oversized buttons */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Button Hover Effect */
+.button-group-name button:hover {
+  background-color: #16a085;
 }
 
 /* Buttons section */
@@ -1454,23 +1592,25 @@ input:not(:checked) + .slider .on {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+  width: 97%;
 }
 
 /* Buttons should shrink if needed */
 .button-group button {
   flex: 1;
   padding: 8px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  background-color: #f1c40f;
+  background-color: #066;
+  color: white;
   transition: background-color 0.3s ease;
 }
 
 .button-group button:hover {
-  background-color: #d4ac0d;
+  background-color: #000000;
 }
 
 /* Add a scrollbar if too many inputs */
@@ -1487,7 +1627,7 @@ input:not(:checked) + .slider .on {
 .chat-popup-box {
   position: fixed;
   bottom: 45%;
-  right: 15%;
+  right: 8%;
   background-color: #2d2d2d;
   color: white;
   padding: 20px;
@@ -1511,15 +1651,15 @@ input:not(:checked) + .slider .on {
 .popup-close-btn {
   margin: 5px;
   padding: 5px 10px;
-  background-color: #f1c40f;
-  color: #000000;
+  background-color: #066;
+  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .popup-close-btn:hover {
-  background-color: #45a049;
+  background-color: #000000;
 }
 
 /* Animation */
@@ -1557,15 +1697,15 @@ input:not(:checked) + .slider .on {
 .popup-close-btn {
   margin: 5px;
   padding: 5px 10px;
-  background-color: #f1c40f;
-  color: #000000;
+  background-color: #066;
+  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .popup-close-btn:hover {
-  background-color: #45a049;
+  background-color: #000000;
 }
 
 
@@ -1667,26 +1807,14 @@ login-chat-wrapper button:disabled {
 }
 
 #domain-query-text {
-  flex: 1; 
-  border-radius: 30px;
-  border: 1px solid #1abc9c;
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  outline: none;
-  font-size: 14px;
-  height: 35px;
-  box-sizing: border-box;
-}
-
-#domain-query-text {
-  padding: 12px;
+  padding: 8px;
   border-radius: 30px;
   border: 1px solid #1abc9c;
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
   width: 100%; 
-  font-size: 14px;
+  font-size: 12px;
   box-sizing: border-box;
 }
 

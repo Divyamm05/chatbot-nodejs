@@ -90,6 +90,11 @@
     <div class="header">
       <span id="header-menu-icon" onclick="toggleSidebar()">☰</span>
       <span class="info-btn" onclick="showInfo()">ℹ️</span>
+      <div class="header-right">
+        <div class="profile-icon" id="profile-icon"></div>
+        <a class="login-text" id="login-text" onclick="taketosigninsection()">Login</a>
+        <a class="login-text" id="signup-text" href="https://india.connectreseller.com/signup" style="display: none;">Signup</a>
+      </div>
     </div>
     <div class="chat-log" id="chat-log">
       <div class="message bot-message" id="initial-message">Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊</div>
@@ -98,6 +103,7 @@
         <a href="https://india.connectreseller.com/signup" target="_blank"><button class="signup-button" onclick="">Sign Up</button></a>
         <button class="login-button" onclick="taketosigninsection()">Login</button>
       </div>
+
       <!-- Register Buttons Container -->
       <div id="register-buttons-container" style="display: none;">
         <button class="register-button" onclick="goToRegisterDomainSection()">Register a Domain</button>
@@ -113,8 +119,10 @@
 <!-- Email Section (Initially Hidden) -->
 <div class="chat-input" id="email-section" style="display: none;">
   <input type="email" id="user-email" placeholder="Enter your email" autofocus>
+  <div id="email-buttons">
   <button id="submit-email" onclick="requestOTP()">Submit</button>
   <button id="back-to-userinput-section" onclick="goBackTouserinputsection()">Back</button>
+  </div>
 </div>
 
     <!-- OTP Section -->
@@ -219,7 +227,7 @@
   </div>
 
   <!-- Buttons -->
-  <div class="button-group">
+  <div class="button-group-name">
       <button onclick="addNameServerInput()">➕ Add Name Server</button>
       <button onclick="updateNameServers()">Update Name Servers</button>
       <button onclick="goBackToQuerySection()">Back</button>
@@ -360,17 +368,18 @@
     <div id="domain-transfer-section" class="chat-input" style="display: none;">
   
       <div class="domain-transfer-wrapper">
+        <div class="domain-transfer-input">
         <div class="input-group">
-          <input type="text" id="transfer-domain-name" placeholder="Domain Name*">
+          <input type="text" id="transfer-domain-name" placeholder="Domain Name">
         </div>
-    
+
         <div class="input-group">
-          <input type="text" id="auth-code" placeholder="Auth Code (EPP Key)*">
+          <input type="text" id="auth-code" placeholder="Auth Code (EPP Key)">
         </div>
-  
+      </div>
         <div class="input-group">
           <select id="transfer-whois-protection">
-            <option value="">Enable Whois Protection*</option>
+            <option value="">Enable Whois Protection</option>
             <option value="no">No</option>
             <option value="yes">Yes</option>
           </select>

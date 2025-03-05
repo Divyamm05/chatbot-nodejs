@@ -1298,8 +1298,6 @@ const predefinedAnswers = {
 //
   "When was this domain registered?": "Domain registration details, including the registration date, can be found in the domain management section or a WHOIS lookup tool.",
 //
-  "What is my current balance in my account?": "You can check your balance in the billing section of your account.",
-//
   "How can I check available funds?": "You can check your balance in the billing section of your account.",
 //
   "How can I update the name servers for a domain?": "Go to your domain management panel, find DNS settings, and update the name servers accordingly.",
