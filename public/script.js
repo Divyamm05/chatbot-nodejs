@@ -26,12 +26,16 @@ function taketosigninsection() {
     const emailSection = document.getElementById('email-section');
     const userinputSection = document.getElementById('user-input-section');
     const chatLog = document.getElementById('chat-log'); 
+    const login = document.getElementById('login-text')
+    const signup = document.getElementById('signup-text')
 
     // Toggle the visibility of the email section
     if (emailSection.style.display === 'none' || emailSection.style.display === '') {
         // Show the email section
         emailSection.style.display = 'flex';
         userinputSection.style.display = 'none';
+        login.style.display = 'none';
+        signup.style.display = 'flex';
 
         // Clear the chat log
         chatLog.innerHTML = ''; 
@@ -120,6 +124,9 @@ async function verifyOTP() {
 const email = document.getElementById('user-email').value.trim();
 const otpInput = document.getElementById('otp-code');
 const otp = otpInput ? otpInput.value.trim() : '';
+const signup= document.getElementById('signup-text');
+const profileicon= document.getElementById('profile-icon');
+const login= document.getElementById('login-text');
 
 if (!email) {
     updateChatLog('Please enter your email to proceed.', 'bot');
@@ -146,6 +153,9 @@ try {
     if (data.success) {
         isSignedIn = true;
         localStorage.setItem('isSignedIn', 'true');
+        login.style.display = 'none';
+        signup.style.display = 'none';
+        profileicon.style.display = 'none';
 
         // Use customerId (resellerId) from the response
         if (data.customerId) {
@@ -164,6 +174,7 @@ try {
         document.getElementById('login-chat-section').style.display = 'flex';
         document.getElementById('sidebar-content').style.display = 'none';
         document.getElementById('faq-post-login').style.display = 'flex';
+        
 
         updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
 
@@ -317,13 +328,13 @@ function updateChatLog(message, sender) {
           .register-button, .transfer-button, .available-button, .update-button, .renew-button, .child-ns-button {
               padding: 10px 10px;
               font-family: 'Inter', sans-serif;
-              font-size: 14px;
+              font-size: 12px;
               font-weight: 600;
               cursor: pointer;
               border: none;
-              color: #2c3e50;
+              color: white;
               border-radius: 20px;
-              background-color: #f1c40f;
+              background-color: #3b3b3b;
               transition: background-color 0.3s ease;
               margin-top: 12px;
               display: block;
@@ -331,7 +342,7 @@ function updateChatLog(message, sender) {
               text-align: center;
           }
           .register-button:hover, .transfer-button:hover, .available-button:hover, .update-button:hover, .renew-button:hover, .child-ns-button:hover {
-              background-color: #d4ac0d;
+              background-color: black;
           }
           .button-container {
               width: 100%;
@@ -517,6 +528,21 @@ function checkDomainRegistrationResponse(response) {
 
 // Fill Chat Input with FAQ Question
 function fillChatInput(question) {
+
+    const chatInput = document.getElementById('domain-query-text');
+    const submitButton = document.getElementById('submitDomainQuery');
+    const toggleContainer = document.getElementById('theft-protection-toggle-container'); 
+    const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
+    const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
+    const privacyContainer = document.getElementById('domain-privacy-toggle-container');
+
+    // ❗ Always hide all toggle containers first
+    toggleContainer.style.display = 'none';
+    lockToggleContainer.style.display = 'none';
+    suspendToggleContainer.style.display = 'none';
+    privacyContainer.style.display = 'none';
+    submitButton.style.width = '100%'; // Reset button width
+
     const userInput = document.getElementById("user-question");
     const userInput2 = document.getElementById("domain-query-text");
     userInput.value = question;
@@ -539,6 +565,13 @@ function fillChatInputWithPlaceholder(template) {
   chatInput.value = template;
   chatInput.focus();
 
+  // Hide all toggle containers by default
+toggleContainer.style.display = 'none';
+lockToggleContainer.style.display = 'none';
+suspendToggleContainer.style.display = 'none';
+privacyContainer.style.display = 'none';
+submitButton.style.width = '100%';
+
   // Find the placeholder position and select it
   const startPos = template.indexOf(placeholder);
   if (startPos !== -1) {
@@ -546,15 +579,6 @@ function fillChatInputWithPlaceholder(template) {
       chatInput.setSelectionRange(startPos, endPos);
   }
 
-
-  // Show toggle container if theft protection is requested
-  if (template.includes('Enable/disable theft protection')) {
-    toggleContainer.style.display = 'flex'; // Show toggle switch
-    submitButton.style.width = '15%';
-    submitButton.style.backgroundColor = '#f1c40f';
-} else {
-    toggleContainer.style.display = 'none'; // Correct way to hide
-}
 console.log("Toggle Container:", toggleContainer);
 console.log("Current Display Style:", toggleContainer.style.display);
 
@@ -562,6 +586,7 @@ console.log("Current Display Style:", toggleContainer.style.display);
     if (domainMatch) {
         const domain = domainMatch[1];
         lockToggleContainer.style.display = 'flex';
+        submitButton.style.width = '60%';
         fetchDomainLockStatus(domain); // Fetch and update toggle state
     } else {
         lockToggleContainer.style.display = 'none';
@@ -569,17 +594,17 @@ console.log("Current Display Style:", toggleContainer.style.display);
 
     if (template.includes('Enable/disable theft protection')) {
         toggleContainer.style.display = 'flex';
-        submitButton.style.width = '15%';
-        submitButton.style.backgroundColor = '#f1c40f';
+        submitButton.style.width = '60%';
+        submitButton.style.backgroundColor = '#066';
     } else {
         toggleContainer.style.display = 'none';
+        submitButton.style.width = '100%';
     }
 
     // Toggle visibility for Domain Suspend/Unsuspend
-    const domainSuspendMatch = template.match(/suspend\/unsuspend (\S+)/i);
-    if (domainSuspendMatch) {
-        const domain = domainSuspendMatch[1];
+    if (template.includes('Suspend/Unsuspend')) {
         suspendToggleContainer.style.display = 'flex';
+        submitButton.style.width = '60%';
         fetchDomainSuspendStatus(domain); // Placeholder function to fetch suspend status
     } else {
         suspendToggleContainer.style.display = 'none';
@@ -590,6 +615,7 @@ console.log("Current Display Style:", toggleContainer.style.display);
     if (privacyMatch) {
     const domain = privacyMatch[1];
     privacyContainer.style.display = 'flex';
+    submitButton.style.width = '60%';
     fetchPrivacyProtectionStatus(domain); // Fetch privacy protection status
     } else {
     privacyContainer.style.display = 'none'; // Hide privacy protection toggle
@@ -614,7 +640,7 @@ console.log("Current Display Style:", toggleContainer.style.display);
       const paddingLeft = parseInt(inputStyle.paddingLeft);
 
       tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
-      tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth - 40) + 'px';
+      tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth - 70) + 'px';
       
       document.body.appendChild(tooltip);
       hiddenSpan.remove();
@@ -622,15 +648,13 @@ console.log("Current Display Style:", toggleContainer.style.display);
 }
 
 function hideTooltipOnInput() {
-        if (tooltip) {
-            tooltip.classList.add('hidden');
-            setTimeout(() => {
-                if (tooltip) {
-                    tooltip.remove();
-                    tooltip = null;
-                }
-            }, 200);
-        }
+    const tooltip = document.querySelector(".tooltip");
+    if (tooltip) {
+        tooltip.classList.add("hidden");
+        setTimeout(() => {
+            tooltip.remove(); // Optional: Remove it completely after hiding
+        }, 200);
+    }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -949,7 +973,7 @@ function disableChat() {
   const chatContainer = document.getElementById("chat-container");
   if (chatContainer) {
       chatContainer.style.pointerEvents = "none";
-      chatContainer.style.opacity = "0.5";
+      chatContainer.style.opacity = "0.9";
   }
 }
 
@@ -968,7 +992,7 @@ style.textContent = `
 .chat-confirmation-box {
   position: fixed;
   bottom: 45%;
-  right: 6%;
+  right: 3%;
   background-color: #2d2d2d;
   color: white;
   padding: 20px;
@@ -982,14 +1006,14 @@ style.textContent = `
 .confirmation-content button {
 margin: 5px;
     padding: 5px 10px;
-    background-color: #f1c40f;
-    color: #000000;
+    background-color: #066;
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 .confirmation-content button:hover {
-  background-color: #45a049;
+  background-color: #000000;
 }
 `;
 document.head.appendChild(style);
@@ -1215,26 +1239,25 @@ let nameServerCount = 1;
 const maxNameServers = 13;
 
 function addNameServerInput() {
-    if (nameServerCount >= maxNameServers) {
-        alert("You can add up to 13 name servers only.");
-        return;
-    }
-
-    nameServerCount++;
-
     const container = document.getElementById("nameserver-container");
+    
+    // Create wrapper div
+    const nsInputWrapper = document.createElement("div");
+    nsInputWrapper.classList.add("ns-input");
 
-    const inputDiv = document.createElement("div");
-    inputDiv.className = "ns-input";
-    inputDiv.innerHTML = `
-        <input type="text" id="nameserver${nameServerCount}" placeholder="Enter Name Server ${nameServerCount}" required>
-    `;
+    // Create input field
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Enter Name Server";
+    input.required = true;
 
-    container.appendChild(inputDiv);
+    // Append input to wrapper
+    nsInputWrapper.appendChild(input);
 
-    // Ensure new inputs fit inside the fixed height
-    adjustNameServerInputSizes();
+    // Append wrapper to container
+    container.appendChild(nsInputWrapper);
 }
+
 
 function adjustNameServerInputSizes() {
     const totalInputs = document.querySelectorAll(".ns-input").length;
@@ -1641,7 +1664,6 @@ async function submitDomainQuery() {
           "Where can I register domains?",
           "How can I renew a domain?",
           "How do I transfer IN/OUT domains?",
-          "What is my current balance in my account?",
           "Give me the list of domain registrars.",
           "Give me a list of high-value domain TLDs?",
           "Can you suggest TLDs for a selected category?",
@@ -1737,7 +1759,7 @@ async function submitDomainQuery() {
         return;
     }
 
-    const balanceMatch = queryText.match(/what is my current balance in my account/i);
+    const balanceMatch = queryText.match(/current balance/i);
 if (balanceMatch) {
     try {
         updateChatLog(`Fetching your current balance...`, 'bot');
@@ -1764,11 +1786,22 @@ if (balanceMatch) {
 }
 
     // Handle theft protection request only if stored domain exists
-if (domainForTheftProtection !== null) {
-    await submitTheftProtectionRequest(domainForTheftProtection, isTheftProtectionEnabled);
-    domainForTheftProtection = null; // Reset after submission
-    return;
-}
+    if (domainForTheftProtection !== null) {
+        // Apply a temporary loading style
+        const button = document.getElementById("submitDomainQuery");
+        button.style.backgroundColor = "#ccc"; // Disable look
+        button.style.cursor = "not-allowed";
+    
+        await submitTheftProtectionRequest(domainForTheftProtection, isTheftProtectionEnabled);
+    
+        // Reset styles after submission
+        button.style.backgroundColor = "#007bff";
+        button.style.cursor = "pointer";
+    
+        domainForTheftProtection = null; // Reset after submission
+        return;
+    }
+    
 
 // Handle domain lock/unlock request if the toggle was changed
 if (domainToLock !== null) {
@@ -1820,6 +1853,7 @@ if (domainForPrivacyProtection !== null) {
         console.error("Error with fetch request:", error);
         updateChatLog("This chatbot can answer domain-related questions only", 'bot');
     }
+    hideTooltipOnInput();
 }
 
 //----------------------------------------------- Back button after verification --------------------------------------------------//
@@ -2022,8 +2056,8 @@ function goBackToPreviousSection() {
 
 function goBackTouserinputsection() {
   document.getElementById('email-section').style.display = 'none';
-  
-
+  document.getElementById('signup-text').style.display = 'none';
+  document.getElementById('login-text').style.display = 'flex' ; 
   document.getElementById('user-input-section').style.display = 'flex';
   document.getElementById('initial-message').style.display = 'flex';  
 }
