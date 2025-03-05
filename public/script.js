@@ -1985,7 +1985,7 @@ function showInfo() {
     let infoBox = document.createElement("div");
     infoBox.id = "info-box";
     infoBox.innerHTML = `
-      <p>This chatbot helps with domain registration, transferring domain name, domain name suggestions, domain availability checks, and domain-related queries.</p>
+      <p>This platform provides domain registration, transfer, renewal, management, theft protection, API access, WHMCS integration, reports, payment options, and customer support, including a chatbot for assistance.</p>
       <button onclick="closeInfo()">OK</button>
     `;
 
