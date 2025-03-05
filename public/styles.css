@@ -1,3 +1,22 @@
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.background-website {
+  width: 100%;
+  height: 100%;
+  border: none; /* Removes iframe border */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0; /* Keeps the website in the background */
+}
+
 /* General Body Styles */
 body {
   font-family: 'Inter', sans-serif;
@@ -10,10 +29,11 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+
 #chat-container {
   display: none;  /* Flexbox ensures sidebar & chatbox stay together */
-  width: 800px;
-  height: 85vh;
+  width: 80vh;
+  height: 70vh;
   background: #ecf0f1;
   border-radius: 20px;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
@@ -116,15 +136,17 @@ body {
 .header {
   font-size: 18px;
   font-weight: 600;
-  background-color: #16a085;
+  background-color: #34495e;
   color: #ffffff;
   text-align: center;
+  justify-content: center;
   padding: 12px;
   border-bottom: 1px solid #1abc9c;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  height: 4%;
 }
 
 /* Hamburger icon in header */
@@ -146,11 +168,12 @@ body {
 .info-btn {
   cursor: pointer;
   position: absolute;
-  left: 94%;
-  font-size: 15px;
-  color: #007bff; /* Blue color */
+  left: 85%;
+  font-size: 20px;
+  color: #007bff;
   display: inline-block;
 }
+
 .info-btn:hover {
   color: #0056b3;
 }
@@ -210,7 +233,7 @@ body {
   flex-shrink: 0;
   overflow-y: auto;
   padding: 10px;
-  background-color: #2c3e50;
+  background-color: white;
   font-size: 15px;
   line-height: 1.6;
   white-space: pre-wrap;
@@ -248,15 +271,15 @@ body {
 }
 
 .bot-message {
-  background-color: #16a085;
+  background-color: #066;
   color: #ffffff;
   align-self: flex-start;
   margin-left: 20px;
 }
 
 .user-message {
-  background-color: #34495e;
-  color: #f39c12;
+  background-color: #1abc9c;
+  color: white;
   align-self: flex-end;
   margin-right: 20px;
 }
@@ -279,16 +302,16 @@ body {
   font-size: 16px;
   cursor: pointer;
   border: none;
-  color: #2c3e50;
+  color: white;
   border-radius: 20px; /* Matches button radius in chat-input section */
-  background-color: #f1c40f; /* Matches button color */
+  background-color: #45a049; /* Matches button color */
   transition: background-color 0.3s ease;
   margin: 5px; /* Ensure some space between buttons */
 }
 
 /* Hover effects */
 .signup-button:hover {
-  background-color: #45a049; /* Green when hovering */
+  background-color: #066; /* Green when hovering */
 }
 
 .login-button:hover {
@@ -400,7 +423,7 @@ body {
 }
 
 .faq-list li:hover {
-  background: #1abc9c;
+  background: #066;
   color: white;
 }
 
@@ -421,12 +444,12 @@ body {
 /* FAQ Items */
 .faq-list li {
   padding: 8px;
-  background: #f1c40f;
+  background: #797979;
   margin: 5px 0;
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.2s;
-  color: black;
+  color: white;
 }
 
 
@@ -480,8 +503,8 @@ body {
 /* Styling for all buttons */
 .chat-input button {
   padding: 12px 18px;
-  background-color: #f1c40f;
-  color: #2c3e50;
+  background-color: #066;
+  color: white;
   border: none;
   border-radius: 20px;
   font-weight: bold;
@@ -602,6 +625,7 @@ body {
   outline: none;
   font-size: 14px;
   flex-grow: 1;
+  width: 10%;
 }
 
 #email-section button {
@@ -614,6 +638,7 @@ body {
   font-weight: bold;
   font-size: 14px;
   transition: background-color 0.3s ease;
+  width: 25%;
 }
 
 #email-section button:hover {
@@ -1912,14 +1937,12 @@ login-chat-wrapper button:disabled {
   background-color: #bd1401;
 }
 
-
-/* Assistant Logo */
 /* Assistant Logo */
 #assistant-logo {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  background-color: #f1c40f;
+  background-color: #066;
   color: #fff;
   border-radius: 50%;
   padding: 18px;
@@ -1948,11 +1971,11 @@ login-chat-wrapper button:disabled {
 @media (min-width: 1024px) {
   #chat-container {
     display: flex;
-    width: 800px;
-    height: 85vh;
+    width: 65vh;
+    height: 75vh;
     background: #ecf0f1;
     border-radius: 20px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: -10px -2px 20px rgba(0, 0, 0, 0.6);
     position: fixed;
     bottom: 90px;
     right: 15px;
@@ -1960,7 +1983,7 @@ login-chat-wrapper button:disabled {
   }
 
   #sidebar {
-    width: 200px;
+    width: 150px;
     height: auto;
     background: #3b3b3b;
     color: white;
@@ -1972,12 +1995,12 @@ login-chat-wrapper button:disabled {
 
   #toggle-sidebar {
     cursor: pointer;
-    background: #1abc9c;
+    background: #3b3b3b;
     color: white;
     padding: 10px;
     font-weight: 600;
     border: none;
-    width: 92%;
+    width: 90%;
     display: flex
 ;
     align-items: center;
