@@ -525,7 +525,7 @@ body {
   border-radius: 0 0 20px 20px;
   box-sizing: border-box;
   bottom: 0%;
-  gap: 5px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -541,7 +541,7 @@ body {
   background-color: #2c3e50;
   color: #ecf0f1;
   outline: none;
-  font-size: 14px;
+  font-size: 12px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
   width: 100%;
@@ -574,8 +574,8 @@ body {
 
 /* Specific styling for the third button if needed, remove if not */
 .chat-input button:nth-child(3) {
-  width: 20%;
-  background-color: #f1c40f;
+  width: 100%;
+  background-color: #066;
   color: #ffffff;
   border-radius: 20px;
   font-size: 14px;
@@ -1472,119 +1472,41 @@ input:not(:checked) + .slider .on {
   margin-top: 10px;
 }
 
-#add-child-name-server-section {
+.name-server-container {
+  max-width: 400px;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.input-group {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  height: auto;
-  padding: 10px;
-  gap: 10px;
+  height: 30px;
+  padding: 2px 4px;
 }
 
-/* Ensure all input fields are the same width */
-.input-group,
-.ns-input {
-  display: flex;
-  width: 100%;
-}
-
-/* Style for all input fields */
-.input-group input,
-.ns-input input {
-  flex: 1; /* Makes all inputs take up equal space */
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #1abc9c;
-  border-radius: 5px;
-  box-sizing: border-box; /* Prevents width issues */
-}
-
-/* Container for Name Server Inputs */
 .ns-wrapper {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Dynamic grid */
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
+  padding: 5px;
 }
 
-/* Each Name Server input block */
-.ns-input {
+.ns-input, .childns-input  {
+  flex: 1 1 calc(50% - 5px);
+  min-width: calc(50% - 10px);
+}
+
+.button-group-name, .button-group-child {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   gap: 5px;
-}
-
-/* Ensure uniform input styling */
-.ns-input input {
-  width: 100%;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #1abc9c;
-  border-radius: 5px;
-  box-sizing: border-box;
-}
-
-/* Button section - Keep buttons in one row */
-.button-group-name {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin-top: 10px;
-}
-
-/* Button Styling */
-.button-group-name button {
-  flex: 1;
-  padding: 10px;
-  font-size: 14px;
-  border: none;
-  border-radius: 5px;
-  background-color: #1abc9c;
-  color: white;
-  cursor: pointer;
   height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-/* Button Hover Effect */
-.button-group-name button:hover {
-  background-color: #16a085;
-}
-
-/* Ensure buttons are in one row and properly aligned */
-.button-group-name {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin-top: 10px;
-}
-
-/* Button Styling */
-.button-group-name button {
-  flex: 1; /* Makes all buttons take equal width */
-  padding: 10px; /* Ensures uniform padding */
-  border: none;
-  border-radius: 5px;
-  background-color: #1abc9c;
-  color: white;
-  cursor: pointer;
-  height: 40px; /* Fixed height to prevent oversized buttons */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Button Hover Effect */
-.button-group-name button:hover {
-  background-color: #16a085;
+.add-child-name-server-container {
+  max-width: 400px;
+  border-radius: 8px;
+  background: #f9f9f9;
 }
 
 /* Buttons section */

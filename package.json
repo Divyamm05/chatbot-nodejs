@@ -28,6 +28,8 @@
         "node-fetch": "^2.7.0",
         "nodemailer": "^6.10.0",
         "openai": "^4.79.4",
+        "pdf-parse": "^1.1.1",
+        "pdfjs-dist": "^4.10.38",
         "qs": "^6.14.0",
         "spellchecker": "^3.7.1",
         "whois": "^2.14.2",

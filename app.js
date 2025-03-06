@@ -12,6 +12,8 @@ const Fuse = require('fuse.js');
 const admin = require('firebase-admin');
 const { info } = require('console');
 const qs = require('qs');
+const fs = require('fs');
+const pdf = require('pdf-parse');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -1257,6 +1259,208 @@ app.get('/add-child-ns', async (req, res) => {
   res.json(result);
 });
 
+const getCategorySuggestions = async (category) => {
+  try {
+    const prompt = `Suggest 5 top-level domains (TLDs) suitable for the category "${category}". Example response: .tech, .ai, .shop, .biz, .online`;
+
+    const response = await axios.post(
+      COHERE_API_URL,
+      {
+        model: 'command',
+        prompt: prompt,
+        max_tokens: 50,
+        temperature: 0.7,
+      },
+      {
+        headers: { Authorization: `Bearer ${COHERE_API_KEY}` },
+      }
+    );
+
+    if (!response.data.generations || response.data.generations.length === 0) {
+      return [];
+    }
+
+    return response.data.generations[0].text
+      .split(',')
+      .map((tld) => tld.trim())
+      .slice(0, 5);
+
+  } catch (error) {
+    console.error('Error fetching category suggestions:', error);
+    return [];
+  }
+};
+
+// ✅ Use getCategorySuggestions inside /api/category-suggestion to remove duplicate code
+app.post('/api/category-suggestion', async (req, res) => {
+  const { category } = req.body;
+  if (!category) return res.status(400).json({ success: false, message: 'Category is required.' });
+
+  const suggestions = await getCategorySuggestions(category);
+
+  if (suggestions.length > 0) {
+    return res.json({
+      success: true,
+      suggestions,
+    });
+  } else {
+    return res.json({ success: false, answer: 'Failed to fetch TLD suggestions.' });
+  }
+});
+
+const allowedActions = [
+  "Check Availability of Specified Domain",
+  "Bulk Domain Check for Multiple domains",
+  "Check Domain Suggestions List",
+  "Check TLD Suggestions List",
+  "Check Domain Price for Multiple Years",
+  "Register",
+  "Transfer",
+  "Cancel Transfer",
+  "Validate a Transfer",
+  "Renew",
+  "Getting Details of the Domain using ID",
+  "Getting Details of the Domain using Domain Name",
+  "Search",
+  "Modify Nameserver of Domain",
+  "Modify Authcode of Domain",
+  "Manage Lock on Domain",
+  "Manage Privacy on Domain",
+  "Manage Domain Suspend",
+  "Manage Theft Protection on Domain",
+  "View Domain Secret Key",
+  "Manage DNS Management",
+  "Add DNS Record",
+  "Modify DNS Record",
+  "Delete DNS Record",
+  "View DNS Record",
+  "Modifying Domain Contact",
+  "To move domain from one client to another",
+  "Add SRV Record",
+  "Modify DNS Record for Domain",
+  "Add Contact",
+  "Modify Contact",
+  "View Contact",
+  "To get Registrant list of specific client",
+  "To Send RAA Verification mail",
+  "Add Client",
+  "Modify Client",
+  "View Client",
+  "Change the Client Password",
+  "To Delete The Client",
+  "To Get A Client List",
+  "To Add Child Name Server",
+  "Modify Name Server IP",
+  "To Modify Host Child Name Server",
+  "To Delete Child Name Server",
+  "To Get Child Name Servers of a Domain",
+  "To Set Domain Forwarding Details",
+  "To Get Domain Forwarding Details",
+  "To Update Domain Forwarding Details",
+  "To Delete Domain Forwarding Details",
+  "Check Reseller Available Funds"
+];
+
+// Find the closest matching action
+function findClosestAction(userQuery) {
+  const normalizedQuery = userQuery.toLowerCase().trim();
+  let bestMatch = null;
+  let bestScore = 0;
+
+  allowedActions.forEach(action => {
+      let words = action.toLowerCase().split(" ");
+      let matchCount = words.filter(word => normalizedQuery.includes(word)).length;
+
+      if (matchCount > bestScore) {
+          bestScore = matchCount;
+          bestMatch = action;
+      }
+  });
+
+  return bestMatch;
+}
+
+// Extract relevant API details from PDF
+async function extractRelevantText(userQuery) {
+  const matchedAction = findClosestAction(userQuery);
+  if (!matchedAction) {
+      return `❌ The requested action **"${userQuery}"** was not found in our API documentation.`;
+  }
+
+  const pdfBuffer = fs.readFileSync('CR_API_Document_V7.pdf');
+  const data = await pdf(pdfBuffer);
+  const content = data.text;
+
+  const regex = new RegExp(`${matchedAction}[\\s\\S]*?(?=\\n\\n|$)`, "i");
+  const match = content.match(regex);
+
+  return match ? `✅ **API Details for ${matchedAction}:**\n\n${match[0]}` : 
+      `⚠️ No specific details found for **"${matchedAction}"**.`;
+}
+
+// API Route
+app.post('/api/get-api-details', async (req, res) => {
+  try {
+      const responseText = await extractRelevantText(req.body.query);
+      res.json({ success: true, answer: responseText });
+  } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ success: false, message: "Server error while fetching API details." });
+  }
+});
+
+app.get('/api/domain-auth-code', async (req, res) => {
+  const { domain } = req.query;
+
+  if (!domain) {
+      return res.status(400).json({ success: false, message: 'Domain Name is required' });
+  }
+
+  console.log(`🔍 Fetching domainNameId from Firestore for ${domain}`);
+
+  try {
+      // Fetch domainNameId from Firestore
+      const domainRef = db.collection('DomainName');
+      const domainSnapshot = await domainRef.where('websiteName', '==', domain).get();
+
+      if (domainSnapshot.empty) {
+          console.warn(`⚠️ No domain found for: ${domain}`);
+          return res.status(404).json({ success: false, message: `Domain ${domain} not found in database.` });
+      }
+
+      const domainData = domainSnapshot.docs[0].data();
+      const domainNameId = domainData?.domainNameId;
+
+      if (!domainNameId) {
+          console.warn(`⚠️ domainNameId missing for ${domain}`);
+          return res.status(404).json({ success: false, message: `Invalid domain ID for ${domain}.` });
+      }
+
+      console.log(`✅ Found domainNameId: ${domainNameId}`);
+
+      // Fetch Auth Code using domainNameId
+      const authCodeUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewEPPCode?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}`;
+      
+      console.log(`🌐 Fetching Auth Code: ${authCodeUrl}`);
+      
+      const authCodeResponse = await axios.get(authCodeUrl);
+      const authCodeData = authCodeResponse.data;
+
+      console.log('Auth code response:', authCodeData);
+
+      // ✅ Ensure responseData is returned correctly
+      if (authCodeData.responseData) {
+          return res.json({ success: true, authCode: authCodeData.responseData });
+      } else {
+          return res.status(404).json({ success: false, message: 'Auth code not found.' });
+      }
+  } catch (error) {
+      console.error('❌ Error fetching auth code:', error);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
@@ -1288,21 +1492,15 @@ const predefinedAnswers = {
 //
   "Give me a list of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
 //
-  "Can you suggest TLDs for a selected category?": "Popular TLDs vary by category. For tech, use .tech or .ai. For businesses, use .biz or .company. For personal use, try .me or .name.",
-//
   "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions, and ask domain-related queries.",
 //
   "How can I view the auth code for a domain?": "You can find the auth code in your domain management panel under transfer settings.",
 //
   "What are the name servers for this domain?": "The name servers for your domain can be viewed in your domain management dashboard under DNS settings.",
 //
-  "When was this domain registered?": "Domain registration details, including the registration date, can be found in the domain management section or a WHOIS lookup tool.",
-//
-  "How can I check available funds?": "You can check your balance in the billing section of your account.",
-//
   "How can I update the name servers for a domain?": "Go to your domain management panel, find DNS settings, and update the name servers accordingly.",
 //
-  "Where can I find the API documentation?": "You can find API documentation in the developer section of our website.",
+  "Where can I find the API documentation?": "You can find API documentation by clicking the button below:<br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
 //
   "Where can I find API for 'action name'": "You can find API documentation in the developer section of our website.",
 //
@@ -1316,21 +1514,21 @@ const predefinedAnswers = {
 //
   "Which domain was registered on a selected date/month?": "Check your domain registration history in the account panel or request a report for a specific date range.",
 //
-  "How can I contact support?": "You can contact support through our support page or email us at support@domainplatform.com.",
+"How can I contact support?": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; background: #007fff; color: white; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
 //
-  "What types of SSL are available?": "We offer various SSL certificates, including Domain Validation (DV), Organization Validation (OV), and Extended Validation (EV) SSL.",
+  "What types of SSL are available?": "We offer various SSL certificates, including:\n- Commercial SSL (Domain verification)\n- Trusted SSL (Domain + Organization verification)\n- Positive SSL (Basic domain verification)\n- Sectigo SSL (Domain verification)\n- Instant SSL (Domain + Organization verification)",
 //
-  "Where can I sign up?": "You can sign up at our registration page: <a href='https://example.com/signup'>CLICK HERE</a>.",
+  "Where can I sign up?": "You can sign up here: <a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>",
 //
   "How can I download the WHMCS module?": "You can download the WHMCS module from our developer tools section.",
 //
   "How do I export 'List Name'?": "You can export domain-related lists from your account dashboard under the reports or export section.",
 //
-  "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process.",
+  "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process by clicking on the transfer button below.",
 //
   "How can I add a child nameserver?": "To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers.",
 //
-  "How do I pull a domain?": "A domain pull can be initiated from your registrar account under the transfer or migration section.",
+  "How do I pull a domain?": "To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.",
 //
   "What types of reports can I get?": "You can generate transaction reports, domain registration reports, expiration reports, and more from your account dashboard."
 };
@@ -1466,6 +1664,25 @@ app.post('/api/domain-queries', async (req, res) => {
     }
   }
 
+  // ✅ Detect TLD Suggestion Request
+  const categoryMatch = lowerQuery.match(/suggest tlds for (.+)/i);
+  if (categoryMatch) {
+    const category = categoryMatch[1].trim();
+    const suggestions = await getCategorySuggestions(category);
+
+    if (suggestions.length > 0) {
+      const formattedSuggestions = suggestions.map((tld, index) => `${index + 1}. ${tld}`).join('\n');
+
+      return res.json({
+        success: true,
+        answer: `Here are 5 suggested TLDs for "${category}":\n${formattedSuggestions}`,
+        suggestions,
+      });
+    } else {
+      return res.json({ success: false, answer: 'Failed to fetch TLD suggestions.' });
+    }
+  }
+
   // ✅ New Condition: Check for Domain Registration
   const isRegisterQuery = lowerQuery.includes('register') || lowerQuery.includes('domain registration');
 
@@ -1487,43 +1704,64 @@ app.post('/api/domain-queries', async (req, res) => {
     });
   }
 
-  // Check for Domain Information
-  if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain'))) {
-    console.log('[DOMAIN-QUERIES] 📝 Domain information requested for:', domainName);
-    try {
-        const response = await axios.get(
-            `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`,
-            {
-                params: {
-                    APIKey: process.env.CONNECT_RESELLER_API_KEY,
-                    websiteName: domainName,
-                }
-            }
-        );
+// Check for Domain Information or Specific Registration Date Request
+if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain') || lowerQuery.includes('when was this domain registered'))) {
+  console.log('[DOMAIN-QUERIES] 📝 Domain information requested for:', domainName);
+  try {
+      const response = await axios.get(
+          `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`,
+          {
+              params: {
+                  APIKey: process.env.CONNECT_RESELLER_API_KEY,
+                  websiteName: domainName,
+              }
+          }
+      );
 
-        console.log('[DOMAIN-QUERIES] 🌐 API Response:', response.data);
+      console.log('[DOMAIN-QUERIES] 🌐 API Response:', response.data);
 
-        if (response.data.responseMsg.statusCode === 200) {
-            console.log('[DOMAIN-QUERIES] ✅ Successfully fetched domain info for:', domainName);
-            return res.json({
-                success: true,
-                answer: `Domain information for ${domainName}:`,
-                domainData: response.data.responseData
-            });
-        } else {
-            console.warn('[DOMAIN-QUERIES] ⚠️ Domain not found in records:', domainName);
-            return res.json({
-                success: false,
-                message: `Domain ${domainName} not found in our records.`,
-            });
-        }
-    } catch (error) {
-        console.error('[DOMAIN-QUERIES] ❗ Error fetching domain info:', error.message);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to fetch domain information.'
-        });
-    }
+      if (response.data.responseMsg.statusCode === 200) {
+          console.log('[DOMAIN-QUERIES] ✅ Successfully fetched domain info for:', domainName);
+
+          // Extract domain details
+          const domainData = response.data.responseData;
+          const registrationTimestamp = domainData.creationDate || null;
+
+          let registrationDateFormatted = 'Not available';
+          if (registrationTimestamp) {
+              // Convert timestamp to readable date format
+              const registrationDate = new Date(registrationTimestamp * 1000); // Assuming timestamp is in seconds
+              registrationDateFormatted = registrationDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+          }
+
+          // If user specifically asked for registration date
+          if (lowerQuery.includes('domain registered') || lowerQuery.includes('when was this domain registered')){
+              return res.json({
+                  success: true,
+                  answer: `The domain **${domainName}** was registered on **${registrationDateFormatted}**.`,
+              });
+          }
+
+          // Return full domain details
+          return res.json({
+              success: true,
+              answer: `Domain information for ${domainName}:`,
+              domainData: domainData
+          });
+      } else {
+          console.warn('[DOMAIN-QUERIES] ⚠️ Domain not found in records:', domainName);
+          return res.json({
+              success: false,
+              message: `Domain ${domainName} not found in our records.`,
+          });
+      }
+  } catch (error) {
+      console.error('[DOMAIN-QUERIES] ❗ Error fetching domain info:', error.message);
+      return res.status(500).json({
+          success: false,
+          message: 'Failed to fetch domain information.'
+      });
+  }
 }
 
 
