@@ -18,6 +18,8 @@ const suggestButtonsContainer = document.getElementById('suggest-buttons-contain
 const domainAvailabilitySection = document.getElementById('domain-availability-section');
 let userEmail = '';
 const loadingContainer = document.getElementById('loading-container');
+const nameserver = document.getElementById('name-server-container');
+nameserver.style.display ='none';
 
 //------------------------------------------- Request OTP, Resend and Verification Section --------------------------------------------//
 
@@ -388,7 +390,7 @@ function updateChatLog(message, sender) {
   // Transfer a domain
   if (
       sender === 'bot' && isUserSignedIn &&
-      (message.includes("transfer a domain") || message.includes("domain transfer") || message.includes("To transfer a domain to us")) &&
+      (message.includes("transfer a domain") || message.includes("domain transfer") || message.includes("To transfer a domain to us")) || message.includes("How can I move a domain?") || message.includes("To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.") &&
       !message.includes("Yes, you can transfer your domains") &&
       !message.includes("Thank you for signing in!")
   ) {
@@ -409,7 +411,7 @@ function updateChatLog(message, sender) {
       sender === 'bot' && isUserSignedIn &&
       (message.includes("update the name servers") || message.includes("update name servers") || message.includes("Go to your domain management panel, find DNS settings, and update the name servers accordingly."))
   ) {
-      addButton("Add Name Servers", "update-button", "name-server-update-section");
+      addButton("Update Name Servers", "update-button", "name-server-container");
   }
 
   // Renew a domain
@@ -427,6 +429,13 @@ function updateChatLog(message, sender) {
     !message.includes("Thank you for signing in!")
 ) {
     addButton("Add Child Nameservers", "child-ns-button", "add-child-name-server-section");
+    document.getElementById("chat-log").style.height = "60%";
+    document.getElementById("ns-wrapper").style.padding = "0";
+    const buttons = document.querySelectorAll(".chat-input button");
+
+    buttons.forEach(button => {
+        button.style.fontSize = "12px"; // Adjust size as needed
+    });
 }
 
   // Show auth buttons if response matches predefined responses
@@ -553,45 +562,72 @@ function fillChatInput(question) {
 //Highlight domain name placeholder for required functionalities
 let tooltip;
 function fillChatInputWithPlaceholder(template) {
-  const chatInput = document.getElementById('domain-query-text');
-  const submitButton = document.getElementById('submitDomainQuery');
-  const inputSection = document.getElementById('login-chat-section');
-  const placeholder = 'mydomain.com';
-  const toggleContainer = document.getElementById('theft-protection-toggle-container'); // Fixed reference
-  const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
-  const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
-  const privacyContainer = document.getElementById('domain-privacy-toggle-container')
+    const chatInput = document.getElementById('domain-query-text');
+    const submitButton = document.getElementById('submitDomainQuery');
+    const inputSection = document.getElementById('login-chat-section');
+    
+    const placeholders = {
+        'mydomain.com': 'Enter your domain name here',
+        'Category': 'Enter category name here',
+        'action name': 'Enter the action for which you want to find api here',
+    };
 
-  chatInput.value = template;
-  chatInput.focus();
+    const toggleContainer = document.getElementById('theft-protection-toggle-container'); 
+    const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
+    const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
+    const privacyContainer = document.getElementById('domain-privacy-toggle-container');
 
-  // Hide all toggle containers by default
-toggleContainer.style.display = 'none';
-lockToggleContainer.style.display = 'none';
-suspendToggleContainer.style.display = 'none';
-privacyContainer.style.display = 'none';
-submitButton.style.width = '100%';
+    chatInput.value = template;
+    chatInput.focus();
 
-  // Find the placeholder position and select it
-  const startPos = template.indexOf(placeholder);
-  if (startPos !== -1) {
-      const endPos = startPos + placeholder.length;
-      chatInput.setSelectionRange(startPos, endPos);
-  }
+    // Hide all toggle containers by default
+    toggleContainer.style.display = 'none';
+    lockToggleContainer.style.display = 'none';
+    suspendToggleContainer.style.display = 'none';
+    privacyContainer.style.display = 'none';
+    submitButton.style.width = '100%';
 
-console.log("Toggle Container:", toggleContainer);
-console.log("Current Display Style:", toggleContainer.style.display);
+    const actionName = extractActionName(template);
+    if (actionName) {
+        getAPIDetails(template, actionName);
+    }
+    console.log("Extracted Action Name:", actionName); // Debugging log
 
-  const domainMatch = template.match(/lock\/unlock (\S+)/i);
+    // Call getAPIDetails only if an action name is found
+    if (actionName) {
+        getAPIDetails(template, actionName);
+    }
+
+    // Find placeholder positions and select the first match
+    let startPos = -1;
+    let endPos = -1;
+    let tooltipText = '';
+
+    for (const [placeholder, tooltipMessage] of Object.entries(placeholders)) {
+        startPos = template.indexOf(placeholder);
+        if (startPos !== -1) {
+            endPos = startPos + placeholder.length;
+            chatInput.setSelectionRange(startPos, endPos);
+            tooltipText = tooltipMessage;
+            break; // Stop at the first match
+        }
+    }
+
+    console.log("Toggle Container:", toggleContainer);
+    console.log("Current Display Style:", toggleContainer.style.display);
+
+    // Domain lock toggle visibility
+    const domainMatch = template.match(/lock\/unlock (\S+)/i);
     if (domainMatch) {
         const domain = domainMatch[1];
         lockToggleContainer.style.display = 'flex';
         submitButton.style.width = '60%';
-        fetchDomainLockStatus(domain); // Fetch and update toggle state
+        fetchDomainLockStatus(domain);
     } else {
         lockToggleContainer.style.display = 'none';
     }
 
+    // Theft protection toggle visibility
     if (template.includes('Enable/disable theft protection')) {
         toggleContainer.style.display = 'flex';
         submitButton.style.width = '60%';
@@ -601,51 +637,54 @@ console.log("Current Display Style:", toggleContainer.style.display);
         submitButton.style.width = '100%';
     }
 
-    // Toggle visibility for Domain Suspend/Unsuspend
-    if (template.includes('Suspend/Unsuspend')) {
+    // Suspend/Unsuspend toggle visibility
+    const suspendMatch = template.match(/Suspend\/Unsuspend (\S+)/i);
+    if (suspendMatch) {
+        const domain = suspendMatch[1];
         suspendToggleContainer.style.display = 'flex';
         submitButton.style.width = '60%';
-        fetchDomainSuspendStatus(domain); // Placeholder function to fetch suspend status
+        fetchDomainSuspendStatus(domain);
     } else {
         suspendToggleContainer.style.display = 'none';
     }
 
-    // Toggle visibility for Privacy Protection
+    // Privacy protection toggle visibility
     const privacyMatch = template.match(/privacy protection (\S+)/i);
     if (privacyMatch) {
-    const domain = privacyMatch[1];
-    privacyContainer.style.display = 'flex';
-    submitButton.style.width = '60%';
-    fetchPrivacyProtectionStatus(domain); // Fetch privacy protection status
+        const domain = privacyMatch[1];
+        privacyContainer.style.display = 'flex';
+        submitButton.style.width = '60%';
+        fetchPrivacyProtectionStatus(domain);
     } else {
-    privacyContainer.style.display = 'none'; // Hide privacy protection toggle
+        privacyContainer.style.display = 'none';
     }
 
-  // Tooltip handling
-  if (startPos !== -1) {
-      if (tooltip) tooltip.remove();
-      tooltip = document.createElement('div');
-      tooltip.textContent = 'Enter your domain name here';
-      tooltip.className = 'tooltip';
+    // Tooltip handling
+    if (startPos !== -1 && tooltipText) {
+        if (typeof tooltip !== 'undefined' && tooltip) tooltip.remove();
+        let tooltip = document.createElement('div');
+        tooltip.textContent = tooltipText;
+        tooltip.className = 'tooltip';
 
-      const hiddenSpan = document.createElement('span');
-      hiddenSpan.style.visibility = 'hidden';
-      hiddenSpan.style.whiteSpace = 'pre';
-      hiddenSpan.style.font = window.getComputedStyle(chatInput).font;
-      hiddenSpan.textContent = template.substring(0, startPos);
-      document.body.appendChild(hiddenSpan);
+        let hiddenSpan = document.createElement('span');
+        hiddenSpan.style.visibility = 'hidden';
+        hiddenSpan.style.whiteSpace = 'pre';
+        hiddenSpan.style.font = window.getComputedStyle(chatInput).font;
+        hiddenSpan.textContent = template.substring(0, startPos);
+        document.body.appendChild(hiddenSpan);
 
-      const rect = chatInput.getBoundingClientRect();
-      const inputStyle = window.getComputedStyle(chatInput);
-      const paddingLeft = parseInt(inputStyle.paddingLeft);
+        let rect = chatInput.getBoundingClientRect();
+        let inputStyle = window.getComputedStyle(chatInput);
+        let paddingLeft = parseInt(inputStyle.paddingLeft);
 
-      tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
-      tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth - 70) + 'px';
-      
-      document.body.appendChild(tooltip);
-      hiddenSpan.remove();
-  }
+        tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
+        tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth - 70) + 'px';
+
+        document.body.appendChild(tooltip);
+        hiddenSpan.remove();
+    }
 }
+
 
 function hideTooltipOnInput() {
     const tooltip = document.querySelector(".tooltip");
@@ -1208,6 +1247,19 @@ function confirmRenewal(domainName, duration) {
     }, 100); 
 }
 
+//----------------------------------------- Extract action from api documentation section ---------------------------------------------//
+
+async function getAPIDetails(userQuery, actionName) {
+    const response = await fetch('/api/get-api-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: userQuery, action: actionName }) // Send both query & action
+    });
+
+    const data = await response.json();
+    updateChatLog(data.answer, 'bot'); // Display response in chatbot
+}
+
 //---------------------------------------- Question to answers before verification Section --------------------------------------------//
 
 async function handleBotResponse(userQuestion) {
@@ -1234,40 +1286,35 @@ async function handleBotResponse(userQuestion) {
 }
 
 //---------------------------------------------------- Add Name Server Section --------------------------------------------------------//
-
 let nameServerCount = 1;
-const maxNameServers = 13;
+const maxNameServers = 4;
 
 function addNameServerInput() {
-    const container = document.getElementById("nameserver-container");
-    
-    // Create wrapper div
-    const nsInputWrapper = document.createElement("div");
-    nsInputWrapper.classList.add("ns-input");
+    if (nameServerCount >= maxNameServers) {
+        alert("Maximum name servers reached!");
+        return;
+    }
 
-    // Create input field
+    const container = document.getElementById("nameserver-container");
+
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Enter Name Server";
+    input.id = `nameserver${nameServerCount + 1}`; // Unique ID for each input
+    input.placeholder = `Enter Name Server ${nameServerCount + 1}`;
     input.required = true;
 
-    // Append input to wrapper
+    const nsInputWrapper = document.createElement("div");
+    nsInputWrapper.classList.add("ns-input");
     nsInputWrapper.appendChild(input);
 
-    // Append wrapper to container
     container.appendChild(nsInputWrapper);
-}
 
+    nameServerCount++;
 
-function adjustNameServerInputSizes() {
-    const totalInputs = document.querySelectorAll(".ns-input").length;
-    const maxHeight = 150; // Total space allocated to inputs
-    const newHeight = maxHeight / totalInputs;
-
-    document.querySelectorAll(".ns-input input").forEach(input => {
-        input.style.height = `${newHeight}px`;
-        input.style.fontSize = "12px"; // Adjust font size slightly if needed
-    });
+    if (nameServerCount >= 3) {
+        document.getElementById("chat-log").style.height = "59%";
+        document.getElementsByClassName("chat-input").style.borderRadius= "0";
+    }
 }
 
 // Function to show a popup message
@@ -1380,37 +1427,39 @@ const maxChildNameServers = 4;
 
 function addChildNameServerInput() {
     if (childNameServerCount >= maxChildNameServers) {
-        alert("You can add up to 4 child nameservers only.");
+        alert("Maximum child name servers reached!");
         return;
     }
 
-    childNameServerCount++;
+    childNameServerCount++; // Increment first
 
     const container = document.getElementById("childnameserver-container");
 
-    const inputDiv = document.createElement("div");
-    inputDiv.className = "childns-input";
-    inputDiv.innerHTML = `
-        <input type="text" id="childnameserver${childNameServerCount}" placeholder="Enter Hostname (e.g., ns${childNameServerCount}.example.com)" required>
-        <input type="text" id="child-ip-address${childNameServerCount}" placeholder="Enter IP Address" required>
-    `;
+    const childInputWrapper = document.createElement("div");
+    childInputWrapper.classList.add("childns-input");
 
-    container.appendChild(inputDiv);
+    const hostnameInput = document.createElement("input");
+    hostnameInput.type = "text";
+    hostnameInput.id = `childnameserver${childNameServerCount}`;
+    hostnameInput.placeholder = `Enter Hostname ${childNameServerCount}`;
+    hostnameInput.required = true;
 
-    // Ensure new inputs fit inside the fixed height
-    adjustInputSizes();
+    const ipInput = document.createElement("input");
+    ipInput.type = "text";
+    ipInput.id = `child-ip-address${childNameServerCount}`;
+    ipInput.placeholder = `Enter IP Address ${childNameServerCount}`;
+    ipInput.required = true;
+
+    childInputWrapper.appendChild(hostnameInput);
+    childInputWrapper.appendChild(ipInput);
+    container.appendChild(childInputWrapper);
+
+    if (childNameServerCount >= 3) {
+        document.getElementById("chat-log").style.height = "47%";
+        document.getElementsByClassName("chat-input").style.borderRadius= "0";
+    }
 }
 
-function adjustInputSizes() {
-    const totalInputs = document.querySelectorAll(".childns-input").length;
-    const maxHeight = 150; // Total space allocated to inputs
-    const newHeight = maxHeight / totalInputs;
-
-    document.querySelectorAll(".childns-input input").forEach(input => {
-        input.style.height = `${newHeight}px`;
-        input.style.fontSize = "12px"; // Adjust font size slightly if needed
-    });
-}
 
 // Function to show a popup message and disable chat
 function showChildNSPopup(message, isSuccess) {
@@ -1643,6 +1692,40 @@ async function submitDomainLockRequest(domain, isDomainLocked) {
     }
 }
 
+//--------------------------------------------------- Suggest Category Section ------------------------------------------------------//
+
+function sendCategoryToBackend(template) {
+    // Extract the category from the template using regex or string manipulation
+    const categoryMatch = template.match(/Category:\s*([\w\s-]+)/i);
+    const category = categoryMatch ? categoryMatch[1].trim() : null;
+
+    if (!category) {
+        console.warn("No category found in the template.");
+        return;
+    }
+
+    fetch('/api/category-suggestion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ category: category }) // Send category as a JSON object
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Category submitted successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error submitting category:', error);
+    });
+}
+
+// Extract closest matching action from the allowed actions
+function extractActionName(userQuery) {
+    const normalizedQuery = userQuery.toLowerCase().trim();
+    return allowedActions.find(action => normalizedQuery.includes(action.toLowerCase())) || null;
+}
+
 //------------------------------------------- Submit Domain query after login Section ----------------------------------------------//
 
 async function submitDomainQuery() {
@@ -1723,6 +1806,30 @@ async function submitDomainQuery() {
           return;
       }
 
+      const apiQueryMatch = queryText.match(/where can I find API for (.+)/i);
+
+      if (apiQueryMatch) {
+          const actionName = apiQueryMatch[1].trim();
+          console.log('Detected API request for action:', actionName);
+  
+          try {
+              const response = await fetch('/api/get-api-details', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ query: actionName })
+              });
+  
+              const data = await response.json();
+              if (data.success) {
+                  console.log("API Details:", data.answer);
+              } else {
+                  console.warn("No API details found.");
+              }
+          } catch (error) {
+              console.error("Error fetching API details:", error);
+          }
+      }
+
     // Handle domain information request
     const domainInfoMatch = queryText.match(/give me domain information for (.+)/i);
     if (domainInfoMatch) {
@@ -1759,7 +1866,81 @@ async function submitDomainQuery() {
         return;
     }
 
-    const balanceMatch = queryText.match(/current balance/i);
+    const authCodeMatch = queryText.match(/what is the auth code for (.+)/i);
+    if (authCodeMatch) {
+        const domainName = authCodeMatch[1].trim();
+
+        try {
+            console.log('Fetching auth code for:', domainName);
+            const response = await fetch(`/api/domain-auth-code?domain=${encodeURIComponent(domainName)}`);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data. Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Auth code response:', data);
+
+            if (data.success) {
+                console.log('Auth Code:', data.authCode);
+                updateChatLog(`Auth Code for ${domainName}: ${data.authCode}`, 'bot');
+            } else {
+                updateChatLog(`${data.message}`, 'bot');
+            }          
+
+        } catch (error) {
+            console.error("Error fetching auth code:", error);
+            updateChatLog("Unable to fetch auth code at this time.", 'bot');
+        }
+
+        document.getElementById("domain-query-text").value = "";
+    }
+
+    const domainregisterMatch = queryText.match(/when was (.+) domain registered/i);
+    if (domainregisterMatch) {
+        const domainName = domainregisterMatch[1].trim();
+
+        try {
+            console.log('Fetching domain details for:', domainName);
+            const response = await fetch(`/api/domain-info?domain=${encodeURIComponent(domainName)}`);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data. Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Domain details response:', data);
+
+            if (data.success) {
+                console.log('Domain data:', data.domainData); 
+                
+                const timestamp = data.domainData.creationDate;
+                let registrationDate = "Not available";
+            
+                if (timestamp) {
+                    registrationDate = new Date(timestamp).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric'
+                    });
+                }
+            
+                updateChatLog(
+                    `The domain ${domainName} was registered on ${registrationDate}.`,
+                    'bot'
+                );
+            }
+            
+
+        } catch (error) {
+            console.error("Error fetching domain details:", error);
+            updateChatLog("Unable to fetch domain details at this time.", 'bot');
+        }
+
+        document.getElementById("domain-query-text").value = "";
+
+        return;
+    }
+
+    const balanceMatch = queryText.match(/current balance|available funds/i);
 if (balanceMatch) {
     try {
         updateChatLog(`Fetching your current balance...`, 'bot');
@@ -1866,7 +2047,7 @@ function goBackToQuerySection() {
     console.log("login-chat-section is now visible");
   
     // Hide the other sections
-    const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , ];
+    const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , 'name-server-update-section'];
   
     sectionsToHide.forEach(sectionId => {
       const element = document.getElementById(sectionId);

@@ -48,35 +48,35 @@
             <li onclick="fillChatInput('Where can I register domains?')">Where can I register domains?</li>
             <li onclick="fillChatInput('How can I renew a domain?')">How can I renew a domain?</li>
             <li onclick="fillChatInput('How do I transfer IN/OUT domains?')">How do I transfer IN/OUT domains?</li>
+            <li onclick="fillChatInput('How can I move a domain?')">How can I move a domain?</li>
             <li onclick="fillChatInputWithPlaceholder('Give me domain information for mydomain.com')">Give me domain information for <em>mydomain.com</em></li>
             <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for mydomain.com')">Enable/disable theft protection for <em>mydomain.com</em></li>
             <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock mydomain.com')">How do I lock/unlock <em>mydomain.com</em></li>
             <li onclick="fillChatInput('What is my current balance in my account?')">What is my current balance in my account?</li>
+            <li onclick="fillChatInput('How much are my available funds?')">How much are my available funds?</li>
             <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com')">Suspend/Unsuspend <em>mydomain.com</em></li>
             <li onclick="fillChatInput('How can I update the name servers for a domain?')">How can I update the name servers for a domain?</li>
             <li onclick="fillChatInputWithPlaceholder('Enable/disable privacy protection for mydomain.com')">Enable/disable privacy protection for <em>mydomain.com</em></li>
             <li onclick="fillChatInput('How can I add a child nameserver?')">How can I add a child nameserver?</li>
-            <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
-            <li onclick="fillChatInput('Give me a list of high-value domain TLDs?')">Give me a list of high-value domain TLDs?</li>
-            <li onclick="fillChatInput('Can you suggest TLDs for a selected category?')">Can you suggest TLDs for a selected category?</li>
+            <li onclick="fillChatInputWithPlaceholder('Suggest TLDs for Category')">Suggest TLDs for <em>category</em></li>
+            <li onclick="fillChatInput('Give me a list of high-value domain TLDs.')">Give me a list of high-value domain TLDs.</li>
             <li onclick="fillChatInput('What actions can I do here on the chatbot?')">What actions can I do here on the chatbot?</li>
-            <li onclick="fillChatInput('How can I view the auth code for a domain?')">How can I view the auth code for a domain?</li>
-            <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
-            <li onclick="fillChatInput('When was this domain registered?')">When was this domain registered?</li>
-            <li onclick="fillChatInput('How can I check available funds?')">How can I check available funds?</li>
+            <li onclick="fillChatInputWithPlaceholder('What is the auth code for mydomain.com')">What is the auth code for <em>mydomain.com</em>?</li>
+            <li onclick="fillChatInputWithPlaceholder('When was mydomain.com domain registered?')">When was <em>mydomain.com</em> domain registered?</li>
             <li onclick="fillChatInput('Where can I find the API documentation?')">Where can I find the API documentation?</li>
-            <li onclick="fillChatInput('Where can I find API for action name?')">Where can I find API for 'action name'?</li>
+            <li onclick="fillChatInput('Where can I sign up?')">Where can I sign up?</li>
+            <li onclick="fillChatInputWithPlaceholder('Where can I find API for action name?')">Where can I find API for <em>action name</em>?</li>
+            <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
+            <li onclick="fillChatInput('What types of SSL are available?')">What types of SSL are available?</li>
+            <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
+            <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
             <li onclick="fillChatInput('How can I get a transaction report for a selected month?')">How can I get a transaction report for a selected month?</li>
             <li onclick="fillChatInput('Which domains are getting expired?')">Which domains are getting expired?</li>
             <li onclick="fillChatInput('Which domains are getting deleted on a selected date/month?')">Which domains are getting deleted on a selected date/month?</li>
             <li onclick="fillChatInput('Which domains were registered on this domain?')">Which domains were registered on this domain?</li>
             <li onclick="fillChatInput('Which domain was registered on a selected date/month?')">Which domain was registered on a selected date/month?</li>
-            <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
-            <li onclick="fillChatInput('What types of SSL are available?')">What types of SSL are available?</li>
-            <li onclick="fillChatInput('Where can I sign up?')">Where can I sign up?</li>
             <li onclick="fillChatInput('How can I download the WHMCS module?')">How can I download the WHMCS module?</li>
             <li onclick="fillChatInput('How do I export List Name?')">How do I export 'List Name'?</li>
-            <li onclick="fillChatInput('How can I move a domain?')">How can I move a domain?</li>
             <li onclick="fillChatInput('How do I pull a domain?')">How do I pull a domain?</li>
             <li onclick="fillChatInput('What types of reports can I get?')">What types of reports can I get?</li>
         </ul>
@@ -213,27 +213,23 @@
     </div>
 
 <!-- Name Server Update Section -->
-<div id="name-server-update-section" class="chat-input" style="display: none;">
-    
-  <div class="input-group">
-      <input type="text" id="domain-name-input" placeholder="Enter Domain Name" required>
-  </div>
-
-  <!-- Name Server Inputs Container -->
-  <div id="nameserver-container" class="ns-wrapper">
-      <div class="ns-input">
-          <input type="text" id="nameserver1" placeholder="Enter Name Server 1" required>
+<div class="name-server-container" id="name-server-container">
+  <div id="name-server-update-section" class="chat-input">
+      <div class="input-group">
+          <input type="text" id="domain-name-input" placeholder="Enter Domain Name" required>
       </div>
+      <div id="nameserver-container" class="ns-wrapper">
+          <div class="ns-input">
+              <input type="text" id="nameserver1" placeholder="Enter Name Server 1" required>
+          </div>
+      </div>
+      <div class="button-group-name">
+          <button onclick="addNameServerInput()">➕ Add Name Server</button>
+          <button onclick="updateNameServers()">Update Name Servers</button>
+          <button onclick="goBackToQuerySection()">Back</button>
+      </div>
+      <div id="update-status"></div>
   </div>
-
-  <!-- Buttons -->
-  <div class="button-group-name">
-      <button onclick="addNameServerInput()">➕ Add Name Server</button>
-      <button onclick="updateNameServers()">Update Name Servers</button>
-      <button onclick="goBackToQuerySection()">Back</button>
-  </div>
-
-  <div id="update-status"></div>
 </div>
 
 
@@ -246,13 +242,13 @@
 
   <div id="childnameserver-container" class="ns-wrapper">
       <div class="childns-input">
-          <input type="text" id="childnameserver1" placeholder="Enter Hostname (e.g., ns1.example.com)" required>
+          <input type="text" id="childnameserver1" placeholder="Enter Hostname" required>
           <input type="text" id="child-ip-address1" placeholder="Enter IP Address" required>
       </div>
   </div>
 
   <!-- Buttons -->
-  <div class="button-group">
+  <div class="button-group-child">
       <button onclick="addChildNameServerInput()">➕ Add Child Name Server</button>
       <button onclick="registerChildNameServer()">Register Child Name Server</button>
       <button onclick="goBackToQuerySection()">Back</button>
