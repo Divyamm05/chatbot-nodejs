@@ -680,6 +680,15 @@ document.addEventListener("DOMContentLoaded", function () {
     chatInput.addEventListener('input', hideTooltips);
 });
 
+function fillChatInputWithPlaceholderCategory(template) {
+    const chatInput = document.getElementById('domain-query-text');
+    chatInput.value = template;
+    chatInput.focus();
+
+    // Highlight "Category" or "DomainName" for user input
+    tooltipDomain = highlightPlaceholder(chatInput, template, "Category", "Enter a category.", tooltipDomain);
+}
+
 //------------------------------------------------------ Domain Theft Section --------------------------------------------------------//
 
 let domainForTheftProtection = null;
@@ -2071,6 +2080,52 @@ if (expiringDomainMatch) {
     return;
 }
 
+const tldMatch = queryText.match(/\b(suggest|available|recommend)\s*(TLDs|domains|extensions)\s*(for|to)?\s*([\w-]+)\b/i);
+
+if (tldMatch) {
+    const categoryOrName = tldMatch[4].trim(); // Extract the website name
+
+    try {
+        console.log('Fetching TLD suggestions for:', categoryOrName);
+        const response = await fetch(`/api/tld-suggestions?websiteName=${encodeURIComponent(categoryOrName)}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch TLDs. Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('TLD Suggestions Response:', data);
+
+        if (data.success && data.tldList.length > 0) {
+            let message = `🌍 Suggested TLDs for ${categoryOrName}:\n`;
+
+            // Extract only top 10 results
+            data.tldList.slice(0, 10).forEach(tld => {
+                // Extract the TLD from the full domain name (e.g., "sweets.cc" → "cc")
+                const domainParts = tld.websiteName.split('.');
+                const tldExtension = domainParts.length > 1 ? domainParts.pop() : "unknown";
+
+                // Construct the full domain name (e.g., "sweets.com")
+                const fullDomain = `${categoryOrName}.${tldExtension}`;
+
+                // Construct message with only full domain names
+                message += `🔹 ${fullDomain}\n`;
+            });
+
+            // Update chat log with TLD suggestions
+            updateChatLog(message, 'bot');
+        } else {
+            updateChatLog(`⚠️ No TLD suggestions found for ${categoryOrName}.`, 'bot');
+        }
+
+    } catch (error) {
+        console.error("Error fetching TLD suggestions:", error);
+        updateChatLog("❌ Unable to fetch TLD suggestions at this time.", 'bot');
+    }
+
+    queryInput.value = "";  // Reset query input field
+    return;
+}
       const apiQueryMatch = queryText.match(/where can I find API for (.+)/i);
 
       if (apiQueryMatch) {
