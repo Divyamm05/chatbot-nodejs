@@ -384,7 +384,9 @@ function updateChatLog(message, sender) {
        message.includes("You can register domains directly through this chatbot")) &&
       !message.includes("To register a domain, you need to provide the domain name")
   ) {
-      addButton("Register a Domain", "register-button", "domain-registration-section");
+    if (!document.getElementById("register-button")) { // Prevent duplicate buttons
+    addButton("Register a Domain", "register-button", "domain-availability-section");
+    }
   }
 
   // Transfer a domain
@@ -538,167 +540,144 @@ function checkDomainRegistrationResponse(response) {
 // Fill Chat Input with FAQ Question
 function fillChatInput(question) {
 
-    const chatInput = document.getElementById('domain-query-text');
-    const submitButton = document.getElementById('submitDomainQuery');
-    const toggleContainer = document.getElementById('theft-protection-toggle-container'); 
-    const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
-    const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
-    const privacyContainer = document.getElementById('domain-privacy-toggle-container');
-
-    // ❗ Always hide all toggle containers first
-    toggleContainer.style.display = 'none';
-    lockToggleContainer.style.display = 'none';
-    suspendToggleContainer.style.display = 'none';
-    privacyContainer.style.display = 'none';
-    submitButton.style.width = '100%'; // Reset button width
-
     const userInput = document.getElementById("user-question");
     const userInput2 = document.getElementById("domain-query-text");
     userInput.value = question;
     userInput2.value = question;
     userInput.focus();
   }  
+// Highlight domain name placeholder for required functionalities
+let tooltipDomain = null;
+let tooltipDate = null;
 
-//Highlight domain name placeholder for required functionalities
-let tooltip;
 function fillChatInputWithPlaceholder(template) {
     const chatInput = document.getElementById('domain-query-text');
     const submitButton = document.getElementById('submitDomainQuery');
-    const inputSection = document.getElementById('login-chat-section');
-    
-    const placeholders = {
-        'mydomain.com': 'Enter your domain name here',
-        'Category': 'Enter category name here',
-        'action name': 'Enter the action for which you want to find api here',
-    };
-
-    const toggleContainer = document.getElementById('theft-protection-toggle-container'); 
-    const lockToggleContainer = document.getElementById('domain-lock-toggle-container'); 
+    const toggleContainer = document.getElementById('theft-protection-toggle-container');
+    const lockToggleContainer = document.getElementById('domain-lock-toggle-container');
     const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
     const privacyContainer = document.getElementById('domain-privacy-toggle-container');
 
     chatInput.value = template;
     chatInput.focus();
 
-    // Hide all toggle containers by default
-    toggleContainer.style.display = 'none';
-    lockToggleContainer.style.display = 'none';
-    suspendToggleContainer.style.display = 'none';
-    privacyContainer.style.display = 'none';
-    submitButton.style.width = '100%';
+    // Highlight "mydomain.com" and show tooltip
+    tooltipDomain = highlightPlaceholder(chatInput, template, "mydomain.com", "Enter your domain name here.", tooltipDomain);
 
+    // Extract action name and fetch API details
     const actionName = extractActionName(template);
     if (actionName) {
         getAPIDetails(template, actionName);
     }
-    console.log("Extracted Action Name:", actionName); // Debugging log
+    console.log("Extracted Action Name:", actionName);
 
-    // Call getAPIDetails only if an action name is found
-    if (actionName) {
-        getAPIDetails(template, actionName);
-    }
-
-    // Find placeholder positions and select the first match
-    let startPos = -1;
-    let endPos = -1;
-    let tooltipText = '';
-
-    for (const [placeholder, tooltipMessage] of Object.entries(placeholders)) {
-        startPos = template.indexOf(placeholder);
-        if (startPos !== -1) {
-            endPos = startPos + placeholder.length;
-            chatInput.setSelectionRange(startPos, endPos);
-            tooltipText = tooltipMessage;
-            break; // Stop at the first match
-        }
-    }
-
-    console.log("Toggle Container:", toggleContainer);
-    console.log("Current Display Style:", toggleContainer.style.display);
-
-    // Domain lock toggle visibility
-    const domainMatch = template.match(/lock\/unlock (\S+)/i);
+    // Lock toggle
+    const domainMatch = document.getElementById('theft-protection-input');
     if (domainMatch) {
-        const domain = domainMatch[1];
-        lockToggleContainer.style.display = 'flex';
+        lockToggleContainer.style.display = 'block';
         submitButton.style.width = '60%';
-        fetchDomainLockStatus(domain);
-    } else {
-        lockToggleContainer.style.display = 'none';
+        console.log("Lock toggle visible for:", domainMatch[1]);
+        fetchDomainLockStatus(domainMatch[1]);
     }
 
-    // Theft protection toggle visibility
-    if (template.includes('Enable/disable theft protection')) {
+    if ((/theft protection for (.+)/i.test(template))) {
         toggleContainer.style.display = 'flex';
         submitButton.style.width = '60%';
-        submitButton.style.backgroundColor = '#066';
+        console.log("✅ Theft protection toggle should now be visible");
     } else {
-        toggleContainer.style.display = 'none';
-        submitButton.style.width = '100%';
+        console.error("❌ ERROR: Element #theft-protection-toggle-container not found in the DOM.");
     }
 
-    // Suspend/Unsuspend toggle visibility
-    const suspendMatch = template.match(/Suspend\/Unsuspend (\S+)/i);
+    // Suspend/Unsuspend toggle
+    const suspendMatch = template.match(/suspend\/unsuspend (\S+)/i);
     if (suspendMatch) {
-        const domain = suspendMatch[1];
         suspendToggleContainer.style.display = 'flex';
         submitButton.style.width = '60%';
-        fetchDomainSuspendStatus(domain);
-    } else {
-        suspendToggleContainer.style.display = 'none';
+        console.log("Suspend toggle visible for:", suspendMatch[1]);
+        fetchDomainSuspendStatus(suspendMatch[1]);
     }
 
-    // Privacy protection toggle visibility
+    // Privacy protection toggle
     const privacyMatch = template.match(/privacy protection (\S+)/i);
     if (privacyMatch) {
-        const domain = privacyMatch[1];
         privacyContainer.style.display = 'flex';
         submitButton.style.width = '60%';
-        fetchPrivacyProtectionStatus(domain);
-    } else {
-        privacyContainer.style.display = 'none';
-    }
-
-    // Tooltip handling
-    if (startPos !== -1 && tooltipText) {
-        if (typeof tooltip !== 'undefined' && tooltip) tooltip.remove();
-        let tooltip = document.createElement('div');
-        tooltip.textContent = tooltipText;
-        tooltip.className = 'tooltip';
-
-        let hiddenSpan = document.createElement('span');
-        hiddenSpan.style.visibility = 'hidden';
-        hiddenSpan.style.whiteSpace = 'pre';
-        hiddenSpan.style.font = window.getComputedStyle(chatInput).font;
-        hiddenSpan.textContent = template.substring(0, startPos);
-        document.body.appendChild(hiddenSpan);
-
-        let rect = chatInput.getBoundingClientRect();
-        let inputStyle = window.getComputedStyle(chatInput);
-        let paddingLeft = parseInt(inputStyle.paddingLeft);
-
-        tooltip.style.top = (window.scrollY + rect.top - 30) + 'px';
-        tooltip.style.left = (window.scrollX + rect.left + hiddenSpan.offsetWidth - 70) + 'px';
-
-        document.body.appendChild(tooltip);
-        hiddenSpan.remove();
+        console.log("Privacy toggle visible for:", privacyMatch[1]);
+        fetchPrivacyProtectionStatus(privacyMatch[1]);
     }
 }
 
+function highlightPlaceholder(inputElement, template, placeholder, tooltipText, tooltipRef) {
+    let startPos = template.indexOf(placeholder);
+    let endPos = startPos !== -1 ? startPos + placeholder.length : -1;
 
-function hideTooltipOnInput() {
-    const tooltip = document.querySelector(".tooltip");
-    if (tooltip) {
-        tooltip.classList.add("hidden");
+    if (startPos !== -1) {
+        console.log(`Selecting ${placeholder} from`, startPos, "to", endPos);
+
         setTimeout(() => {
-            tooltip.remove(); // Optional: Remove it completely after hiding
+            inputElement.setSelectionRange(startPos, endPos);
+        }, 10);
+
+        inputElement.classList.add("highlight-input");
+    } else {
+        console.warn(`${placeholder} not found in template:`, template);
+        inputElement.classList.remove("highlight-input");
+    }
+
+    // Remove existing tooltip before creating a new one
+    if (tooltipRef) {
+        tooltipRef.remove();
+    }
+
+    if (startPos !== -1) {
+        tooltipRef = document.createElement("div");
+        tooltipRef.textContent = tooltipText;
+        tooltipRef.className = "tooltip";
+        document.body.appendChild(tooltipRef);
+
+        // Position tooltip
+        let rect = inputElement.getBoundingClientRect();
+        let fontSize = parseInt(window.getComputedStyle(inputElement).fontSize, 10);
+        let charWidth = fontSize * 0.6; // Approximate character width
+        let placeholderX = rect.left + window.scrollX + startPos * charWidth;
+        let placeholderY = rect.top + window.scrollY - 40;
+
+        tooltipRef.style.left = `${placeholderX}px`;
+        tooltipRef.style.top = `${placeholderY}px`;
+    }
+
+    return tooltipRef; // Return reference to new tooltip
+}
+
+function fillChatInputWithPlaceholderDate(template) {
+    const chatInput = document.getElementById('domain-query-text');
+    chatInput.value = template;
+    chatInput.focus();
+
+    // Highlight "dd-mm-yyyy" and show tooltip
+    tooltipDate = highlightPlaceholder(chatInput, template, "dd-mm-yyyy", "Enter a valid date (dd-mm-yyyy).", tooltipDate);
+}
+
+function hideTooltips() {
+    if (tooltipDomain) {
+        tooltipDomain.classList.add("hidden");
+        setTimeout(() => {
+            tooltipDomain.remove();
+            tooltipDomain = null;
+        }, 200);
+    }
+    if (tooltipDate) {
+        tooltipDate.classList.add("hidden");
+        setTimeout(() => {
+            tooltipDate.remove();
+            tooltipDate = null;
         }, 200);
     }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-        const chatInput = document.getElementById('domain-query-text');
-        chatInput.addEventListener('input', hideTooltipOnInput);
+    const chatInput = document.getElementById('domain-query-text');
+    chatInput.addEventListener('input', hideTooltips);
 });
 
 //------------------------------------------------------ Domain Theft Section --------------------------------------------------------//
@@ -917,94 +896,257 @@ function processUserQuestion() {
 
 //-------------------------------------------------- Domain Registration Section -----------------------------------------------------//
 
-document.getElementById("user-question").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault(); // Prevent form submission (if inside a form)
-        processUserQuestion();  // Trigger the button click function
+async function handleCheckDomain() {
+    const domainInput = document.getElementById("check-domain-input").value.trim();
+    
+    if (!domainInput) {
+      alert("Please enter a domain name.");
+      return;
     }
-});
 
-document.getElementById("domain-name").addEventListener("input", function () {
-  const domain = this.value.toLowerCase();
-  const usFields = document.querySelector(".us-domain-fields");
-  const chatLog = document.querySelector(".chat-log");
+    try {
+      const response = await fetch(`/api/check-domain?domain=${domainInput}`);
+      const data = await response.json();
 
-  if (domain.endsWith(".us")) {
-      usFields.style.display = "block"; // Show .us-specific fields
-      chatLog.style.height = "50%"; // Reduce chat log height
-  } else {
-      usFields.style.display = "none"; // Hide .us-specific fields for other TLDs
-      chatLog.style.height = "65%"; // Reset chat log height
+      console.log("Frontend received response:", data);
+
+      if (!data.success || !data.success.message) {
+        console.warn("Invalid response from backend!");
+        addChatMessage("bot", "⚠️ Error checking domain availability. Please try again.");
+        return;
+      }
+
+      const message = data.success.message;
+      const isAvailable = data.success.available;
+
+      if (isAvailable) {
+        addChatMessage("bot", `✅ ${domainInput} is available for registration! \n💰 Registration Fee: $${data.success.responseData.registrationFee}`);
+        showDomainRegistration(domainInput);
+      } else {
+        addChatMessage("bot", `❌ ${domainInput} is already taken. \nDo you want suggestions for a similar domain name?`, true, domainInput);
+      }
+      
+    } catch (error) {
+      console.error("Error checking domain availability:", error);
+      addChatMessage("bot", "⚠️ Error checking domain availability. Please try again later.");
+    }
   }
+
+  function addChatMessage(sender, message, showButtons = false, domainInput = "") {
+    const chatContainer = document.getElementById("chat-log"); // Replace with your chat container ID
+    const messageElement = document.createElement("div");
+
+    // Apply styles dynamically
+    messageElement.style.marginBottom = "10px";
+    messageElement.style.padding = "12px 15px";
+    messageElement.style.maxWidth = "80%";
+    messageElement.style.wordWrap = "break-word";
+    messageElement.style.borderRadius = "20px"; // Rounded corners
+    messageElement.style.whiteSpace = "pre-line"; // Preserve line breaks
+
+    if (sender === "bot") {
+        messageElement.style.backgroundColor = "#066";
+        messageElement.style.color = "#ffffff";
+        messageElement.style.alignSelf = "flex-start";
+        messageElement.style.marginLeft = "20px";
+    } else {
+        messageElement.style.backgroundColor = "#ddd";
+        messageElement.style.color = "#000";
+        messageElement.style.alignSelf = "flex-end";
+        messageElement.style.marginRight = "20px";
+    }
+
+    messageElement.innerHTML = message;
+    chatContainer.appendChild(messageElement);
+
+    if (showButtons) {
+        const buttonContainer = document.createElement("div");
+        buttonContainer.style.display = "flex";
+        buttonContainer.style.gap = "10px";
+        buttonContainer.style.marginLeft = "20px";
+        buttonContainer.style.marginTop = "5px";
+
+        const yesButton = document.createElement("button");
+        yesButton.innerText = "Yes";
+        yesButton.style.padding = "8px 12px";
+        yesButton.style.border = "none";
+        yesButton.style.cursor = "pointer";
+        yesButton.style.backgroundColor = "#008CBA";
+        yesButton.style.color = "white";
+        yesButton.style.borderRadius = "5px";
+        yesButton.style.transition = "background-color 0.3s ease";
+        yesButton.onclick = () => fetchDomainSuggestions(domainInput);
+
+        const noButton = document.createElement("button");
+        noButton.innerText = "No";
+        noButton.style.padding = "8px 12px";
+        noButton.style.border = "none";
+        noButton.style.cursor = "pointer";
+        noButton.style.backgroundColor = "#ccc";
+        noButton.style.color = "#000";
+        noButton.style.borderRadius = "5px";
+        noButton.style.transition = "background-color 0.3s ease";
+        noButton.onclick = () => addChatMessage("bot", "Okay! Let me know if you need anything else. 😊");
+
+        buttonContainer.appendChild(yesButton);
+        buttonContainer.appendChild(noButton);
+        chatContainer.appendChild(buttonContainer);
+    }
+
+    chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+// Event Listener for "Check Availability" button
+document.getElementById("check-domain-button").addEventListener("click", function () {
+    const domainName = document.getElementById("check-domain-input").value.trim();
+    if (!domainName) {
+        addChatMessage("bot", "Please enter a domain name.");
+        return;
+    }
+    checkDomainAvailability(domainName);
 });
+
+// Function to fetch and show domain suggestions
+async function fetchDomainSuggestions(domainInput) {
+    try {
+        const response = await fetch(`/api/domainname-suggestions?domain=${domainInput}`);
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+            addChatMessage("bot", "⚠️ No suggestions found. Please try another keyword.");
+            return;
+        }
+
+        let suggestionMessage = "💡 Here are some similar domains:\n(Click on a domain to register it)\n";
+        data.data.forEach((suggestion) => {
+            suggestionMessage += `\n🔹 <a href="#" onclick="event.preventDefault(); selectDomain('${suggestion.domainName}')">${suggestion.domainName}</a> - 💰 $${suggestion.price}`;
+        });        
+
+        addChatMessage("bot", suggestionMessage);
+    } catch (error) {
+        console.error("Error fetching domain suggestions:", error);
+        addChatMessage("bot", "⚠️ Error fetching domain suggestions. Please try again later.");
+    }
+}
+
+// Function to handle domain selection
+function selectDomain(domainName) {
+    // Hide only the domain input section, NOT the entire chat
+    document.getElementById("domain-availability-section").style.display = "none";
+
+    // Ensure domain registration is visible
+    document.getElementById("domain-registration-section").style.display = "block";
+
+    // Ensure chat remains visible
+    document.getElementById("chat-log").style.display = "block";
+
+    document.getElementById("domain-name").value = domainName;
+    document.getElementById("domain-name").focus();
+    addChatMessage("bot", `✅ Selected domain: ${domainName}`);
+}
+
+// Display domain suggestions as buttons in the chat
+function displayDomainSuggestions(domains) {
+    const suggestionContainer = document.createElement("div");
+    suggestionContainer.className = "domain-suggestions";
+
+    // Clear previous suggestions
+    document.querySelectorAll(".domain-suggestions").forEach(el => el.remove());
+
+    domains.forEach((domain) => {
+        const button = document.createElement("button");
+        button.innerText = domain;
+        button.className = "suggested-domain";
+        button.onclick = function () {
+            addChatMessage("user", domain);
+            showDomainRegistration(domain);
+        };
+        suggestionContainer.appendChild(button);
+    });
+
+    addChatMessageElement("bot", suggestionContainer);
+}
+
+// Show the domain registration section
+function showDomainRegistration(domainName) {
+    document.getElementById("domain-name").value = domainName;
+    document.getElementById("domain-registration-section").style.display = "block";
+    document.getElementById("check-availability-section").style.display = "none"; // Hide check section
+}
+
+// Handle "Go Back" button from registration section
+function goBackToCheckSection() {
+    document.getElementById("domain-registration-section").style.display = "none";
+    document.getElementById("check-availability-section").style.display = "block";
+}
 
 async function registerDomain() {
-  const domainName = document.getElementById("domain-name").value.trim();
-  const duration = document.getElementById("duration").value;
-
-  if (!domainName || !duration) {
-      alert("Please fill in all required fields.");
-      return;
+    const domainName = document.getElementById("domain-name").value.trim();
+    const duration = document.getElementById("duration").value;
+  
+    if (!domainName || !duration) {
+        alert("Please fill in all required fields.");
+        return;
+    }
+  
+    if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
+        alert("Please enter a valid domain name.");
+        return;
+    }
+  
+    const confirmationBox = document.createElement('div');
+    confirmationBox.className = 'chat-confirmation-box';
+  
+    const content = document.createElement('div');
+    content.className = 'confirmation-content';
+    content.innerHTML = `<p>Do you want to register the domain <strong>${domainName}</strong>?</p>`;
+  
+    const yesButton = document.createElement('button');
+    yesButton.innerText = 'Yes';
+    yesButton.addEventListener('click', () => confirmRegistration(domainName, duration));
+  
+    const noButton = document.createElement('button');
+    noButton.innerText = 'No';
+    noButton.addEventListener('click', closeConfirmationBox);
+  
+    content.appendChild(yesButton);
+    content.appendChild(noButton);
+    confirmationBox.appendChild(content);
+    document.body.appendChild(confirmationBox);
+  
+    disableChat(); 
   }
-
-  if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
-      alert("Please enter a valid domain name.");
-      return;
+  
+  function confirmRegistration(domainName, duration) {
+    closeConfirmationBox();
+  
+    // Keep chat disabled while processing
+    disableChat(); 
+  
+    // Show "Processing..." message to indicate the request is in progress
+    showChatPopup("Registering your domain, please wait...", false, true);
+  
+    fetch(`/api/register-domain?Websitename=${domainName}&Duration=${duration}`, { method: "GET" })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showChatPopup("Domain registered successfully!", true); // Show success message
+            } else {
+                showChatPopup("Error: " + result.message, false); // Show error message
+            }
+  
+            // 🆕 Close the domain renewal section
+            document.getElementById('domain-registration-section').style.display = 'none';
+            document.getElementById('login-chat-section').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error("❗ Unexpected error:", error);
+            showChatPopup("Internal Server Error", false); // Show error message
+        })
+        .finally(() => {
+            enableChat(); // 🟢 Re-enable chat regardless of success or failure
+        });
   }
-
-  const confirmationBox = document.createElement('div');
-  confirmationBox.className = 'chat-confirmation-box';
-
-  const content = document.createElement('div');
-  content.className = 'confirmation-content';
-  content.innerHTML = `<p>Do you want to register the domain <strong>${domainName}</strong>?</p>`;
-
-  const yesButton = document.createElement('button');
-  yesButton.innerText = 'Yes';
-  yesButton.addEventListener('click', () => confirmRegistration(domainName, duration));
-
-  const noButton = document.createElement('button');
-  noButton.innerText = 'No';
-  noButton.addEventListener('click', closeConfirmationBox);
-
-  content.appendChild(yesButton);
-  content.appendChild(noButton);
-  confirmationBox.appendChild(content);
-  document.body.appendChild(confirmationBox);
-
-  disableChat(); 
-}
-
-function confirmRegistration(domainName, duration) {
-  closeConfirmationBox();
-
-  // Keep chat disabled while processing
-  disableChat(); 
-
-  // Show "Processing..." message to indicate the request is in progress
-  showChatPopup("Registering your domain, please wait...", false, true);
-
-  fetch(`/api/register-domain?Websitename=${domainName}&Duration=${duration}&Id=15272`, { method: "GET" })
-      .then(response => response.json())
-      .then(result => {
-          if (result.success) {
-              showChatPopup("Domain registered successfully!", true); // Show success message
-          } else {
-              showChatPopup("Error: " + result.message, false); // Show error message
-          }
-
-          // 🆕 Close the domain renewal section
-          document.getElementById('domain-registration-section').style.display = 'none';
-          document.getElementById('login-chat-section').style.display = 'flex';
-      })
-      .catch(error => {
-          console.error("❗ Unexpected error:", error);
-          showChatPopup("Internal Server Error", false); // Show error message
-      })
-      .finally(() => {
-          enableChat(); // 🟢 Re-enable chat regardless of success or failure
-      });
-}
 
 //------------------------------------------------- Enable/Disable Chatbox Section ---------------------------------------------------//
 
@@ -1175,77 +1317,76 @@ async function confirmDomainTransfer(domainName, authCode, isWhoisProtection, cu
 //----------------------------------------------------- Renew Domain Section --------------------------------------------------------//
 
 async function renewDomain() {
-  const domainName = document.getElementById("renew-domain-name").value.trim();
-  const duration = document.getElementById("renew-duration").value;
-
-  if (!domainName || !duration) {
-      alert("Please fill in all required fields.");
-      return;
-  }
-
-  if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
-      alert("Please enter a valid domain name.");
-      return;
-  }
-
-  disableChat();
-
-  const confirmationBox = document.createElement('div');
-  confirmationBox.className = 'chat-confirmation-box';
-
-  const content = document.createElement('div');
-  content.className = 'confirmation-content';
-  content.innerHTML = `<p>Do you want to renew the domain <strong>${domainName}</strong> for ${duration} year(s)?</p>`;
-
-  const yesButton = document.createElement('button');
-  yesButton.innerText = 'Yes';
-  yesButton.addEventListener('click', () => confirmRenewal(domainName, duration));
-
-  const noButton = document.createElement('button');
-  noButton.innerText = 'No';
-  noButton.addEventListener('click', closeConfirmationBox);
-
-  content.appendChild(yesButton);
-  content.appendChild(noButton);
-  confirmationBox.appendChild(content);
-  document.body.appendChild(confirmationBox);
-}
-
-function confirmRenewal(domainName, duration) {
-    closeConfirmationBox();
+    const domainName = document.getElementById("renew-domain-name").value.trim();
+    const duration = document.getElementById("renew-duration").value;
+  
+    if (!domainName || !duration) {
+        alert("Please fill in all required fields.");
+        return;
+    }
+  
+    if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domainName)) {
+        alert("Please enter a valid domain name.");
+        return;
+    }
   
     disableChat();
-    showChatPopup("Renewing your domain, please wait...", false, true);
   
-    setTimeout(() => {
-        fetch(`/api/renew-domain?Websitename=${domainName}&Duration=${duration}&OrderType=2&IsWhoisProtection=false`, { method: "GET" })
-            .then(response => response.json())
-            .then(result => {
-                enableChat(); 
-                console.log("✅ Domain Renewal Response:", result);
+    const confirmationBox = document.createElement('div');
+    confirmationBox.className = 'chat-confirmation-box';
   
-                // 🟢 Using the 'success' field from the backend response directly
-                if (result?.success) {
-                    showChatPopup(`Domain <strong>${domainName}</strong> renewed successfully!`, true);
-                } else {
-                    showChatPopup(`Error: ${result?.message || 'Could not renew domain successfully.'}`, false);
-                }
+    const content = document.createElement('div');
+    content.className = 'confirmation-content';
+    content.innerHTML = `<p>Do you want to renew the domain <strong>${domainName}</strong> for ${duration} year(s)?</p>`;
   
-                // 🆕 Close the domain renewal section
-                document.getElementById('domain-renewal-section').style.display = 'none';
-                document.getElementById('login-chat-section').style.display = 'flex';
-            })
-            .catch(error => {
-                enableChat(); 
-                console.error("❗ Unexpected error:", error);
-                showChatPopup("Internal Server Error", false);
+    const yesButton = document.createElement('button');
+    yesButton.innerText = 'Yes';
+    yesButton.addEventListener('click', () => confirmRenewal(domainName, duration));
   
-                // 🆕 Same behavior on error
-                document.getElementById('domain-renewal-section').style.display = 'none';
-                document.getElementById('login-chat-section').style.display = 'flex';
-            });
-    }, 100); 
+    const noButton = document.createElement('button');
+    noButton.innerText = 'No';
+    noButton.addEventListener('click', closeConfirmationBox);
+  
+    content.appendChild(yesButton);
+    content.appendChild(noButton);
+    confirmationBox.appendChild(content);
+    document.body.appendChild(confirmationBox);
 }
+  
+  function confirmRenewal(domainName, duration) {
+      closeConfirmationBox();
+    
+      disableChat();
+      showChatPopup("Renewing your domain, please wait...", false, true);
+    
+      setTimeout(() => {
+          fetch(`/api/renew-domain?Websitename=${encodeURIComponent(domainName)}&Duration=${encodeURIComponent(duration)}`, {
+              method: "GET"
+          })
+          .then(response => response.json())
+          .then(result => {
+              enableChat(); 
+              console.log("✅ Domain Renewal Response:", result);
+    
+              if (result?.success) {
+                  showChatPopup(`Domain <strong>${domainName}</strong> renewed successfully!`, true);
+              } else {
+                  showChatPopup(`Error: ${result?.message || 'Could not renew domain successfully.'}`, false);
+              }
+    
+              document.getElementById('domain-renewal-section').style.display = 'none';
+              document.getElementById('login-chat-section').style.display = 'flex';
+          })
+          .catch(error => {
+              enableChat(); 
+              console.error("❗ Unexpected error:", error);
+              showChatPopup("Internal Server Error", false);
+    
+              document.getElementById('domain-renewal-section').style.display = 'none';
+              document.getElementById('login-chat-section').style.display = 'flex';
+          });
+      }, 100); 
+}  
 
 //----------------------------------------- Extract action from api documentation section ---------------------------------------------//
 
@@ -1314,6 +1455,7 @@ function addNameServerInput() {
     if (nameServerCount >= 3) {
         document.getElementById("chat-log").style.height = "59%";
         document.getElementsByClassName("chat-input").style.borderRadius= "0";
+        document.getElementsByClassName("chat-input").style.gap = "10px"
     }
 }
 
@@ -1754,16 +1896,11 @@ async function submitDomainQuery() {
           "How do I enable/disable privacy protection?",
           "How can I view the auth code for a domain?",
           "What are the name servers for this domain?",
-          "When was this domain registered?",
           "How can I check available funds?",
           "How can I update the name servers for a domain?",
           "Where can I find the API documentation?",
           "Where can I find API for action name?",
           "How can I get a transaction report for a selected month?",
-          "Which domains are getting expired?",
-          "Which domains are getting deleted on a selected date/month?",
-          "Which domains were registered on this domain?",
-          "Which domain was registered on a selected date/month?",
           "How can I contact support?",
           "What types of SSL are available?",
           "Where can I sign up?",
@@ -1805,6 +1942,134 @@ async function submitDomainQuery() {
           }
           return;
       }
+
+      if (/expiring\s+domains|domains\s+getting\s+expired|which\s+domains\s+are\s+getting\s+expired/i.test(queryText)) {
+        try {
+            console.log('Fetching expiring domains...');
+            const response = await fetch('/api/expiring-domains');
+    
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data. Status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log('Expiring domains response:', data);
+    
+            if (data.success && data.domains.length > 0) {
+                let message = "🔍 **Expiring Domains:**\n";
+                data.domains.forEach(domain => {
+                    message += `🔹 **${domain.domainName}** - *Expires on:* ${domain.expirationDate}\n`;
+                });
+                updateChatLog(message, 'bot');
+            } else {
+                updateChatLog("⚠️ No expiring domains found.", 'bot');
+            }
+    
+        } catch (error) {
+            console.error("Error fetching expiring domains:", error);
+            updateChatLog("❌ Unable to fetch expiring domains at this time.", 'bot');
+        }
+    
+        queryInput.value = ""; // Clear input after processing
+        return;
+    }
+
+    if (queryText.match(/\bregistered\s+on\s+(\d{2}-\d{2}-\d{4})\b/i)) {
+        try {
+            // Extract the date from the query
+            const dateMatch = queryText.match(/(\d{2}-\d{2}-\d{4})/);
+            if (!dateMatch) {
+                updateChatLog("⚠️ Please specify a valid date in the format dd-mm-yyyy.", 'bot');
+                return;
+            }
+    
+            const inputDate = dateMatch[1];  // "05-03-2025"
+            console.log(`Fetching registered domains for date: ${inputDate}`);
+    
+            // Fetch domain registration data
+            const response = await fetch(`/api/registrationdate-domains?date=${encodeURIComponent(inputDate)}`);
+    
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data. Status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log('Registered domains response:', data);
+    
+            if (data.success && data.domains.length > 0) {
+                let message = `📅 Domains Registered on ${inputDate}:\n`;
+    
+                // Convert timestamps to human-readable date
+                const formattedDate = new Date(inputDate.split('-').reverse().join('-'));
+                formattedDate.setHours(0, 0, 0, 0);
+    
+                // Filter domains based on exact date match
+                const matchedDomains = data.domains.filter(domain => {
+                    const creationTimestamp = domain.creationDate;
+                    const domainTimestamp = creationTimestamp.toString().length === 10 ? creationTimestamp * 1000 : creationTimestamp;
+                    const domainCreationDate = new Date(domainTimestamp);
+                    domainCreationDate.setHours(0, 0, 0, 0);
+                    return domainCreationDate.getTime() === formattedDate.getTime();
+                });
+    
+                if (matchedDomains.length > 0) {
+                    matchedDomains.forEach(domain => {
+                        message += `🔹 ${domain.domainName} \n`;
+                    });
+                } else {
+                    message = `⚠️ No domains were registered on ${inputDate}.`;
+                }
+    
+                updateChatLog(message, 'bot');
+            } else {
+                updateChatLog(`⚠️ No domains were registered on ${inputDate}.`, 'bot');
+            }
+    
+        } catch (error) {
+            console.error("Error fetching registered domains:", error);
+            updateChatLog("❌ Unable to fetch registered domains at this time.", 'bot');
+        }
+    
+        queryInput.value = ""; // Clear input after processing
+        return;
+    }
+    
+
+    const expiringDomainMatch = queryText.match(/\b(deleted|expiring|getting deleted)\s+(on|by|before)?\s*(\d{2}-\d{2}-\d{4})\b/i);
+if (expiringDomainMatch) {
+    const selectedDate = expiringDomainMatch[3].trim(); // Extract the correct date
+
+    try {
+        console.log('Fetching expiring domains for:', selectedDate);
+        const response = await fetch(`/api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data. Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Expiring domains response:', data);
+
+        if (data.success && data.domains.length > 0) {
+            let message = `⏳ **Domains Expiring on ${selectedDate}:**\n`;
+
+            data.domains.forEach(domain => {
+                message += `🔹 **${domain.domainName}** - *Expiring on:* ${moment(domain.expirationDate).format("DD-MM-YYYY")}\n`;
+            });
+
+            updateChatLog(message, 'bot');
+        } else {
+            updateChatLog(`⚠️ No domains are expiring on ${selectedDate}.`, 'bot');
+        }
+
+    } catch (error) {
+        console.error("Error fetching expiring domains:", error);
+        updateChatLog("❌ Unable to fetch expiring domains at this time.", 'bot');
+    }
+
+    queryInput.value = "";
+    return;
+}
 
       const apiQueryMatch = queryText.match(/where can I find API for (.+)/i);
 

@@ -31,21 +31,16 @@
           <li onclick="fillChatInput('How do I create an account?')">How do I create an account?</li>
           <li onclick="fillChatInput('What information is needed to sign up?')">What information is needed to sign up?</li>
           <li onclick="fillChatInput('Is there a fee for signing up?')">Is there a fee for signing up?</li>
-          <li onclick="fillChatInput('How secure is my information?')">How secure is my information?</li>
           <li onclick="fillChatInput('Does your platform provide an API for domain management?')">Does your platform provide an API for domain management?</li>
           <li onclick="fillChatInput('What integrations are supported?')">What integrations are supported?</li>
           <li onclick="fillChatInput('How can I get more details about the API?')">How can I get more details about the API?</li>
           <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
-          <li onclick="fillChatInput('Can I get a demo of the platform?')">Can I get a demo of the platform?</li>
-          <li onclick="fillChatInput('Is there a guide for new users?')">Is there a guide for new users?</li>
           <li onclick="fillChatInput('What payment methods are supported?')">What payment methods are supported?</li>
-          <li onclick="fillChatInput('How do I pay for services after signing up?')">How do I pay for services after signing up?</li>
         </ul>
       </div>
       <div id="faq-post-login" style="display: none;">
         <ul class="faq-list">
             <li onclick="fillChatInput('How do I register a domain?')">How do I register a domain?</li>
-            <li onclick="fillChatInput('Where can I register domains?')">Where can I register domains?</li>
             <li onclick="fillChatInput('How can I renew a domain?')">How can I renew a domain?</li>
             <li onclick="fillChatInput('How do I transfer IN/OUT domains?')">How do I transfer IN/OUT domains?</li>
             <li onclick="fillChatInput('How can I move a domain?')">How can I move a domain?</li>
@@ -68,19 +63,14 @@
             <li onclick="fillChatInputWithPlaceholder('Where can I find API for action name?')">Where can I find API for <em>action name</em>?</li>
             <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
             <li onclick="fillChatInput('What types of SSL are available?')">What types of SSL are available?</li>
-            <li onclick="fillChatInput('Give me the list of domain registrars.')">Give me the list of domain registrars.</li>
             <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
-            <li onclick="fillChatInput('How can I get a transaction report for a selected month?')">How can I get a transaction report for a selected month?</li>
             <li onclick="fillChatInput('Which domains are getting expired?')">Which domains are getting expired?</li>
-            <li onclick="fillChatInput('Which domains are getting deleted on a selected date/month?')">Which domains are getting deleted on a selected date/month?</li>
-            <li onclick="fillChatInput('Which domains were registered on this domain?')">Which domains were registered on this domain?</li>
-            <li onclick="fillChatInput('Which domain was registered on a selected date/month?')">Which domain was registered on a selected date/month?</li>
+            <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting deleted on dd-mm-yyyy')">Which domains are getting deleted on <em>dd-mm-yyyy</em>?</li>
+            <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy')">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
             <li onclick="fillChatInput('How can I download the WHMCS module?')">How can I download the WHMCS module?</li>
-            <li onclick="fillChatInput('How do I export List Name?')">How do I export 'List Name'?</li>
             <li onclick="fillChatInput('How do I pull a domain?')">How do I pull a domain?</li>
             <li onclick="fillChatInput('What types of reports can I get?')">What types of reports can I get?</li>
-        </ul>
-        
+        </ul> 
     </div>    
     </div>
 
@@ -200,14 +190,10 @@
     
     <!-- Domain Availability Section -->
     <div class="chat-input" style="display:none" id="domain-availability-section">
-      <div id="domain-availability-check-section">
         <div id="domain-check-wrapper">
-          <input type="text" id="domain-query-input" placeholder="Enter domain to check availability">
-          <button onclick="checkDomainAvailability()">Check</button>
+          <input type="text" id="check-domain-input" placeholder="Enter domain to check availability">
+          <button id="check-domain-button" onclick="handleCheckDomain()">Check</button>
         </div>
-        <div id="loading-container" style="display:none;">
-          <div class="loading-spinner"></div>
-        </div>   
         <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
       </div>
     </div>
@@ -265,7 +251,7 @@
       </div>
     </div>
 
-<!-- Domain registration section -->
+<!-- Domain Registration Section (Hidden initially) -->
 <div id="domain-registration-section" class="chat-input" style="display: none;">
   <div class="domain-registration-wrapper">
     <div class="input-group">
@@ -283,11 +269,10 @@
     </div>
     <div class="button-group">
       <button onclick="registerDomain()">Register Domain</button>
-      <button onclick="goBackToQuerySection()">Back</button>
+      <button onclick="goBackToCheckSection()">Back</button>
     </div>
   </div>
 </div>
-
 
 <!-- Additional domain settings section (visible post-registration) -->
 <div id="additional-settings-section" class="chat-input" style="display: none;">

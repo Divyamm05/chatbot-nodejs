@@ -238,7 +238,7 @@ body {
 #info-box {
   position: absolute;
   top: 34%;
-  left: 17%;
+  left: 75%;
   width: 40%;
   background: #fff;
   padding: 10px;
@@ -353,7 +353,8 @@ body {
 }
 
 /* Signup and Login Buttons */
-.signup-button, .login-button {
+.signup-button, .login-button, 
+.suggestion-buttons button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
@@ -366,7 +367,7 @@ body {
 }
 
 /* Hover effects */
-.signup-button:hover {
+.signup-button:hover, .suggestion-buttons button {
   background-color: #066; /* Green when hovering */
 }
 
@@ -589,16 +590,14 @@ body {
   background-color: #bd1401;
 }
 
-/* Back Button Styling */
 #back-to-domain-section {
-  width: 100%; 
-  margin-top: 10px;
-  padding: 12px;
-  background-color: #e74c3c;
-  color: white;
+  width: 100%;
+  padding: 8px;
+  background-color: #066;
+  color: #ffffff;
   border: none;
   border-radius: 20px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -639,7 +638,7 @@ body {
 }
 
 #otp-section button {
-  width: 24%;
+  width: 22%;
   margin-left: 10px;
   background-color: #066;
   color: #ffffff;
@@ -1258,35 +1257,33 @@ body {
   font-size: 14px;
 }
 
-/* Tooltip styling */
 .tooltip {
   position: absolute;
-  background: #3b3b3b;
-  padding: 4px 8px;
-  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 5px;
   font-size: 14px;
-  color: white;
-  z-index: 10;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1000;
+  text-align: center;
+  transform: translateX(-50%);
 }
 
-/* Pointer styling for tooltip */
 .tooltip::after {
-  content: '';
+  content: "";
   position: absolute;
-  bottom: -7px;
-  left: 80px;
-  border-width: 5px;
+  bottom: -8px; /* Arrow below tooltip */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
   border-style: solid;
-  border-color: #fff transparent transparent transparent;
+  border-color: #333 transparent transparent transparent;
 }
 
-/* Hide tooltip smoothly */
-.tooltip.hidden {
+.hidden {
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
 }
 
 .switch {
@@ -1545,45 +1542,6 @@ input:not(:checked) + .slider .on {
   border-radius: 10px;
 }
 
-/* Chat Popup Box */
-.chat-popup-box {
-  position: fixed;
-  bottom: 45%;
-  right: 8%;
-  background-color: #2d2d2d;
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  min-width: 250px;
-  max-width: 300px;
-  text-align: center;
-  animation: fadeInOut 5s ease-in-out;
-}
-
-/* Popup Content */
-.popup-content p {
-  margin-bottom: 10px;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-/* Popup Button */
-.popup-close-btn {
-  margin: 5px;
-  padding: 5px 10px;
-  background-color: #066;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.popup-close-btn:hover {
-  background-color: #000000;
-}
-
 /* Animation */
 @keyframes fadeInOut {
     0% { opacity: 0; transform: translateY(10px); }
@@ -1596,7 +1554,7 @@ input:not(:checked) + .slider .on {
 .chat-popup-box {
   position: fixed;
   bottom: 45%;
-  right: 15%;
+    right: 5%;
   background-color: #2d2d2d;
   color: white;
   padding: 20px;
@@ -1738,7 +1696,13 @@ login-chat-wrapper button:disabled {
   width: 100%; 
   font-size: 12px;
   box-sizing: border-box;
+  user-select: text !important;
 }
+.highlight-input::selection {
+  background: rgb(145, 145, 145);
+  color: black;
+}
+
 
 /* Styling for Submit Button */
 #submit-domain-query {
@@ -1896,16 +1860,16 @@ login-chat-wrapper button:disabled {
 }
 
 #back-to-domain-section {
-  width: 100%; 
-  padding: 12px 18px;
-  background-color: #1abc9c;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  width: 100%;
+    padding: 8px;
+    background-color: #066;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 #back-to-domain-section:hover {

@@ -13,6 +13,7 @@ const admin = require('firebase-admin');
 const { info } = require('console');
 const qs = require('qs');
 const fs = require('fs');
+const moment = require('moment');
 const pdf = require('pdf-parse');
 
 const app = express();
@@ -35,15 +36,13 @@ app.use(session({
 const COHERE_API_KEY = process.env.COHERE_API_KEY;
 const COHERE_API_URL = 'https://api.cohere.ai/v1/generate';
 
-const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString('utf-8'));
-
-// Firebase Admin setup
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
-
-const auth = admin.auth();
-const db = admin.firestore();
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
@@ -103,13 +102,13 @@ const startQuestions = {
   "Are all the features available without an account?": "Yes, an account is required for some advanced features.",
   "Do I have to create an account to use this platform?": "Yes, an account is required for some advanced features.",
   
-  "How can I search for a domain name?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
-  "Where can I check for domain availability?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
-  "How to check if a domain is available?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
-  "How do I find a good domain name for my website?": "To search for a domain name, start by using domain registration platforms like GoDaddy, Namecheap, or Google Domains. These services offer search tools where you can enter your desired name, and they will show availability. You can also explore variations if your first choice is already taken, and they often suggest alternatives. Some tools even provide insights into the domain's potential for search engine optimization (SEO). Once you find an available domain, you can proceed to purchase and register it.",
+  "How can I search for a domain name?": "You can start by signing into our domain registration platform or using our AI chatbot to search for a domain name. Simply enter your desired domain, and our system will check its availability.Need suggestions? Our domain name suggestion feature will provide variations and alternatives if your preferred domain is already taken.Once you find the perfect domain, you can proceed with the purchase and registration seamlessly.",
+  "Where can I check for domain availability?": "You can start by signing into our domain registration platform or using our AI chatbot to search for a domain name. Simply enter your desired domain, and our system will check its availability.Need suggestions? Our domain name suggestion feature will provide variations and alternatives if your preferred domain is already taken.Once you find the perfect domain, you can proceed with the purchase and registration seamlessly.",
+  "How to check if a domain is available?": "You can start by signing into our domain registration platform or using our AI chatbot to search for a domain name. Simply enter your desired domain, and our system will check its availability.Need suggestions? Our domain name suggestion feature will provide variations and alternatives if your preferred domain is already taken.Once you find the perfect domain, you can proceed with the purchase and registration seamlessly.",
+  "How do I find a good domain name for my website?": "You can start by signing into our domain registration platform or using our AI chatbot to search for a domain name. Simply enter your desired domain, and our system will check its availability.Need suggestions? Our domain name suggestion feature will provide variations and alternatives if your preferred domain is already taken.Once you find the perfect domain, you can proceed with the purchase and registration seamlessly.",
   
-  "What details are required to register a domain?": "To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.",
-  "What information is needed to buy a domain?": "To register a domain, you need to provide the domain name, registration duration (in years), whois protection preference, primary and secondary name servers (ns1, ns2), and a customer ID. Additional optional details include third and fourth name servers (ns3, ns4) and a language code for IDN domains. If registering a .us domain, you must also provide the purpose of registration (e.g., business, personal, educational) and nexus category (e.g., US citizen, US organization). Once all required details are submitted, the domain will be successfully registered.",
+  "What details are required to register a domain?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
+  "What information is needed to buy a domain?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
   
   "Do you support premium domain registration?": "Yes, we support the registration of premium domains.",
   "Can I buy premium domains on this platform?": "Yes, we support the registration of premium domains.",
@@ -126,7 +125,7 @@ const startQuestions = {
   "Can I transfer my existing domains to this platform?": "Yes, you can transfer your domains to our platform.",
   "How do I create an account?": "To create an account, click the Sign Up button and provide your basic details. If you are already registered, simply log in.",
   "What information is needed to sign up?": "You need to provide your name and your email address.",
-  "Is there a fee for signing up?": "No, signing up is free of charge.",
+  "Is there a fee for signing up?": "No, Signing up is completely free!",
   "How secure is my information?": "We follow industry-standard security practices to protect your data.",
   "Does your platform provide an API for domain management?": "Absolutely! Our platform offers a comprehensive API for seamless domain management. You can explore the full API documentation here: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
   "What integrations are supported?": "Our API supports a wide range of integrations. For detailed information on all available integrations, please refer to our API documentation: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
@@ -134,7 +133,7 @@ const startQuestions = {
   "How can I contact support?": '<a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to contact us.',
   "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
   "Is there a guide for new users?": "Yes! Signing up with us gives you access to a helpful onboarding guide, along with the latest offers on our extensive selection of TLDs.",
-  "What payment methods are supported?": "We accept credit/debit cards, and other popular payment methods.",
+  "What payment methods are supported?": "We support multiple payment gateways, offering flexibility for your transactions. Additionally, we also accept offline payment methods, including cheques, for your convenience.",
   "How do I pay for services after signing up?": "After signing up, you can pay for services directly through the platform's payment portal.",
 };
 
@@ -182,21 +181,186 @@ app.post('/ask-question', (req, res) => {
   return res.json({ answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
-const checkDomainAvailability = async (domainName) => {
-  try {
-      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
-      
-      console.log('🔍 Checking Domain Availability:', url);
-      const response = await axios.get(url, { headers: { 'Accept': 'application/json' } });
+// Tester login without checking Firebase
+app.post('/api/tester-login', logSession, (req, res) => {
+  const { email } = req.body;
 
-      console.log('✅ Domain Availability Response:', response.data);
-      return response.data;
-  } catch (error) {
-      console.error('❌ Error during domain availability check:', error.response?.data || error.message);
-      return { success: false, message: error.response?.data?.message || error.message };
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required for tester login.' });
   }
-};
 
+  req.session.email = email;
+  req.session.verified = true;  
+  req.session.userState = 'awaiting_domain_name'; 
+
+  res.json({
+    success: true,
+    message: 'Logged in as tester successfully.',
+    options: [
+      { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
+      { text: 'More Options', action: 'askMoreOptions' },
+    ],
+  });
+});
+
+app.post('/api/check-email', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required." });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase(); // ✅ Always store email in lowercase
+  req.session.email = normalizedEmail;
+
+  // ✅ Tester & AI Chatbot Bypass Logic
+  const bypassEmails = ["tester@abc.com", "aichatbot@iwantdemo.com"];
+  if (bypassEmails.includes(normalizedEmail)) {
+    req.session.otpVerified = true; // ✅ Mark as verified without OTP
+    return res.json({ success: true, otpRequired: false });
+  }
+
+  try {
+    const connection = await pool.getConnection(); // ✅ Get a connection from the pool
+    const [users] = await connection.query("SELECT clientId FROM Client WHERE UserName = ?", [normalizedEmail]);
+    connection.release(); // ✅ Release the connection
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Email not found in our records.<br>
+          <a href='https://india.connectreseller.com/signup' style='color: white; font-weight: bold; text-decoration: none;'>CLICK HERE</a> to sign up for the India panel.<br>
+          <a href='https://global.connectreseller.com/signup' style='color: white; font-weight: bold; text-decoration: none;'>CLICK HERE</a> to sign up for the Global panel.<br>
+          Or enter your registered email ID to continue.`
+      });
+    }
+
+    // ✅ Generate OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 60000);
+
+    // ✅ Store OTP in MySQL (Replace with your actual OTP table structure)
+    const otpQuery = "INSERT INTO otp_records (email, otp, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?";
+    await pool.query(otpQuery, [normalizedEmail, otp, expiresAt, otp, expiresAt]);
+
+    // ✅ Send OTP email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: normalizedEmail,
+      subject: 'Your OTP Code',
+      text: `Your OTP code is: ${otp}. It is valid for 1 minute.`
+    };
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true, message: 'OTP sent to your email address.', otpRequired: true });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+// Resend OTP if valid or generate new OTP
+app.post('/api/resend-otp', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required." });
+  }
+
+  try {
+    const otpRef = db.collection('otp_records').doc(email);
+    const otpDoc = await otpRef.get();
+
+    if (otpDoc.exists && otpDoc.data().expires_at.toDate() > new Date()) {
+      const otp = otpDoc.data().otp;
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Your OTP Code',
+        text: `Your OTP code is: ${otp}. It is still valid for 1 minute.`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'OTP resent to your email address.' });
+    } else {
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const expiresAt = new Date(Date.now() + 60000);
+
+      await otpRef.set({
+        otp,
+        expires_at: expiresAt,
+      }, { merge: true });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Your OTP Code',
+        text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'New OTP sent to your email address.' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+// OTP Verification Endpoint
+app.post('/api/verify-otp', async (req, res) => {
+  const { otp, email } = req.body;
+
+  if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required.' });
+  }
+
+  try {
+      const lowerCaseEmail = email.toLowerCase();
+
+      if (lowerCaseEmail === 'aichatbot@iwantdemo.com') {
+          // 🔍 Fetch customerId dynamically
+          const clientQuery = await db.collection('Client').where('UserName', '==', lowerCaseEmail).get();
+          if (!clientQuery.empty) {
+              req.session.customerId = clientQuery.docs[0].data().clientId;
+          } else {
+              return res.status(404).json({ success: false, message: 'Client not found in database.' });
+          }
+
+          req.session.verified = true;
+          return res.json({ success: true, message: 'Test user authenticated successfully.', customerId: req.session.customerId });
+      }
+
+      // 🔍 Normal OTP Verification
+      const otpRef = db.collection('otp_records').doc(email);
+      const otpDoc = await otpRef.get();
+
+      if (!otpDoc.exists || otpDoc.data().otp !== otp || otpDoc.data().expires_at.toDate() < new Date()) {
+          return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+      }
+
+      req.session.verified = true;
+
+      // 🔍 Fetch clientId from Client table using email
+      const clientQuery = await db.collection('Client').where('UserName', '==', email).get();
+      if (!clientQuery.empty) {
+          req.session.customerId = clientQuery.docs[0].data().clientId;
+      } else {
+          return res.status(404).json({ success: false, message: 'Client not found in database.' });
+      }
+
+      return res.json({
+          success: true,
+          message: 'OTP verified successfully.',
+          customerId: req.session.customerId,
+      });
+
+  } catch (error) {
+      console.error('Error during OTP verification:', error);
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
 
 const domainRegistrationService = async (params) => {
   try {
@@ -234,44 +398,109 @@ const domainRegistrationService = async (params) => {
   }
 };
 
-app.get('/api/register-domain', async (req, res) => {
-  let params = { ...req.query };
+const checkDomainAvailability = async (domainName) => {
+  try {
+    const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
 
-  console.log("🔍 Received Params:", params);
+    console.log(`Checking domain availability for: ${domainName}`);
+    console.log(`Request URL: ${url}`);
+
+    const response = await axios.get(url, { headers: { "Accept": "application/json" } });
+
+    console.log("API Response:", JSON.stringify(response.data, null, 2));
+
+    // Extract the message from the API response
+    const message = response.data?.responseMsg?.message || "Unknown response from API";
+
+    // Correctly determine if the domain is available
+    const isAvailable = message.toLowerCase() === "domain available for registration";  // ✅ Correct condition
+
+    console.log(`Domain Availability: ${isAvailable}`);
+
+    return {
+      available: isAvailable,
+      message: message, // Send the API message to frontend
+    };
+  } catch (error) {
+    console.error("Error checking domain availability:", error.message);
+    return { available: false, message: "Error checking domain availability." };
+  }
+};
+
+app.get("/api/domainname-suggestions", async (req, res) => {
+  const { domain } = req.query;
+
+  console.log("====================================");
+  console.log(`📥 Received request for domain suggestions: ${domain}`);
+  
+  if (!domain) {
+      console.warn("⚠️ Domain keyword is missing in the request.");
+      return res.status(400).json({ success: false, message: "Domain keyword is required." });
+  }
 
   try {
-      // Check domain availability first
-      const availabilityResponse = await checkDomainAvailability(params.Websitename);
+      const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
+      const maxResults = 5;
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=${API_KEY}&keyword=${domain}&maxResult=${maxResults}`;
 
-      if (availabilityResponse?.responseMsg?.statusCode === 400 || !availabilityResponse?.responseData?.available) {
-          return res.json({
-              success: false,
-              message: "Domain is not available for registration."
-          });
+      console.log(`🔍 Fetching domain suggestions from API...`);
+      console.log(`🌍 API Request URL: ${url}`);
+
+      const response = await axios.get(url, { headers: { "Accept": "application/json" } });
+
+      console.log("✅ API Response Received:");
+      console.log(JSON.stringify(response.data, null, 2));
+
+      // Ensure we properly access the registryDomainSuggestionList
+      const suggestions = response.data?.registryDomainSuggestionList; 
+
+      if (!suggestions || suggestions.length === 0) {
+          console.warn(`⚠️ No suggestions found for: ${domain}`);
+          return res.json({ success: false, message: "No domain suggestions found." });
       }
 
-      if (params.Id === '15272' || (req.session && req.session.email === 'aichatbot@iwantdemo.com')) {
-          console.log("🔄 Using Client ID directly as Id for API request.");
-          params.Id = 223855;
-      }
+      console.log(`📌 Found ${suggestions.length} domain suggestions for: ${domain}`);
+      suggestions.forEach((suggestion, index) => {
+          console.log(`   ${index + 1}. ${suggestion.domainName} - $${suggestion.price}`);
+      });
 
-      params.clientId = params.Id;
-
-      const response = await domainRegistrationService(params);
-
-      console.log('✅ Domain Registration Response:', response);
-
-      if (response?.responseMsg?.statusCode === 200) {
-          res.json({ success: true, message: "Domain registered successfully!" });
-      } else {
-          res.json({
-              success: false,
-              message: response?.responseMsg?.message || "Domain registration failed."
-          });
-      }
+      // Correctly send the list of domain suggestions
+      res.json({ success: true, data: suggestions });
   } catch (error) {
-      console.error('❗ Error during domain registration API call:', error.message);
-      res.status(500).json({ success: false, message: "Internal Server Error" });
+      console.error("❌ Error fetching domain suggestions:", error.message);
+      res.status(500).json({ success: false, message: "Failed to fetch domain suggestions." });
+  }
+  console.log("====================================");
+});
+
+app.get("/api/check-domain", async (req, res) => {
+  const { domain } = req.query;
+  if (!domain) return res.status(400).json({ success: false, message: "Domain name required." });
+
+  const available = await checkDomainAvailability(domain);
+  res.json({ success: available });
+});
+
+app.get("/api/register-domain", async (req, res) => {
+  let { Websitename, Duration, Id } = req.query;
+  
+  const available = await checkDomainAvailability(Websitename);
+  if (!available) {
+    return res.json({ success: false, message: "Domain is not available." });
+  }
+
+  const balanceResponse = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${Id}`);
+  const balance = parseFloat(balanceResponse.data.responseData);
+  
+  if (balance < 20) { // Assuming minimum required balance is $10
+    return res.json({ success: false, message: "Insufficient funds for registration." });
+  }
+
+  const response = await domainRegistrationService(req.query);
+  if (response.responseMsg.statusCode === 200) {
+    res.json({ success: true, message: "Domain registered successfully!" });
+  } else {
+    res.json({ success: false, message: response.responseMsg.message });
   }
 });
 
@@ -332,6 +561,10 @@ const ORDER_TYPE_RENEWAL = 2;
 
 const renewDomainService = async (params) => {
     try {
+        if (!params.Websitename || !params.Duration || !params.clientId) {
+            throw new Error("Missing required parameters for renewal.");
+        }
+
         const queryParams = new URLSearchParams({
             APIKey: process.env.CONNECT_RESELLER_API_KEY,
             OrderType: ORDER_TYPE_RENEWAL,
@@ -351,240 +584,57 @@ const renewDomainService = async (params) => {
         console.log('✅ Domain Renewal Successful:', response.data);
         return response.data;
     } catch (error) {
-      console.error('❌ Error during domain renewal API call:', error.message);
-
-      // 🔴 Log the full error response to capture the actual reason for failure
-      if (error.response) {
-          console.error('🔍 API Response Status:', error.response.status);
-          console.error('📄 API Response Data:', error.response.data);
-      } else {
-          console.error('🚫 No Response Received');
-      }
-
-      return { success: false, message: error.message };
-  }
+        console.error('❌ Error during domain renewal API call:', error.message);
+        if (error.response) {
+            console.error('🔍 API Response Status:', error.response.status);
+            console.error('📄 API Response Data:', error.response.data);
+        } else {
+            console.error('🚫 No Response Received');
+        }
+        return { success: false, message: error.message };
+    }
 };
 
 app.get('/api/renew-domain', async (req, res) => {
     let params = { ...req.query };
     console.log("🔍 Received Params:", params);
 
+    if (!req.session || !req.session.email) {
+        return res.status(400).json({ success: false, message: "User is not authenticated." });
+    }
+
+    const email = req.session.email;
+    console.log("📧 Fetching clientId for email:", email);
+
+    let connection;
     try {
-        if (params.Id === '15272' || (req.session && req.session.email === 'aichatbot@iwantdemo.com')) {
-            console.log("🔄 Using Client ID directly as Id for API request.");
-            params.Id = 223855;
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            "SELECT clientId FROM Client WHERE UserName = ? LIMIT 1",
+            [email]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Client not found." });
         }
 
-        params.clientId = params.Id;
-        const response = await renewDomainService(params);
+        params.clientId = rows[0].clientId;
+        console.log("✅ Retrieved clientId:", params.clientId);
 
+        const response = await renewDomainService(params);
         console.log('✅ Domain Renewal Response:', response);
 
-        if (response?.responseMsg?.statusCode === 200) {
-            res.json({
-                success: true,
-                message: "Domain renewed successfully!",
-                expiryDate: response?.responseData?.expiryDate
-            });
-        } else {
-            res.json({
-                success: false,
-                message: response?.responseMsg?.message || "Domain renewal failed."
-            });
-        }
+        return res.json({
+            success: response?.responseMsg?.statusCode === 200,
+            message: response?.responseMsg?.message || "Domain renewal failed.",
+            expiryDate: response?.responseData?.expiryDate || null
+        });
     } catch (error) {
         console.error('❗ Error during domain renewal API call:', error.message);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    } finally {
+        if (connection) connection.release();
     }
-});
-
-// Tester login without checking Firebase
-app.post('/api/tester-login', logSession, (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required for tester login.' });
-  }
-
-  req.session.email = email;
-  req.session.verified = true;  
-  req.session.userState = 'awaiting_domain_name'; 
-
-  res.json({
-    success: true,
-    message: 'Logged in as tester successfully.',
-    options: [
-      { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
-      { text: 'More Options', action: 'askMoreOptions' },
-    ],
-  });
-});
-
-app.post('/api/check-email', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required." });
-  }
-
-  req.session.email = email.trim().toLowerCase(); // ✅ Always store email in lowercase
-
-  // ✅ Tester & AI Chatbot Bypass Logic
-  if (req.session.email === "tester@abc.com" || req.session.email === "aichatbot@iwantdemo.com") {
-    req.session.otpVerified = true; // ✅ Mark as verified without OTP
-    return res.json({ 
-        success: true, 
-        otpRequired: false 
-    });
-  }
-
-  try {
-    const usersRef = db.collection('Client');
-    const query = await usersRef.where('UserName', '==', req.session.email).get();
-
-    if (query.empty) {
-      return res.status(404).json({ 
-        success: false, 
-        message: `Email not found in our records.  
-<a href="https://india.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the India panel.  
-<a href="https://global.connectreseller.com/signup" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to sign up for the Global panel.
-Or enter your registered email id to continue. ` 
-      });
-    }
-
-    const otp = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 60000);
-
-    const otpRef = db.collection('otp_records').doc(req.session.email);
-    await otpRef.set({ otp, expires_at: expiresAt }, { merge: true });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: req.session.email,
-      subject: 'Your OTP Code',
-      text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
-    };
-
-    await transporter.sendMail(mailOptions);
-    res.json({ 
-      success: true, 
-      message: 'OTP sent to your email address.', 
-      otpRequired: true 
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ success: false, message: "Internal server error." });
-  }
-});
-
-
-// Resend OTP if valid or generate new OTP
-app.post('/api/resend-otp', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required." });
-  }
-
-  try {
-    const otpRef = db.collection('otp_records').doc(email);
-    const otpDoc = await otpRef.get();
-
-    if (otpDoc.exists && otpDoc.data().expires_at.toDate() > new Date()) {
-      const otp = otpDoc.data().otp;
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Your OTP Code',
-        text: `Your OTP code is: ${otp}. It is still valid for 1 minute.`,
-      };
-
-      await transporter.sendMail(mailOptions);
-      res.json({ success: true, message: 'OTP resent to your email address.' });
-    } else {
-      const otp = crypto.randomInt(100000, 999999).toString();
-      const expiresAt = new Date(Date.now() + 60000);
-
-      await otpRef.set({
-        otp,
-        expires_at: expiresAt,
-      }, { merge: true });
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Your OTP Code',
-        text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
-      };
-
-      await transporter.sendMail(mailOptions);
-      res.json({ success: true, message: 'New OTP sent to your email address.' });
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ success: false, message: "Internal server error." });
-  }
-});
-
-// OTP Verification Endpoint
-app.post('/api/verify-otp', logSession, async (req, res) => {
-  const { otp, email } = req.body;
-
-  if (!email) {
-      return res.status(400).json({ success: false, message: 'Email is required.' });
-  }
-
-  try {
-      const lowerCaseEmail = email.toLowerCase();
-
-      if (lowerCaseEmail === 'aichatbot@iwantdemo.com') {
-          // 🔍 Check if OTP is required for chatbot email
-          const otpRef = db.collection('otp_records').doc(email);
-          const otpDoc = await otpRef.get();
-
-          if (!otpDoc.exists || otpDoc.data().otp !== otp || otpDoc.data().expires_at.toDate() < new Date()) {
-              return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
-          }
-
-          req.session.verified = true;
-          req.session.customerId = '223855';
-
-          return res.json({
-              success: true,
-              message: 'Test user authenticated successfully.',
-              customerId: '223855',
-          });
-      }
-
-      // Normal OTP verification for other users
-      const otpRef = db.collection('otp_records').doc(email);
-      const otpDoc = await otpRef.get();
-
-      if (!otpDoc.exists || otpDoc.data().otp !== otp || otpDoc.data().expires_at.toDate() < new Date()) {
-          return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
-      }
-
-      req.session.verified = true;
-
-      // 🔍 Fetch clientId from Client table using email as UserName
-      const clientQuery = await db.collection('Client').where('UserName', '==', email).get();
-      if (!clientQuery.empty) {
-          req.session.customerId = clientQuery.docs[0].data().clientId;
-      } else {
-          return res.status(404).json({ success: false, message: 'Client not found in database.' });
-      }
-
-      return res.json({
-          success: true,
-          message: 'OTP verified successfully.',
-          customerId: req.session.customerId,
-      });
-
-  } catch (error) {
-      console.error('Error during OTP verification:', error);
-      res.status(500).json({ success: false, message: 'Internal server error.' });
-  }
 });
 
 
@@ -644,7 +694,7 @@ app.post('/api/domain-suggestions', async (req, res) => {
 
   try {
     // Modify the prompt to focus on professional, short, and industry-specific domains
-    const prompt = `Suggest 10 unique and professional domain names related to "${domain}". The names should be brandable, suitable for a legitimate business, and easy to remember. Use common domain extensions such as .com, .net, and .co. Avoid using numbers, hyphens, or generic words. The suggestions should reflect the type of business represented by the term "${domain}". Please give only the domain names, no extra information. The domain names should be unique so that they are available to register. Do not use hyphens in suggesting domain names`;
+    const prompt = `Suggest 5 unique and professional domain names related to "${domain}". The names should be brandable, suitable for a legitimate business, and easy to remember. Use common domain extensions such as .com, .net, and .co. Avoid using numbers, hyphens, or generic words. The suggestions should reflect the type of business represented by the term "${domain}". Please give only the domain names, no extra information. The domain names should be unique so that they are available to register. Do not use hyphens in suggesting domain names`;
 
     //Generate domain name suggestions using Cohere API
     const getDomainSuggestions = async () => {
@@ -1416,39 +1466,53 @@ app.get('/api/domain-auth-code', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Domain Name is required' });
   }
 
-  console.log(`🔍 Fetching domainNameId from Firestore for ${domain}`);
+  if (!req.session || !req.session.email) {
+      return res.status(400).json({ success: false, message: "User is not authenticated." });
+  }
 
+  const email = req.session.email;
+  console.log(`📧 Fetching clientId and resellerId for email: ${email}`);
+
+  let connection;
   try {
-      // Fetch domainNameId from Firestore
-      const domainRef = db.collection('DomainName');
-      const domainSnapshot = await domainRef.where('websiteName', '==', domain).get();
+      connection = await pool.getConnection();
 
-      if (domainSnapshot.empty) {
-          console.warn(`⚠️ No domain found for: ${domain}`);
+      // 1️⃣ Fetch clientId and resellerId from Client table
+      const [clientRows] = await connection.execute(
+          "SELECT clientId, ResellerId FROM Client WHERE UserName = ? LIMIT 1",
+          [email]
+      );
+
+      if (clientRows.length === 0) {
+          return res.status(404).json({ success: false, message: "Client not found." });
+      }
+
+      const { clientId, ResellerId } = clientRows[0];
+      console.log(`✅ Retrieved clientId: ${clientId}, ResellerId: ${ResellerId}`);
+
+      // 2️⃣ Fetch domainNameId from DomainName table using ResellerId and websiteName
+      const [domainRows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? AND resellerId = ? LIMIT 1",
+          [domain, ResellerId]
+      );
+
+      if (domainRows.length === 0) {
+          console.warn(`⚠️ No domain found for: ${domain} under resellerId: ${ResellerId}`);
           return res.status(404).json({ success: false, message: `Domain ${domain} not found in database.` });
       }
 
-      const domainData = domainSnapshot.docs[0].data();
-      const domainNameId = domainData?.domainNameId;
-
-      if (!domainNameId) {
-          console.warn(`⚠️ domainNameId missing for ${domain}`);
-          return res.status(404).json({ success: false, message: `Invalid domain ID for ${domain}.` });
-      }
-
+      const domainNameId = domainRows[0].domainNameId;
       console.log(`✅ Found domainNameId: ${domainNameId}`);
 
-      // Fetch Auth Code using domainNameId
+      // 3️⃣ Fetch Auth Code using domainNameId
       const authCodeUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewEPPCode?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}`;
-      
       console.log(`🌐 Fetching Auth Code: ${authCodeUrl}`);
-      
+
       const authCodeResponse = await axios.get(authCodeUrl);
       const authCodeData = authCodeResponse.data;
 
-      console.log('Auth code response:', authCodeData);
+      console.log('🔑 Auth Code Response:', authCodeData);
 
-      // ✅ Ensure responseData is returned correctly
       if (authCodeData.responseData) {
           return res.json({ success: true, authCode: authCodeData.responseData });
       } else {
@@ -1457,9 +1521,139 @@ app.get('/api/domain-auth-code', async (req, res) => {
   } catch (error) {
       console.error('❌ Error fetching auth code:', error);
       return res.status(500).json({ success: false, message: 'Internal server error' });
+  } finally {
+      if (connection) connection.release();
   }
 });
 
+app.get('/api/expiring-domains', async (req, res) => {
+  try {
+      const apiKey = process.env.CONNECT_RESELLER_API_KEY;
+      const { date } = req.query; // Expecting "DD-MM-YYYY"
+
+      if (!apiKey) {
+          return res.status(500).json({ success: false, message: "API key is missing" });
+      }
+
+      if (!date || !moment(date, "DD-MM-YYYY", true).isValid()) {
+          return res.status(400).json({ success: false, message: "Invalid or missing date. Use DD-MM-YYYY format." });
+      }
+
+      // Convert input date to UNIX timestamp (start and end of the selected day)
+      const startOfDay = moment(date, "DD-MM-YYYY").startOf('day').valueOf();
+      const endOfDay = moment(date, "DD-MM-YYYY").endOf('day').valueOf();
+
+      // API Call to fetch all domains sorted by expiration date
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/SearchDomainList?APIKey=${apiKey}&page=1&maxIndex=100&orderby=ExpirationDate&orderType=asc`;
+
+      console.log(`🌐 Fetching domains expiring on ${date}: ${url}`);
+
+      const response = await axios.get(url);
+      if (!response.data || !response.data.records) {
+          return res.json({ success: false, message: "No domains found.", domains: [] });
+      }
+
+      const domains = response.data.records;
+
+      // Filter domains that expire exactly on the given date
+      const expiringDomains = domains.filter(domain => {
+          const expirationTimestamp = domain.expirationDate;
+          if (!expirationTimestamp) return false;
+
+          // Convert expiration timestamp (milliseconds handling)
+          const domainExpiration = expirationTimestamp.toString().length === 10 ? expirationTimestamp * 1000 : expirationTimestamp;
+          return domainExpiration >= startOfDay && domainExpiration <= endOfDay;
+      });
+
+      return res.json({
+          success: true,
+          domains: expiringDomains.length ? expiringDomains : [],
+          message: expiringDomains.length ? "" : `No domains expiring on ${date}.`
+      });
+
+  } catch (error) {
+      console.error("❌ Error fetching expiring domains:", error);
+      return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.get('/api/deleted-domains', async (req, res) => {
+  try {
+      const apiKey = process.env.CONNECT_RESELLER_API_KEY;
+      const { date } = req.query; // Expecting "dd-mm-yyyy"
+
+      if (!apiKey) {
+          return res.status(500).json({ success: false, message: "API key is missing" });
+      }
+
+      if (!date || !moment(date, "DD-MM-YYYY", true).isValid()) {
+          return res.status(400).json({ success: false, message: "Invalid or missing date. Use dd-mm-yyyy format." });
+      }
+
+      // Convert input date to UNIX timestamp (milliseconds)
+      const startOfDay = moment(date, "DD-MM-YYYY").startOf('day').valueOf();
+
+      // API Call to fetch domains sorted by expiration date
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/SearchDomainList?APIKey=${apiKey}&page=1&maxIndex=100&orderby=ExpirationDate&orderType=asc`;
+
+      console.log(`🌐 Fetching domains expiring on ${date}: ${url}`);
+
+      const response = await axios.get(url);
+      const domains = response.data.success ? response.data.records || [] : [];
+
+      // Filter domains that are set to expire exactly on the given date
+      const expiringDomains = domains.filter(domain => {
+          const expirationTimestamp = domain.expirationDate;
+          if (!expirationTimestamp) return false;
+          return moment(expirationTimestamp).startOf('day').valueOf() === startOfDay;
+      });
+
+      return res.json({ success: true, domains: expiringDomains, message: expiringDomains.length ? "" : `No domains expiring on ${date}.` });
+  } catch (error) {
+      console.error("❌ Error fetching expiring domains:", error);
+      return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+app.get('/api/registrationdate-domains', async (req, res) => {
+  try {
+      const apiKey = process.env.CONNECT_RESELLER_API_KEY;
+      const { date } = req.query; // Expecting "dd-mm-yyyy"
+
+      if (!apiKey) {
+          return res.status(500).json({ success: false, message: "API key is missing" });
+      }
+
+      if (!date || !moment(date, "DD-MM-YYYY", true).isValid()) {
+          return res.status(400).json({ success: false, message: "Invalid or missing date. Use dd-mm-yyyy format." });
+      }
+
+      // Convert input date to UNIX timestamp (milliseconds)
+      const startOfDay = moment(date, "DD-MM-YYYY").startOf('day').valueOf();
+      const endOfDay = moment(date, "DD-MM-YYYY").endOf('day').valueOf();
+
+      // API Call to fetch recently registered domains
+      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/SearchDomainList?APIKey=${apiKey}&page=1&maxIndex=100&orderby=CreationDate&orderType=asc`;
+
+      console.log(`🌐 Fetching registered domains for ${date}: ${url}`);
+
+      const response = await axios.get(url);
+      const domains = response.data.records || []; // Fix: Use correct API key
+
+      // Filter domains registered on the exact date
+      const filteredDomains = domains.filter(domain => {
+          const creationTimestamp = domain.creationDate;
+          const domainTimestamp = creationTimestamp.toString().length === 10 ? creationTimestamp * 1000 : creationTimestamp;
+          return domainTimestamp >= startOfDay && domainTimestamp <= endOfDay;
+      });
+
+      return res.json({ success: true, domains: filteredDomains.length ? filteredDomains : [] });
+  } catch (error) {
+      console.error("❌ Error fetching registration date domains:", error);
+      return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
@@ -1474,12 +1668,12 @@ const allowedTopics = [
 // Refined predefined answers with improved grammar, chatbot tone, and categorized responses
 const predefinedAnswers = {
   // Register Domain
-  "How do I register a domain?": "To register a domain, navigate to the 'Register Domain' section, enter the desired domain name, select your preferred TLD, choose the registration duration, and complete the process by clicking the 'Register' button.",
+  "How do I register a domain?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration. Popular domain TLD prices: .com - $11.99, .net - $13.59, .co.in - $5.49, .in - $7.29, .org - $8.99, .ai - $84.09, .io - $36.29, .co - $12.29.",
 //
-  "Where can I register domains?": "You can register domains directly through this chatbot via the 'Register Domain' section by entering the desired domain name and selecting the desired registration duration.",
+  "Where can I register domains?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
 
   // Renew Domain
-  "How can I renew a domain?": "To seamlessly renew your domain name, simply click the 'Renew Domain Name' button to navigate to the renewal section. Enter the domain name you wish to renew and select the desired renewal duration.",
+  "How can I renew a domain?": "To renew a domain. Enter the domain name and select the number of years for renewal.",
 
   // Transfer Domain
   "How do I transfer IN/OUT domains?": "To transfer a domain to us, unlock it at your current registrar and obtain the AuthCode/EPP code. Then, navigate to the 'Transfer Domain Name' section, enter the domain name you wish to transfer, and provide the AuthCode/EPP code to complete the transfer process with us.",
@@ -1502,25 +1696,13 @@ const predefinedAnswers = {
 //
   "Where can I find the API documentation?": "You can find API documentation by clicking the button below:<br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
 //
-  "Where can I find API for 'action name'": "You can find API documentation in the developer section of our website.",
-//
-  "How can I get a transaction report for a selected month?": "You can generate and download transaction reports from the billing or reports section of your account.",
-//
-  "Which domains are getting expired?": "You can check expiring domains in the domain management section under the expiration tab.",
-//
-  "Which domains are getting deleted on a selected date/month?": "You can view scheduled deletions in the domain management section under the deletion schedule.",
-//
-  "Which domains were registered on this domain?": "You can find a list of registered domains in your account under domain management.",
-//
-  "Which domain was registered on a selected date/month?": "Check your domain registration history in the account panel or request a report for a specific date range.",
-//
 "How can I contact support?": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; background: #007fff; color: white; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
 //
   "What types of SSL are available?": "We offer various SSL certificates, including:\n- Commercial SSL (Domain verification)\n- Trusted SSL (Domain + Organization verification)\n- Positive SSL (Basic domain verification)\n- Sectigo SSL (Domain verification)\n- Instant SSL (Domain + Organization verification)",
 //
   "Where can I sign up?": "You can sign up here: <a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>",
 //
-  "How can I download the WHMCS module?": "You can download the WHMCS module from our developer tools section.",
+  "How can I download the WHMCS module?": "Click here for more details on how to download the WHMCS module: <br><a href='https://marketplace.whmcs.com/product/5581-connectreseller' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 WHMCS module for Domains</a> <br><br><a href='https://marketplace.whmcs.com/product/6960-connectreseller-ssl' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 WHMCS module for SSL Certificate</a>",
 //
   "How do I export 'List Name'?": "You can export domain-related lists from your account dashboard under the reports or export section.",
 //
@@ -1621,48 +1803,53 @@ app.post('/api/domain-queries', async (req, res) => {
     });
   }
 
-  // ✅ Detect Balance Inquiry
   if (lowerQuery.includes('current balance') || lowerQuery.includes('available funds')) {
     if (!req.session || !req.session.email) {
-      return res.status(401).json({ success: false, message: 'User not authenticated.' });
+        return res.status(401).json({ success: false, message: 'User not authenticated.' });
     }
 
+    let connection;
     try {
-      let resellerId;
+        connection = await pool.getConnection();
 
-      if (req.session.email === 'aichatbot@iwantdemo.com') {
-        resellerId = 15272;
-      } else {
-        const usersRef = admin.firestore().collection('Client');
-        const querySnapshot = await usersRef.where('UserName', '==', req.session.email).get();
+        // 1️⃣ Fetch clientId and resellerId from Client table
+        const [clientRows] = await connection.execute(
+            "SELECT clientId, ResellerId FROM Client WHERE UserName = ? LIMIT 1",
+            [req.session.email]
+        );
 
-        if (querySnapshot.empty) {
-          return res.status(404).json({ success: false, message: 'ResellerId not found.' });
+        if (clientRows.length === 0) {
+            return res.status(404).json({ success: false, message: 'ResellerId not found.' });
         }
 
-        resellerId = querySnapshot.docs[0].data().clientId;
-      }
+        const { clientId, ResellerId } = clientRows[0];
+        console.log(`✅ Retrieved clientId: ${clientId}, ResellerId: ${ResellerId}`);
 
-      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.API_KEY}&resellerId=${resellerId}`;
-      const response = await axios.get(url);
+        // 2️⃣ Fetch available funds using resellerId
+        const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.API_KEY}&resellerId=${ResellerId}`;
+        console.log(`🌐 Fetching balance from: ${url}`);
 
-      if (response.data.responseMsg.statusCode === 0) {
-        return res.json({
-          success: true,
-          answer: `Your current balance is: ${response.data.responseData}`,
-          showInChat: true
-        });
-      } else {
-        return res.json({
-          success: false,
-          message: 'Failed to fetch balance.',
-        });
-      }
+        const response = await axios.get(url);
+
+        if (response.data.responseMsg.statusCode === 0) {
+            return res.json({
+                success: true,
+                answer: `Your current balance is: ${response.data.responseData}`,
+                showInChat: true
+            });
+        } else {
+            return res.json({
+                success: false,
+                message: 'Failed to fetch balance.',
+            });
+        }
     } catch (error) {
-      console.error('Error fetching balance:', error);
-      return res.status(500).json({ success: false, message: 'Error fetching balance.' });
+        console.error('❌ Error fetching balance:', error);
+        return res.status(500).json({ success: false, message: 'Error fetching balance.' });
+    } finally {
+        if (connection) connection.release();
     }
-  }
+}
 
   // ✅ Detect TLD Suggestion Request
   const categoryMatch = lowerQuery.match(/suggest tlds for (.+)/i);
