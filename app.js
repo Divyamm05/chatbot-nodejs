@@ -1615,7 +1615,6 @@ app.get('/api/deleted-domains', async (req, res) => {
   }
 });
 
-
 app.get('/api/registrationdate-domains', async (req, res) => {
   try {
       const apiKey = process.env.CONNECT_RESELLER_API_KEY;
@@ -1652,6 +1651,42 @@ app.get('/api/registrationdate-domains', async (req, res) => {
   } catch (error) {
       console.error("❌ Error fetching registration date domains:", error);
       return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.get("/api/tld-suggestions", async (req, res) => {
+  try {
+      const { websiteName } = req.query;
+
+      console.log(`[INFO] Received request for TLD suggestions - websiteName: ${websiteName}`);
+
+      if (!websiteName) {
+          console.warn(`[WARN] Missing websiteName parameter`);
+          return res.status(400).json({ success: false, message: "websiteName is required" });
+      }
+
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/getTldSuggestion?APIKey=${API_KEY}&websiteName=${websiteName}`;
+
+      console.log(`[INFO] Fetching TLD suggestions from API: ${apiUrl}`);
+
+      // Make request to ConnectReseller API
+      const response = await axios.get(apiUrl);
+
+      console.log(`[INFO] API Response Status: ${response.status}`);
+      console.log(`[DEBUG] API Response Data:`, response.data);
+
+      // Fix: Extract the correct field from the response
+      if (response.data && response.data.responseData) {
+          console.log(`[SUCCESS] TLD suggestions retrieved for ${websiteName}:`, response.data.responseData);
+          return res.status(200).json({ success: true, tldList: response.data.responseData });
+      } else {
+          console.warn(`[WARN] No TLD suggestions found for ${websiteName}`);
+          return res.status(404).json({ success: false, message: "No TLD suggestions found." });
+      }
+  } catch (error) {
+      console.error(`[ERROR] Error fetching TLD suggestions: ${error.message}`);
+      console.error(`[DEBUG] Stack Trace: ${error.stack}`);
+      res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 });
 
