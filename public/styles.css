@@ -401,7 +401,6 @@ body {
 #domain-availability-section {
   display: flex; /* Initially hidden (it will show when the condition is met) */
   text-align: center;
-  margin-left: 15px;
 }
 
 .available-button {

@@ -372,21 +372,19 @@ const domainRegistrationService = async (params) => {
       IsWhoisProtection: params.IsWhoisProtection || 'false',
       ns1: params.ns1 || '11338.dns1.managedns.org',
       ns2: params.ns2 || '11338.dns2.managedns.org',
-      ns3: params.ns3 || '',  // ✅ Include ns3 as empty if not provided
-      ns4: params.ns4 || '',  // ✅ Include ns4 as empty if not provided
-      Id: params.clientId || '15272',  // ✅ Use correct Id
-      isEnablePremium: params.isEnablePremium || '0',  // ✅ Set as '0' instead of 'false'
+      ns3: params.ns3 || '',  
+      ns4: params.ns4 || '',  
+      Id: params.clientId,  // ✅ Corrected: Use `clientId` (not ResellerId)
+      isEnablePremium: params.isEnablePremium || '0',
       lang: params.lang || "en"
     });
 
     const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder?${queryParams.toString()}`;
 
-    console.log('🔍 API Request URL:', url); // Debugging
+    console.log('🔍 API Request URL:', url); 
 
     const response = await axios.get(url, {
-      headers: {
-        'Accept': 'application/json',
-      }
+      headers: { 'Accept': 'application/json' }
     });
 
     console.log('✅ Domain Registration Successful:', response.data);
@@ -409,21 +407,23 @@ const checkDomainAvailability = async (domainName) => {
 
     console.log("API Response:", JSON.stringify(response.data, null, 2));
 
-    // Extract the message from the API response
     const message = response.data?.responseMsg?.message || "Unknown response from API";
+    const isAvailable = response.data?.responseMsg?.message === "Domain Available for Registration";
 
-    // Correctly determine if the domain is available
-    const isAvailable = message.toLowerCase() === "domain available for registration";  // ✅ Correct condition
+    // ✅ Ensure correct price extraction
+    const registrationFee = isAvailable ? response.data?.responseData?.registrationFee || null : null;
 
     console.log(`Domain Availability: ${isAvailable}`);
+    console.log(`Registration Fee: ${registrationFee}`);
 
     return {
       available: isAvailable,
-      message: message, // Send the API message to frontend
+      message: message,
+      registrationFee: registrationFee, // ✅ Ensure price is returned
     };
   } catch (error) {
     console.error("Error checking domain availability:", error.message);
-    return { available: false, message: "Error checking domain availability." };
+    return { available: false, message: "Error checking domain availability.", registrationFee: null };
   }
 };
 
@@ -440,7 +440,7 @@ app.get("/api/domainname-suggestions", async (req, res) => {
 
   try {
       const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
-      const maxResults = 5;
+      const maxResults = 25;
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=${API_KEY}&keyword=${domain}&maxResult=${maxResults}`;
 
       console.log(`🔍 Fetching domain suggestions from API...`);
@@ -475,166 +475,321 @@ app.get("/api/domainname-suggestions", async (req, res) => {
 
 app.get("/api/check-domain", async (req, res) => {
   const { domain } = req.query;
-  if (!domain) return res.status(400).json({ success: false, message: "Domain name required." });
+  if (!domain) {
+    return res.status(400).json({ success: false, message: "Domain name required." });
+  }
 
-  const available = await checkDomainAvailability(domain);
-  res.json({ success: available });
+  const result = await checkDomainAvailability(domain);
+
+  res.json({
+    success: true,
+    available: result.available,
+    message: result.message,
+    registrationFee: result.registrationFee, // ✅ Correctly return price
+  });
 });
 
 app.get("/api/register-domain", async (req, res) => {
-  let { Websitename, Duration, Id } = req.query;
-  
-  const available = await checkDomainAvailability(Websitename);
-  if (!available) {
-    return res.json({ success: false, message: "Domain is not available." });
+  let { Websitename, Duration } = req.query;
+
+  console.log(`📥 [REGISTER DOMAIN] Request received for: ${Websitename}`);
+
+  if (!req.session || !req.session.email) {
+    console.warn("⚠️ [REGISTER DOMAIN] User not authenticated.");
+    return res.status(401).json({ success: false, message: "User not authenticated." });
   }
 
-  const balanceResponse = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${Id}`);
-  const balance = parseFloat(balanceResponse.data.responseData);
-  
-  if (balance < 20) { // Assuming minimum required balance is $10
-    return res.json({ success: false, message: "Insufficient funds for registration." });
+  let connection;
+  let clientId, resellerId;
+
+  try {
+    connection = await pool.getConnection();
+    const [clientRows] = await connection.execute(
+      "SELECT clientId, ResellerId FROM Client WHERE UserName = ? LIMIT 1",
+      [req.session.email]
+    );
+    connection.release();
+
+    if (clientRows.length === 0) {
+      console.error("❌ [REGISTER DOMAIN] ClientId and ResellerId not found.");
+      return res.status(404).json({ success: false, message: "ClientId and ResellerId not found." });
+    }
+
+    clientId = clientRows[0].clientId;
+    resellerId = clientRows[0].ResellerId;
+
+    console.log(`✅ [REGISTER DOMAIN] Retrieved ClientId: ${clientId}, ResellerId: ${resellerId}`);
+  } catch (error) {
+    console.error("❌ [DATABASE ERROR] Failed to fetch ClientId and ResellerId:", error.message);
+    return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
-  const response = await domainRegistrationService(req.query);
-  if (response.responseMsg.statusCode === 200) {
-    res.json({ success: true, message: "Domain registered successfully!" });
-  } else {
-    res.json({ success: false, message: response.responseMsg.message });
+  console.log(`🔍 Checking domain availability for: ${Websitename}`);
+
+  try {
+    const domainAvailability = await checkDomainAvailability(Websitename);
+    if (!domainAvailability.available) {
+      return res.json({ success: false, message: "Domain is not available." });
+    }
+
+    const registrationFee = domainAvailability.registrationFee;
+    if (!registrationFee) {
+      return res.json({ success: false, message: "Failed to retrieve domain price." });
+    }
+
+    console.log(`💰 [DOMAIN PRICE] Registration Fee: $${registrationFee}`);
+
+    console.log(`📡 [BALANCE API] Fetching funds for ResellerId: ${resellerId}`);
+
+    const balanceResponse = await axios.get(
+      `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${resellerId}`
+    );
+
+    console.log(`✅ [BALANCE API] Response:`, balanceResponse.data);
+    const balance = parseFloat(balanceResponse.data.responseData);
+    console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
+
+    if (balance < registrationFee) {
+      return res.json({
+        success: false,
+        message: `Insufficient funds. Required: $${registrationFee.toFixed(2)}, Available: $${balance.toFixed(2)}`
+      });
+    }
+
+    console.log(`🚀 [DOMAIN REGISTRATION] Initiating for ${Websitename}...`);
+    const registrationResponse = await domainRegistrationService({ 
+      Websitename, 
+      Duration, 
+      clientId  // ✅ Correctly passing `clientId`
+    });
+
+    if (registrationResponse.responseMsg.statusCode === 200) {
+      res.json({ success: true, message: "Domain registered successfully!" });
+    } else {
+      res.json({ success: false, message: registrationResponse.responseMsg.message });
+    }
+
+  } catch (error) {
+    console.error("❌ [ERROR] Failed to process domain registration:", error.message);
+    res.status(500).json({ success: false, message: "Domain registration failed." });
   }
 });
 
 const API_KEY_TRANSFER = process.env.CONNECT_RESELLER_API_KEY; 
 const API_URL_TRANSFER = 'https://api.connectreseller.com/ConnectReseller/ESHOP/TransferOrder';
 
-app.post('/api/transfer-domain', async (req, res) => {
-    const { domainName, authCode, isWhoisProtection, customerId } = req.body;
+app.get('/api/get-transfer-fee', async (req, res) => {
+  const { domain } = req.query;
 
-    // Validate required parameters
-    if (!domainName || !authCode || !customerId) {
-        return res.status(400).json({ success: false, message: "Missing required parameters." });
-    }
+  if (!domain) {
+      return res.status(400).json({ success: false, message: "Domain is required." });
+  }
 
-    try {
-        const params = {
-            APIKey: API_KEY_TRANSFER,
-            OrderType: 4, // Required value for transfers
-            Websitename: domainName, // ✅ Correct casing as per documentation
-            IsWhoisProtection: Boolean(isWhoisProtection).toString(), // Ensures correct string format
-            AuthCode: authCode,
-            Id: customerId
-        };
+  const domainParts = domain.split('.');
+  if (domainParts.length < 2) {
+      return res.status(400).json({ success: false, message: "Invalid domain format." });
+  }
 
-        console.log("🔍 Transfer API Request URL:", `${API_URL_TRANSFER}?${new URLSearchParams(params)}`); // Debugging
+  const tld = `.${domainParts[domainParts.length - 1]}`;
 
-        // Make GET request with params
-        const response = await axios.get(API_URL_TRANSFER, { params });
+  try {
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${process.env.CONNECT_RESELLER_API_KEY}`;
+      console.log(`🔍 [GET TRANSFER FEE] Checking TLD Sync API: ${apiUrl}`);
 
-        const data = response.data;
-        console.log("✅ Transfer API Response:", data); // Debugging
+      const response = await axios.get(apiUrl);
+      const tldData = response.data.find(entry => entry.tld === tld);
 
-        if (data?.responseMsg?.statusCode === 200) {
-            return res.json({ 
-                success: true, 
-                message: "Domain transfer initiated successfully. Waiting for approval from losing registrar.", 
-                data 
-            });
-        } else {
-            return res.status(400).json({ 
-                success: false, 
-                message: data?.responseMsg?.message || "Domain transfer failed.",
-                data
-            });
-        }
-    } catch (error) {
-        console.error("❌ API Error:", {
-            message: error.message,
-            responseData: error.response?.data,
-            requestConfig: error.config
-        });
-        return res.status(500).json({ success: false, message: "Internal Server Error" });
-    }
+      if (tldData) {
+          const transferFee = parseFloat(tldData.transferPrice);
+          console.log(`✅ [TRANSFER FEE] TLD: ${tld}, Fee: $${transferFee}`);
+          return res.json({ success: true, transferFee });
+      }
+
+      res.json({ success: false, message: "Could not fetch transfer fee for this TLD." });
+  } catch (error) {
+      console.error("❌ [ERROR] Failed to fetch transfer fee:", error.message);
+      res.status(500).json({ success: false, message: "Error fetching transfer fee." });
+  }
 });
 
 
+app.post('/api/transfer-domain', async (req, res) => {
+  const { domainName, authCode, isWhoisProtection } = req.body;
+
+  if (!req.session || !req.session.email) {
+      return res.status(401).json({ success: false, message: "User not authenticated." });
+  }
+
+  if (!domainName || !authCode) {
+      return res.status(400).json({ success: false, message: "Missing required parameters." });
+  }
+
+  let connection;
+  let customerId;
+
+  try {
+      connection = await pool.getConnection();
+      const [clientRows] = await connection.execute(
+          "SELECT clientId FROM Client WHERE UserName = ? LIMIT 1",
+          [req.session.email]
+      );
+      connection.release();
+
+      if (clientRows.length === 0) {
+          return res.status(404).json({ success: false, message: "Customer ID not found." });
+      }
+
+      customerId = clientRows[0].clientId;
+
+  } catch (error) {
+      return res.status(500).json({ success: false, message: "Database error while fetching customer ID." });
+  }
+
+  try {
+      const params = {
+          APIKey: API_KEY_TRANSFER,
+          OrderType: 4,
+          Websitename: domainName,
+          IsWhoisProtection: Boolean(isWhoisProtection).toString(),
+          AuthCode: authCode,
+          Id: customerId
+      };
+
+      console.log("🔍 Transfer API Request:", `${API_URL_TRANSFER}?${new URLSearchParams(params)}`);
+
+      const response = await axios.get(API_URL_TRANSFER, { params });
+      const data = response.data;
+
+      console.log("✅ Transfer API Response:", data);
+
+      return res.json({
+          success: data?.responseMsg?.statusCode === 200 && data?.responseData?.statusCode !== 404,
+          message: data?.responseData?.message || data?.responseMsg?.message || "Domain transfer failed.",
+          data
+      });
+
+  } catch (error) {
+      console.error("❌ API Error:", {
+          message: error.message,
+          responseData: error.response?.data,
+          requestConfig: error.config
+      });
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
 const ORDER_TYPE_RENEWAL = 2;
 
-const renewDomainService = async (params) => {
-    try {
-        if (!params.Websitename || !params.Duration || !params.clientId) {
-            throw new Error("Missing required parameters for renewal.");
-        }
+// Fetch renewal fee using TLD sync API
+app.get('/api/get-renewal-fee', async (req, res) => {
+  const { domain } = req.query;
 
-        const queryParams = new URLSearchParams({
-            APIKey: process.env.CONNECT_RESELLER_API_KEY,
-            OrderType: ORDER_TYPE_RENEWAL,
-            Websitename: params.Websitename,
-            Duration: params.Duration,
-            Id: params.clientId,
-            IsWhoisProtection: params.IsWhoisProtection || false
-        });
+  if (!domain) {
+      return res.status(400).json({ success: false, message: "Domain is required." });
+  }
 
-        const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder?${queryParams.toString()}`;
+  const domainParts = domain.split('.');
+  if (domainParts.length < 2) {
+      return res.status(400).json({ success: false, message: "Invalid domain format." });
+  }
 
-        console.log("🔍 API Request URL:", url);
-        const response = await axios.get(url, {
-            headers: { 'Accept': 'application/json' }
-        });
+  const tld = `.${domainParts[domainParts.length - 1]}`;
 
-        console.log('✅ Domain Renewal Successful:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('❌ Error during domain renewal API call:', error.message);
-        if (error.response) {
-            console.error('🔍 API Response Status:', error.response.status);
-            console.error('📄 API Response Data:', error.response.data);
-        } else {
-            console.error('🚫 No Response Received');
-        }
-        return { success: false, message: error.message };
-    }
-};
+  try {
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${process.env.CONNECT_RESELLER_API_KEY}`;
+      console.log(`🔍 [GET RENEWAL FEE] Checking TLD Sync API: ${apiUrl}`);
 
+      const response = await axios.get(apiUrl);
+      const tldData = response.data.find(entry => entry.tld === tld);
+
+      if (tldData) {
+          const renewalFee = parseFloat(tldData.renewalPrice);
+          console.log(`✅ [RENEWAL FEE] TLD: ${tld}, Fee: $${renewalFee}`);
+          return res.json({ success: true, renewalFee });
+      }
+
+      res.json({ success: false, message: "Could not fetch renewal fee for this TLD." });
+  } catch (error) {
+      console.error("❌ [ERROR] Failed to fetch renewal fee:", error.message);
+      res.status(500).json({ success: false, message: "Error fetching renewal fee." });
+  }
+});
+
+// Renew domain
 app.get('/api/renew-domain', async (req, res) => {
-    let params = { ...req.query };
-    console.log("🔍 Received Params:", params);
+  let { Websitename, Duration } = req.query;
+  console.log(`🔍 [RENEW DOMAIN] Received request for domain: ${Websitename}, Duration: ${Duration}`);
 
-    if (!req.session || !req.session.email) {
-        return res.status(400).json({ success: false, message: "User is not authenticated." });
-    }
+  if (!req.session || !req.session.email) {
+      console.log("❌ [AUTH] User not authenticated.");
+      return res.status(401).json({ success: false, message: "User not authenticated." });
+  }
 
-    const email = req.session.email;
-    console.log("📧 Fetching clientId for email:", email);
+  if (!Websitename || !Duration) {
+      console.log("❌ [VALIDATION] Missing required parameters.");
+      return res.status(400).json({ success: false, message: "Missing required parameters." });
+  }
 
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [rows] = await connection.execute(
-            "SELECT clientId FROM Client WHERE UserName = ? LIMIT 1",
-            [email]
-        );
+  let connection;
+  let clientId, resellerId;
 
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: "Client not found." });
-        }
+  try {
+      console.log(`🔍 [DB QUERY] Fetching client details for: ${req.session.email}`);
+      connection = await pool.getConnection();
+      const [clientRows] = await connection.execute(
+          "SELECT clientId, ResellerId FROM Client WHERE UserName = ? LIMIT 1",
+          [req.session.email]
+      );
+      connection.release();
 
-        params.clientId = rows[0].clientId;
-        console.log("✅ Retrieved clientId:", params.clientId);
+      if (clientRows.length === 0) {
+          console.log("❌ [DB] ClientId and ResellerId not found.");
+          return res.status(404).json({ success: false, message: "ClientId and ResellerId not found." });
+      }
 
-        const response = await renewDomainService(params);
-        console.log('✅ Domain Renewal Response:', response);
+      clientId = clientRows[0].clientId;
+      resellerId = clientRows[0].ResellerId;
+      console.log(`✅ [DB] Found clientId: ${clientId}, ResellerId: ${resellerId}`);
 
-        return res.json({
-            success: response?.responseMsg?.statusCode === 200,
-            message: response?.responseMsg?.message || "Domain renewal failed.",
-            expiryDate: response?.responseData?.expiryDate || null
-        });
-    } catch (error) {
-        console.error('❗ Error during domain renewal API call:', error.message);
-        return res.status(500).json({ success: false, message: "Internal Server Error" });
-    } finally {
-        if (connection) connection.release();
-    }
+  } catch (error) {
+      console.error("❌ [DB ERROR] Database error while fetching client details:", error);
+      return res.status(500).json({ success: false, message: "Database error while fetching client details." });
+  }
+
+  try {
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder`;
+      const params = {
+          APIKey: process.env.CONNECT_RESELLER_API_KEY,
+          OrderType: ORDER_TYPE_RENEWAL,
+          Websitename,
+          Duration,
+          Id: clientId,
+          IsWhoisProtection: "false"
+      };
+
+      console.log(`🔍 [API REQUEST] Renewing domain: ${Websitename}`);
+      console.log(`🌐 [API URL]: ${apiUrl}`);
+      console.log(`📩 [API PARAMS]:`, params);
+
+      const renewalResponse = await axios.get(apiUrl, { params });
+
+      console.log("✅ [API RESPONSE] Raw response:", renewalResponse.data);
+
+      if (renewalResponse.data.responseMsg.statusCode === 200) {
+          console.log(`✅ [SUCCESS] Domain ${Websitename} renewed successfully!`);
+          res.json({
+              success: true,
+              message: "Domain renewed successfully!",
+              expiryDate: renewalResponse.data.responseData.expiryDate
+          });
+      } else {
+          console.log(`❌ [API ERROR] ${renewalResponse.data.responseMsg.message}`);
+          res.json({ success: false, message: renewalResponse.data.responseMsg.message });
+      }
+  } catch (error) {
+      console.error("❌ [API FAILURE] Failed to renew domain:", error);
+      res.status(500).json({ success: false, message: "Failed to renew domain." });
+  }
 });
 
 
@@ -1529,88 +1684,64 @@ app.get('/api/domain-auth-code', async (req, res) => {
 app.get('/api/expiring-domains', async (req, res) => {
   try {
       const apiKey = process.env.CONNECT_RESELLER_API_KEY;
-      const { date } = req.query; // Expecting "DD-MM-YYYY"
+      const { date } = req.query;
+
+      console.log(`📥 Received Request for Expiring Domains on: ${date}`);
 
       if (!apiKey) {
+          console.error("❌ API Key is missing.");
           return res.status(500).json({ success: false, message: "API key is missing" });
       }
 
       if (!date || !moment(date, "DD-MM-YYYY", true).isValid()) {
+          console.error(`⚠️ Invalid date received: ${date}`);
           return res.status(400).json({ success: false, message: "Invalid or missing date. Use DD-MM-YYYY format." });
       }
 
-      // Convert input date to UNIX timestamp (start and end of the selected day)
-      const startOfDay = moment(date, "DD-MM-YYYY").startOf('day').valueOf();
-      const endOfDay = moment(date, "DD-MM-YYYY").endOf('day').valueOf();
+      console.log(`🌐 Fetching domains expiring on ${date}`);
 
-      // API Call to fetch all domains sorted by expiration date
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/SearchDomainList?APIKey=${apiKey}&page=1&maxIndex=100&orderby=ExpirationDate&orderType=asc`;
-
-      console.log(`🌐 Fetching domains expiring on ${date}: ${url}`);
-
       const response = await axios.get(url);
+
+      console.log("📩 Raw API Response from ConnectReseller:", JSON.stringify(response.data, null, 2));
+
       if (!response.data || !response.data.records) {
+          console.log("⚠️ No records found in API response.");
           return res.json({ success: false, message: "No domains found.", domains: [] });
       }
 
-      const domains = response.data.records;
+      const domains = response.data.records
+          .filter(domain => {
+              if (!domain.expirationDate) return false;
 
-      // Filter domains that expire exactly on the given date
-      const expiringDomains = domains.filter(domain => {
-          const expirationTimestamp = domain.expirationDate;
-          if (!expirationTimestamp) return false;
+              const expirationTimestamp = domain.expirationDate.toString().length === 10
+                  ? domain.expirationDate * 1000
+                  : domain.expirationDate;
 
-          // Convert expiration timestamp (milliseconds handling)
-          const domainExpiration = expirationTimestamp.toString().length === 10 ? expirationTimestamp * 1000 : expirationTimestamp;
-          return domainExpiration >= startOfDay && domainExpiration <= endOfDay;
-      });
+              const startOfDay = moment(date, "DD-MM-YYYY").startOf('day').valueOf();
+              const endOfDay = moment(date, "DD-MM-YYYY").endOf('day').valueOf();
 
-      return res.json({
+              return expirationTimestamp >= startOfDay && expirationTimestamp <= endOfDay;
+          })
+          .map(domain => ({
+              domainName: domain.domainName,
+              expirationDate: moment(Number(domain.expirationDate)).format("DD-MM-YYYY") // Convert timestamp to formatted date
+          }));
+
+      console.log(`✅ Filtered Domains Expiring on ${date}:`, JSON.stringify(domains, null, 2));
+
+      const responseData = {
           success: true,
-          domains: expiringDomains.length ? expiringDomains : [],
-          message: expiringDomains.length ? "" : `No domains expiring on ${date}.`
-      });
+          domains,
+          message: domains.length ? "" : `No domains expiring on ${date}.`
+      };
+
+      console.log("🚀 Final Response Sent to Frontend:", JSON.stringify(responseData, null, 2));
+
+      return res.json(responseData);
 
   } catch (error) {
-      console.error("❌ Error fetching expiring domains:", error);
-      return res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-app.get('/api/deleted-domains', async (req, res) => {
-  try {
-      const apiKey = process.env.CONNECT_RESELLER_API_KEY;
-      const { date } = req.query; // Expecting "dd-mm-yyyy"
-
-      if (!apiKey) {
-          return res.status(500).json({ success: false, message: "API key is missing" });
-      }
-
-      if (!date || !moment(date, "DD-MM-YYYY", true).isValid()) {
-          return res.status(400).json({ success: false, message: "Invalid or missing date. Use dd-mm-yyyy format." });
-      }
-
-      // Convert input date to UNIX timestamp (milliseconds)
-      const startOfDay = moment(date, "DD-MM-YYYY").startOf('day').valueOf();
-
-      // API Call to fetch domains sorted by expiration date
-      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/SearchDomainList?APIKey=${apiKey}&page=1&maxIndex=100&orderby=ExpirationDate&orderType=asc`;
-
-      console.log(`🌐 Fetching domains expiring on ${date}: ${url}`);
-
-      const response = await axios.get(url);
-      const domains = response.data.success ? response.data.records || [] : [];
-
-      // Filter domains that are set to expire exactly on the given date
-      const expiringDomains = domains.filter(domain => {
-          const expirationTimestamp = domain.expirationDate;
-          if (!expirationTimestamp) return false;
-          return moment(expirationTimestamp).startOf('day').valueOf() === startOfDay;
-      });
-
-      return res.json({ success: true, domains: expiringDomains, message: expiringDomains.length ? "" : `No domains expiring on ${date}.` });
-  } catch (error) {
-      console.error("❌ Error fetching expiring domains:", error);
+      console.error("❌ API Fetch Error:", error.response ? error.response.data : error.message);
       return res.status(500).json({ success: false, message: "Internal server error" });
   }
 });

@@ -64,12 +64,11 @@
             <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
             <li onclick="fillChatInput('What types of SSL are available?')">What types of SSL are available?</li>
             <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
-            <li onclick="fillChatInput('Which domains are getting expired?')">Which domains are getting expired?</li>
+            <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting expired on dd-mm-yyyy')">Which domains are getting expired on <em>dd-mm-yyyy</em>?</li>
             <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting deleted on dd-mm-yyyy')">Which domains are getting deleted on <em>dd-mm-yyyy</em>?</li>
             <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy')">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
             <li onclick="fillChatInput('How can I download the WHMCS module?')">How can I download the WHMCS module?</li>
             <li onclick="fillChatInput('How do I pull a domain?')">How do I pull a domain?</li>
-            <li onclick="fillChatInput('What types of reports can I get?')">What types of reports can I get?</li>
         </ul> 
     </div>    
     </div>
@@ -99,6 +98,7 @@
         <button class="register-button" onclick="goToRegisterDomainSection()">Register a Domain</button>
       </div>
     </div>
+
 
     <!-- User Input Section -->
 <div class="chat-input" id="user-input-section">
@@ -192,12 +192,33 @@
     <div class="chat-input" style="display:none" id="domain-availability-section">
         <div id="domain-check-wrapper">
           <input type="text" id="check-domain-input" placeholder="Enter domain to check availability">
-          <button id="check-domain-button" onclick="handleCheckDomain()">Check</button>
+          <button id="check-domain-button" onclick="handleCheckDomain()">Check Availability</button>
         </div>
         <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
       </div>
+          <!-- Domain Renewal Section -->
+<div id="domain-renewal-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+    <div class="input-group">
+      <input type="text" id="renew-domain-name" placeholder="Domain Name" required>
+    </div>
+    <div class="input-group">
+      <select id="renew-duration" required>
+        <option value="" disabled selected>Select Duration</option>
+        <option value="1">1 Year</option>
+        <option value="2">2 Years</option>
+        <option value="3">3 Years</option>
+        <option value="5">5 Years</option>
+        <option value="10">10 Years</option>
+      </select>
     </div>
 
+    <div class="button-group">
+      <button onclick="renewDomain()">Renew Domain</button>
+      <button onclick="goBackToQuerySection()">Back</button>
+    </div>
+  </div>
+</div>
 <!-- Name Server Update Section -->
 <div class="name-server-container" id="name-server-container">
   <div id="name-server-update-section" class="chat-input">
@@ -242,15 +263,6 @@
 
   <div id="child-ns-status"></div>
 </div>
-
-    <!-- Domain Options Section after OTP verification -->
-    <div id="domain-options" style="display:none;">
-      <div class="button-container">
-        <button id="get-domain-suggestions-btn" onclick="showDomainSection()" tabindex="0">Get Domain Name Suggestions</button>
-        <button id="more-options-btn" onclick="askMoreOptions()" tabindex="1">More Options</button>
-      </div>
-    </div>
-
 <!-- Domain Registration Section (Hidden initially) -->
 <div id="domain-registration-section" class="chat-input" style="display: none;">
   <div class="domain-registration-wrapper">
@@ -269,7 +281,7 @@
     </div>
     <div class="button-group">
       <button onclick="registerDomain()">Register Domain</button>
-      <button onclick="goBackToCheckSection()">Back</button>
+      <button onclick="goBackToQuerySection()">Back</button>
     </div>
   </div>
 </div>
@@ -374,29 +386,20 @@
     
     </div>    
 
-<!-- Domain Renewal Section -->
-<div id="domain-renewal-section" class="chat-input" style="display: none;">
-  <div class="domain-registration-wrapper">
-    <div class="input-group">
-      <input type="text" id="renew-domain-name" placeholder="Domain Name" required>
-    </div>
-    <div class="input-group">
-      <select id="renew-duration" required>
-        <option value="" disabled selected>Select Duration</option>
-        <option value="1">1 Year</option>
-        <option value="2">2 Years</option>
-        <option value="3">3 Years</option>
-        <option value="5">5 Years</option>
-        <option value="10">10 Years</option>
-      </select>
+
     </div>
 
-    <div class="button-group">
-      <button onclick="renewDomain()">Renew Domain</button>
-      <button onclick="goBackToQuerySection()">Back</button>
+
+
+    <!-- Domain Options Section after OTP verification -->
+    <div id="domain-options" style="display:none;">
+      <div class="button-container">
+        <button id="get-domain-suggestions-btn" onclick="showDomainSection()" tabindex="0">Get Domain Name Suggestions</button>
+        <button id="more-options-btn" onclick="askMoreOptions()" tabindex="1">More Options</button>
+      </div>
     </div>
-  </div>
-</div>
+
+
 
     <!-- Domain Suggestions Section -->
     <div id="domain-options-next" style="display:none;">
