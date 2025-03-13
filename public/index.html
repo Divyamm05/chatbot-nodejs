@@ -40,35 +40,33 @@
       </div>
       <div id="faq-post-login" style="display: none;">
         <ul class="faq-list">
-            <li onclick="fillChatInput('How do I register a domain?')">How do I register a domain?</li>
-            <li onclick="fillChatInput('How can I renew a domain?')">How can I renew a domain?</li>
-            <li onclick="fillChatInput('How do I transfer IN/OUT domains?')">How do I transfer IN/OUT domains?</li>
-            <li onclick="fillChatInput('How can I move a domain?')">How can I move a domain?</li>
-            <li onclick="fillChatInputWithPlaceholder('Give me domain information for mydomain.com')">Give me domain information for <em>mydomain.com</em></li>
-            <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for mydomain.com')">Enable/disable theft protection for <em>mydomain.com</em></li>
-            <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock mydomain.com')">How do I lock/unlock <em>mydomain.com</em></li>
-            <li onclick="fillChatInput('What is my current balance in my account?')">What is my current balance in my account?</li>
-            <li onclick="fillChatInput('How much are my available funds?')">How much are my available funds?</li>
-            <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com')">Suspend/Unsuspend <em>mydomain.com</em></li>
-            <li onclick="fillChatInput('How can I update the name servers for a domain?')">How can I update the name servers for a domain?</li>
-            <li onclick="fillChatInputWithPlaceholder('Enable/disable privacy protection for mydomain.com')">Enable/disable privacy protection for <em>mydomain.com</em></li>
-            <li onclick="fillChatInput('How can I add a child nameserver?')">How can I add a child nameserver?</li>
-            <li onclick="fillChatInputWithPlaceholderCategory('Suggest TLDs for Category')">Suggest TLDs for <em>Category</em></li>
-            <li onclick="fillChatInput('Give me a list of high-value domain TLDs.')">Give me a list of high-value domain TLDs.</li>
-            <li onclick="fillChatInput('What actions can I do here on the chatbot?')">What actions can I do here on the chatbot?</li>
-            <li onclick="fillChatInputWithPlaceholder('What is the auth code for mydomain.com')">What is the auth code for <em>mydomain.com</em>?</li>
-            <li onclick="fillChatInputWithPlaceholder('When was mydomain.com domain registered?')">When was <em>mydomain.com</em> domain registered?</li>
-            <li onclick="fillChatInput('Where can I find the API documentation?')">Where can I find the API documentation?</li>
-            <li onclick="fillChatInput('Where can I sign up?')">Where can I sign up?</li>
-            <li onclick="fillChatInputWithPlaceholder('Where can I find API for action name?')">Where can I find API for <em>action name</em>?</li>
-            <li onclick="fillChatInput('How can I contact support?')">How can I contact support?</li>
-            <li onclick="fillChatInput('What types of SSL are available?')">What types of SSL are available?</li>
-            <li onclick="fillChatInput('What are the name servers for this domain?')">What are the name servers for this domain?</li>
-            <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting expired on dd-mm-yyyy')">Which domains are getting expired on <em>dd-mm-yyyy</em>?</li>
-            <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting deleted on dd-mm-yyyy')">Which domains are getting deleted on <em>dd-mm-yyyy</em>?</li>
-            <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy')">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
-            <li onclick="fillChatInput('How can I download the WHMCS module?')">How can I download the WHMCS module?</li>
-            <li onclick="fillChatInput('How do I pull a domain?')">How do I pull a domain?</li>
+            <li onclick="fillChatInput('How do I register a domain?'); hidealltoggles();">How do I register a domain?</li>
+            <li onclick="fillChatInput('How can I renew a domain?'); hidealltoggles();">How can I renew a domain?</li>
+            <li onclick="fillChatInput('How do I transfer IN/OUT domains?'); hidealltoggles();">How do I transfer IN/OUT domains?</li>
+            <li onclick="fillChatInput('How can I move a domain?'); hidealltoggles();">How can I move a domain?</li>
+            <li onclick="fillChatInputWithPlaceholder('Give me domain information for mydomain.com'); hidealltoggles();">Give me domain information for <em>mydomain.com</em></li>
+            <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for mydomain.com');showTheftProtectionToggle(); hideexceptthefttoggle()">Enable/disable theft protection for <em>mydomain.com</em></li>
+            <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock mydomain.com'); showDomainLockToggle();hideexceptlocktoggle();">How do I lock/unlock <em>mydomain.com</em></li>
+            <li onclick="fillChatInput('What is my current balance in my account?'); hidealltoggles();">What is my current balance in my account?</li>
+            <li onclick="fillChatInput('How much are my available funds?'); hidealltoggles();">How much are my available funds?</li>
+            <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com'); showDomainSuspendToggle();hideexceptsuspendtoggle();">Suspend/Unsuspend <em>mydomain.com</em></li>
+            <li onclick="fillChatInput('How can I update the name servers for a domain?'); hidealltoggles();">How can I update the name servers for a domain?</li>
+            <li onclick="fillChatInputWithPlaceholder('Enable/disable privacy protection for mydomain.com'); showPrivacyProtectionToggle();hideexceptprivacytoggle();">Enable/disable privacy protection for <em>mydomain.com</em></li>
+            <li onclick="fillChatInput('How can I add a child nameserver?'); hidealltoggles();">How can I add a child nameserver?</li>
+            <li onclick="fillChatInputWithPlaceholderCategory('Suggest TLDs for Category'); hidealltoggles();">Suggest TLDs for <em>Category</em></li>
+            <li onclick="fillChatInput('Give me a list of high-value domain TLDs.'); hidealltoggles();">Give me a list of high-value domain TLDs.</li>
+            <li onclick="fillChatInput('What actions can I do here on the chatbot?'); hidealltoggles();">What actions can I do here on the chatbot?</li>
+            <li onclick="fillChatInputWithPlaceholder('What is the auth code for mydomain.com'); hidealltoggles();">What is the auth code for <em>mydomain.com</em>?</li>
+            <li onclick="fillChatInputWithPlaceholder('When was mydomain.com domain registered?'); hidealltoggles();">When was <em>mydomain.com</em> domain registered?</li>
+            <li onclick="fillChatInput('Where can I find the API documentation?'); hidealltoggles();">Where can I find the API documentation?</li>
+            <li onclick="fillChatInput('Where can I sign up?'); hidealltoggles();">Where can I sign up?</li>
+            <li onclick="fillChatInput('How can I contact support?'); hidealltoggles();">How can I contact support?</li>
+            <li onclick="fillChatInput('What types of SSL are available?'); hidealltoggles();">What types of SSL are available?</li>
+            <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting expired on dd-mm-yyyy'); hidealltoggles();">Which domains are getting expired on <em>dd-mm-yyyy</em>?</li>
+            <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting deleted on dd-mm-yyyy'); hidealltoggles();">Which domains are getting deleted on <em>dd-mm-yyyy</em>?</li>
+            <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy'); hidealltoggles();">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
+            <li onclick="fillChatInput('How can I download the WHMCS module?'); hidealltoggles();">How can I download the WHMCS module?</li>
+            <li onclick="fillChatInput('How do I pull a domain?'); hidealltoggles();">How do I pull a domain?</li>
         </ul> 
     </div>    
     </div>
@@ -126,10 +124,10 @@
       <input type="text" id="domain-query-text" placeholder="Enter your query...">
 
 <!-- Toggle Switch Container -->
-<div id="theft-protection-toggle-container" style="display:none; align-items: center; gap: 10px;">
+<div id="theft-protection-toggle-container" style="display: none;">
   <div id="theft-protection-wrapper">
     <label class="switch">
-      <input type="checkbox" id="theft-protection-toggle" onchange="handleTheftProtectionToggle(this)">
+      <input type="checkbox" id="theft-protection-toggle" checked onchange="handleTheftProtectionToggle(this)">
       <span class="slider round">
         <span class="slider-text on">Theft Protection <br>
           Enabled</span>
@@ -143,7 +141,7 @@
 <div id="domain-lock-toggle-container" style="display:none; align-items: center; gap: 10px;">
   <div id="domain-lock-wrapper">
     <label class="switch">
-      <input type="checkbox" id="domain-lock-toggle">
+      <input type="checkbox" id="domain-lock-toggle" checked onchange="handleDomainLockToggle(this)">
       <span class="slider round">
         <span class="slider-text on">Locked</span>
         <span class="slider-text off">Unlocked</span>
@@ -152,10 +150,10 @@
   </div>
 </div>
 
-<div id="domain-suspend-toggle-container" style="display:none; align-items: center; gap: 10px;">
+<div id="domain-suspend-toggle-container" style="display:none;">
   <div id="domain-suspend-wrapper">
     <label class="switch">
-      <input type="checkbox" id="domain-suspend-toggle" onchange="handleDomainSuspendToggle(this)">
+      <input type="checkbox" id="domain-suspend-toggle" checked onchange="handleDomainSuspendToggle(this)">
       <span class="slider round">
         <span class="slider-text on" id="slider-text-on">Suspend</span>
         <span class="slider-text off" id="slider-text-off">Unsuspend</span>
@@ -167,7 +165,7 @@
 <div id="domain-privacy-toggle-container" style="display:none; align-items: center; gap: 10px;">
   <div id="domain-privacy-wrapper">
     <label class="switch">
-      <input type="checkbox" id="domain-privacy-toggle">
+      <input type="checkbox" id="domain-privacy-toggle" checked onchange="handlePrivacyProtectionToggle(this)">
       <span class="slider round">
         <span class="slider-text on">Enable Privacy
           Protection
@@ -279,8 +277,9 @@
         <option value="10">10 Years</option>
       </select>
     </div>
-    <div class="button-group">
+    <div class="button-group" id="domain-button-group">
       <button onclick="registerDomain()">Register Domain</button>
+      <button onclick="addadditionaldomaindetails()" id="additional-settings-button">Additional Details</button>
       <button onclick="goBackToQuerySection()">Back</button>
     </div>
   </div>
@@ -290,10 +289,10 @@
 <div id="additional-settings-section" class="chat-input" style="display: none;">
   <div class="domain-registration-wrapper">
     <div class="input-group">
-      <input type="text" id="ns1" placeholder="Name Server 1*">
+      <input type="text" id="ns1" placeholder="Name Server 1">
     </div>
     <div class="input-group">
-      <input type="text" id="ns2" placeholder="Name Server 2*">
+      <input type="text" id="ns2" placeholder="Name Server 2">
     </div>
     <div class="input-group">
       <input type="text" id="ns3" placeholder="Name Server 3 (Optional)">
@@ -321,17 +320,22 @@
     </div>
     <div class="input-group">
       <select id="enable-premium">
-        <option value="">Enable Premium*</option>
+        <option value="">Enable Premium</option>
         <option value="no">No</option>
         <option value="yes">Yes</option>
       </select>
     </div>
     <div class="input-group">
       <select id="whois-protection">
-        <option value="">Enable Whois Protection*</option>
+        <option value="">Enable Whois Protection</option>
         <option value="no">No</option>
         <option value="yes">Yes</option>
       </select>
+    </div>
+    <div class="button-group" id="close-additional-settings-buttons">
+      <button onclick="registerDomain()" id="registerDomain">Register Domain</button>
+      <button onclick="closeadditionaldomaindetails()" id="closeadditionaldomaindetails" >Close Additional Details</button>
+      <button onclick="goBackToQuerySection()">Back</button>
     </div>
     <div class="input-group us-domain-fields" style="display: none;">
       <label>.us Domain Registration Details:</label>

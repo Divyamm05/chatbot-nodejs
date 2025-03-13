@@ -6,7 +6,6 @@ const session = require('express-session');
 const mysql = require('mysql2/promise');
 const axios = require('axios');
 const { OpenAI } = require('openai');
-const whois = require('whois');
 const whois2 = require('whois-json');
 const Fuse = require('fuse.js');
 const admin = require('firebase-admin');
@@ -127,10 +126,11 @@ const startQuestions = {
   "What information is needed to sign up?": "You need to provide your name and your email address.",
   "Is there a fee for signing up?": "No, Signing up is completely free!",
   "How secure is my information?": "We follow industry-standard security practices to protect your data.",
-  "Does your platform provide an API for domain management?": "Absolutely! Our platform offers a comprehensive API for seamless domain management. You can explore the full API documentation here: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
-  "What integrations are supported?": "Our API supports a wide range of integrations. For detailed information on all available integrations, please refer to our API documentation: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
-  "How can I get more details about the API?": "You can find all the details, including endpoints, integration guidelines, and examples, in our API documentation: <a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='color: white; bold'><b>API Documentation</b></a>.",
-  "How can I contact support?": '<a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to contact us.',
+  "Does your platform provide an API for domain management?": "Absolutely! Our platform offers a comprehensive API for seamless domain management. You can explore the full API documentation here: <br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
+  "What integrations are supported?": "Our API supports a wide range of integrations. For detailed information on all available integrations, please refer to our API documentation: <br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
+  "How can I get more details about the API?": "You can find all the details, including endpoints, integration guidelines, and examples, in our API documentation: <br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
+  "contact support": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; background: #007fff; color: white; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
+  "How can I contact support?": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; background: #007fff; color: white; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
   "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
   "Is there a guide for new users?": "Yes! Signing up with us gives you access to a helpful onboarding guide, along with the latest offers on our extensive selection of TLDs.",
   "What payment methods are supported?": "We support multiple payment gateways, offering flexibility for your transactions. Additionally, we also accept offline payment methods, including cheques, for your convenience.",
@@ -228,10 +228,7 @@ app.post('/api/check-email', async (req, res) => {
     if (users.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `Email not found in our records.<br>
-          <a href='https://india.connectreseller.com/signup' style='color: white; font-weight: bold; text-decoration: none;'>CLICK HERE</a> to sign up for the India panel.<br>
-          <a href='https://global.connectreseller.com/signup' style='color: white; font-weight: bold; text-decoration: none;'>CLICK HERE</a> to sign up for the Global panel.<br>
-          Or enter your registered email ID to continue.`
+        message: `Email not found in our records.<a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>Or enter your registered email ID to continue.`
       });
     }
 
@@ -481,18 +478,78 @@ app.get("/api/check-domain", async (req, res) => {
 
   const result = await checkDomainAvailability(domain);
 
+  console.log("🟢 [CHECK DOMAIN] Backend Response:", JSON.stringify(result, null, 2));
+
   res.json({
     success: true,
     available: result.available,
     message: result.message,
-    registrationFee: result.registrationFee, // ✅ Correctly return price
+    registrationFee: result.registrationFee, 
   });
 });
 
-app.get("/api/register-domain", async (req, res) => {
-  let { Websitename, Duration } = req.query;
+app.get('/api/check-availability', async (req, res) => {
+  const domain = req.query.domain;
+  
+  if (!domain) {
+      console.warn("⚠️ Missing domain name in request!");
+      return res.status(400).json({ success: false, message: "Domain name is required" });
+  }
 
-  console.log(`📥 [REGISTER DOMAIN] Request received for: ${Websitename}`);
+  console.log(`🔍 Received domain check request for: ${domain}`);
+  console.log("🌍 Sending request to ConnectReseller API...");
+
+  try {
+      const response = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable`, {
+          params: {
+              APIKey: API_KEY,
+              websiteName: domain
+          }
+      });
+
+      const data = response.data;
+      console.log("✅ API Response:", JSON.stringify(data, null, 2));
+
+      // ✅ FIX: Read statusCode correctly from responseMsg
+      if (data.responseMsg?.statusCode === 200) {
+          const { available, registrationFee, renewalfee, transferFee } = data.responseData;
+
+          if (available) {
+              console.log(`✔️ Domain "${domain}" is ✅ AVAILABLE for registration!`);
+          } else {
+              console.warn(`⚠️ Domain "${domain}" is ❌ NOT available.`);
+          }
+
+          return res.json({
+              success: true,
+              available,
+              registrationFee,
+              renewalFee: renewalfee,  // Fix casing
+              transferFee,
+              message: data.responseMsg.message  // Send a clear message
+          });
+      } else {
+          console.error(`❌ Error: API returned status ${data.responseMsg?.statusCode}`);
+          return res.json({
+              success: false,
+              available: false,
+              message: "Domain is not available"
+          });
+      }
+  } catch (error) {
+      console.error("🚨 Error checking domain availability:", error.message);
+      return res.status(500).json({ success: false, message: "Error checking domain availability" });
+  }
+});
+
+app.get("/api/register-domain", async (req, res) => {
+  let { 
+    WebsiteName, Duration, ns1, ns2, ns3, ns4, 
+    IsWhoisProtection, isEnablePremium, lang, 
+    usAppPurpose, usNexusCategory 
+  } = req.query;
+
+  console.log(`📥 [REGISTER DOMAIN] Request received for: ${WebsiteName}`);
 
   if (!req.session || !req.session.email) {
     console.warn("⚠️ [REGISTER DOMAIN] User not authenticated.");
@@ -524,10 +581,10 @@ app.get("/api/register-domain", async (req, res) => {
     return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
-  console.log(`🔍 Checking domain availability for: ${Websitename}`);
+  console.log(`🔍 Checking domain availability for: ${WebsiteName}`);
 
   try {
-    const domainAvailability = await checkDomainAvailability(Websitename);
+    const domainAvailability = await checkDomainAvailability(WebsiteName);
     if (!domainAvailability.available) {
       return res.json({ success: false, message: "Domain is not available." });
     }
@@ -556,17 +613,51 @@ app.get("/api/register-domain", async (req, res) => {
       });
     }
 
-    console.log(`🚀 [DOMAIN REGISTRATION] Initiating for ${Websitename}...`);
-    const registrationResponse = await domainRegistrationService({ 
-      Websitename, 
-      Duration, 
-      clientId  // ✅ Correctly passing `clientId`
-    });
+    console.log(`🚀 [DOMAIN REGISTRATION] Initiating for ${WebsiteName}...`);
 
-    if (registrationResponse.responseMsg.statusCode === 200) {
+    // Convert Duration to an integer
+    Duration = parseInt(Duration, 10);
+
+    // Construct API parameters dynamically
+    let apiParams = {
+      APIKey: process.env.CONNECT_RESELLER_API_KEY,
+      ProductType: 1,
+      Websitename: WebsiteName, // ✅ FIXED: Corrected case-sensitive issue
+      Duration,
+      Id: clientId,
+      ns1,
+      ns2,
+      IsWhoisProtection: IsWhoisProtection === "true" || IsWhoisProtection === "1", // ✅ FIXED: Boolean conversion
+      isEnablePremium: isEnablePremium === "1" ? 1 : 0, // ✅ FIXED: Integer conversion
+    };
+
+    if (ns3) apiParams.ns3 = ns3;
+    if (ns4) apiParams.ns4 = ns4;
+    if (lang) apiParams.lang = lang;
+
+    // Special handling for `.us` domains
+    if (WebsiteName.endsWith(".us") && usAppPurpose && usNexusCategory) {
+      apiParams.isUs = 1;
+      apiParams.appPurpose = usAppPurpose;
+      apiParams.nexusCategory = usNexusCategory;
+    }
+
+    // Log the full request URL for debugging
+    const fullRequestUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder?${new URLSearchParams(apiParams).toString()}`;
+    console.log("🔗 [DOMAIN REGISTRATION] Full API Request URL:", fullRequestUrl);
+
+    // Send request to ConnectReseller
+    const registrationResponse = await axios.get(
+      `https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder`,
+      { params: apiParams }
+    );
+
+    console.log("✅ [DOMAIN REGISTRATION] API Response:", JSON.stringify(registrationResponse.data, null, 2));
+
+    if (registrationResponse.data.responseMsg.statusCode === 200) {
       res.json({ success: true, message: "Domain registered successfully!" });
     } else {
-      res.json({ success: false, message: registrationResponse.responseMsg.message });
+      res.json({ success: false, message: registrationResponse.data.responseMsg.message });
     }
 
   } catch (error) {
@@ -612,7 +703,6 @@ app.get('/api/get-transfer-fee', async (req, res) => {
   }
 });
 
-
 app.post('/api/transfer-domain', async (req, res) => {
   const { domainName, authCode, isWhoisProtection } = req.body;
 
@@ -625,12 +715,12 @@ app.post('/api/transfer-domain', async (req, res) => {
   }
 
   let connection;
-  let customerId;
+  let customerId, resellerId;
 
   try {
       connection = await pool.getConnection();
       const [clientRows] = await connection.execute(
-          "SELECT clientId FROM Client WHERE UserName = ? LIMIT 1",
+          "SELECT clientId, ResellerId FROM Client WHERE UserName = ? LIMIT 1",
           [req.session.email]
       );
       connection.release();
@@ -640,41 +730,72 @@ app.post('/api/transfer-domain', async (req, res) => {
       }
 
       customerId = clientRows[0].clientId;
+      resellerId = clientRows[0].ResellerId;
 
   } catch (error) {
       return res.status(500).json({ success: false, message: "Database error while fetching customer ID." });
   }
 
+  // Step 3: Fetch transfer fee for the domain from tldsync API
+  const domainParts = domainName.split('.');
+  const tld = `.${domainParts[domainParts.length - 1]}`;
+  
   try {
-      const params = {
-          APIKey: API_KEY_TRANSFER,
-          OrderType: 4,
-          Websitename: domainName,
-          IsWhoisProtection: Boolean(isWhoisProtection).toString(),
-          AuthCode: authCode,
-          Id: customerId
-      };
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${process.env.CONNECT_RESELLER_API_KEY}`;
+      console.log(`🔍 [GET TRANSFER FEE] Checking TLD Sync API: ${apiUrl}`);
 
-      console.log("🔍 Transfer API Request:", `${API_URL_TRANSFER}?${new URLSearchParams(params)}`);
+      const response = await axios.get(apiUrl);
+      const tldData = response.data.find(entry => entry.tld === tld);
 
-      const response = await axios.get(API_URL_TRANSFER, { params });
-      const data = response.data;
+      if (tldData) {
+          const transferFee = parseFloat(tldData.transferPrice);
+          console.log(`✅ [TRANSFER FEE] TLD: ${tld}, Fee: $${transferFee}`);
 
-      console.log("✅ Transfer API Response:", data);
+          // Step 4: Fetch available balance for the reseller
+          const balanceResponse = await axios.get(
+              `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${resellerId}`
+          );
 
-      return res.json({
-          success: data?.responseMsg?.statusCode === 200 && data?.responseData?.statusCode !== 404,
-          message: data?.responseData?.message || data?.responseMsg?.message || "Domain transfer failed.",
-          data
-      });
+          const balance = parseFloat(balanceResponse.data.responseData);
+          console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
+
+          if (balance < transferFee) {
+              return res.json({
+                  success: false,
+                  message: `Insufficient funds. Required: $${transferFee.toFixed(2)}, Available: $${balance.toFixed(2)}`
+              });
+          }
+
+          // Proceed with domain transfer if funds are sufficient
+          const params = {
+              APIKey: API_KEY_TRANSFER,
+              OrderType: 4,
+              Websitename: domainName,
+              IsWhoisProtection: Boolean(isWhoisProtection).toString(),
+              AuthCode: authCode,
+              Id: customerId
+          };
+
+          console.log("🔍 Transfer API Request:", `${API_URL_TRANSFER}?${new URLSearchParams(params)}`);
+
+          const transferResponse = await axios.get(API_URL_TRANSFER, { params });
+          const data = transferResponse.data;
+
+          console.log("✅ Transfer API Response:", data);
+
+          return res.json({
+              success: data?.responseMsg?.statusCode === 200 && data?.responseData?.statusCode !== 404,
+              message: data?.responseData?.message || data?.responseMsg?.message || "Domain transfer failed.",
+              data
+          });
+
+      } else {
+          return res.status(400).json({ success: false, message: "Could not fetch transfer fee for this TLD." });
+      }
 
   } catch (error) {
-      console.error("❌ API Error:", {
-          message: error.message,
-          responseData: error.response?.data,
-          requestConfig: error.config
-      });
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+      console.error("❌ [ERROR] Failed to fetch transfer fee or balance:", error.message);
+      return res.status(500).json({ success: false, message: "Error processing transfer fee or balance." });
   }
 });
 
@@ -731,7 +852,7 @@ app.get('/api/renew-domain', async (req, res) => {
   }
 
   let connection;
-  let clientId, resellerId;
+  let clientId, resellerId, renewalFee;
 
   try {
       console.log(`🔍 [DB QUERY] Fetching client details for: ${req.session.email}`);
@@ -756,7 +877,45 @@ app.get('/api/renew-domain', async (req, res) => {
       return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
+  // Fetch renewal fee for the domain
+  console.log(`📡 [RENEWAL FEE API] Fetching renewal fee for domain: ${Websitename}`);
   try {
+      const renewalFeeResponse = await axios.get(
+          `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${process.env.CONNECT_RESELLER_API_KEY}`
+      );
+
+      const tldData = renewalFeeResponse.data.find(entry => entry.tld === `.${Websitename.split('.').pop()}`);
+      if (tldData) {
+          renewalFee = parseFloat(tldData.renewalPrice);
+          console.log(`✅ [RENEWAL FEE] Fee for ${Websitename}: $${renewalFee}`);
+      } else {
+          return res.json({ success: false, message: "Could not fetch renewal fee for this domain." });
+      }
+
+  } catch (error) {
+      console.error("❌ [RENEWAL FEE ERROR] Error fetching renewal fee:", error);
+      return res.status(500).json({ success: false, message: "Error fetching renewal fee." });
+  }
+
+  // Fetch available balance
+  console.log(`📡 [BALANCE API] Fetching funds for ResellerId: ${resellerId}`);
+  try {
+      const balanceResponse = await axios.get(
+          `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${resellerId}`
+      );
+
+      console.log(`✅ [BALANCE API] Response:`, balanceResponse.data);
+      const balance = parseFloat(balanceResponse.data.responseData);
+      console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
+
+      if (balance < renewalFee) {
+          return res.json({
+              success: false,
+              message: `Insufficient funds. Required: $${renewalFee.toFixed(2)}, Available: $${balance.toFixed(2)}`
+          });
+      }
+
+      // Proceed with renewal if balance is sufficient
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder`;
       const params = {
           APIKey: process.env.CONNECT_RESELLER_API_KEY,
@@ -780,15 +939,15 @@ app.get('/api/renew-domain', async (req, res) => {
           res.json({
               success: true,
               message: "Domain renewed successfully!",
-              expiryDate: renewalResponse.data.responseData.expiryDate
+              expiryDate: renewalResponse.data.responseData.exdate
           });
       } else {
           console.log(`❌ [API ERROR] ${renewalResponse.data.responseMsg.message}`);
           res.json({ success: false, message: renewalResponse.data.responseMsg.message });
       }
   } catch (error) {
-      console.error("❌ [API FAILURE] Failed to renew domain:", error);
-      res.status(500).json({ success: false, message: "Failed to renew domain." });
+      console.error("❌ [API FAILURE] Failed to check balance or renew domain:", error);
+      res.status(500).json({ success: false, message: "Failed to check funds or renew domain." });
   }
 });
 
@@ -811,28 +970,6 @@ const checkDomainsAvailability = async (suggestions) => {
     .map(result => result.value.domain);
 
   return availableDomains;
-};
-
-const isAvailable = (domain) => {
-  return new Promise((resolve, reject) => {
-    // Ensure the domain has a valid extension
-    if (!domain.match(/\.\w{2,}$/)) {
-      return reject(new Error(`Invalid domain format: ${domain}`));
-    }
-
-    whois.lookup(domain, (err, data) => {
-      if (err) {
-        return reject(new Error(`WHOIS lookup failed for ${domain}: ${err.message}`));
-      }
-
-      // Check if the domain is available
-      if (data && (data.includes("No match for domain") || data.includes("Domain not found"))) {
-        resolve(true);  // Domain is available
-      } else {
-        resolve(false); // Domain is not available
-      }
-    });
-  });
 };
 
 // Helper function to clean the domain names (remove numbers and extra characters)
@@ -968,24 +1105,28 @@ app.get('/api/domain-info', async (req, res) => {
 
 const BASE_URL = "https://api.connectreseller.com/ConnectReseller";
 const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
-async function getDomainDetails(websiteName) {
-  console.log(`🔍 Fetching domain details for: ${websiteName}`);
-
+async function getDomainDetails(domainName) {
+  let connection;
   try {
-      const domainsRef = admin.firestore().collection('DomainName'); // Ensure correct Firestore collection
-      const querySnapshot = await domainsRef.where('websiteName', '==', websiteName).get();
+      connection = await pool.getConnection();
 
-      if (querySnapshot.empty) {
-          console.warn(`⚠️ No domain found for websiteName: ${websiteName}`);
+      // Fetch domainNameId from DomainName table using websiteName
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domainName]
+      );
+
+      if (rows.length === 0) {
+          console.error(`❌ Domain ${domainName} not found.`);
           return null;
       }
 
-      const domainData = querySnapshot.docs[0].data(); // Get first matching result
-      console.log(`✅ Found domain details:`, domainData);
-      return domainData;
+      return { domainNameId: rows[0].domainNameId };
   } catch (error) {
-      console.error(`❌ Error fetching domain details:`, error);
+      console.error('❌ Error fetching domain details from database:', error);
       return null;
+  } finally {
+      if (connection) connection.release(); // Release the connection back to the pool
   }
 }
 
@@ -999,41 +1140,30 @@ async function manageTheftProtection(domainName, enable) {
 
   const { domainNameId } = domainDetails;
   const apiUrl = `${BASE_URL}/ESHOP/ManageTheftProtection?APIKey=${API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isTheftProtection=${enable}`;
-  
+
   console.log(`🌍 Sending API Request: ${apiUrl}`);
 
   try {
       const response = await axios.get(apiUrl);
       console.log('📨 API Response:', response.data);
 
-      if (response.data?.responseMsg?.statusCode === 200) {
-          return { success: true, message: `Theft protection ${enable ? 'enabled' : 'disabled'} for ${domainName}.` };
-      }
-      if (response.data?.responseMsg?.statusCode === 2306) {
-        return { success: false, message: `Theft protection is already enabled for ${domainName}.` };
-    }
-    if (response.data?.responseMsg?.statusCode === 2305) {
-        return { success: false, message: `Theft protection is already disabled for ${domainName}.` };
-    }    
-
-      return { success: false, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
+      return { success: true, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
   } catch (error) {
       console.error('❌ Error managing theft protection:', error);
       return { success: false, message: 'Internal server error while managing theft protection.' };
   }
 }
 
-// 🚀 API Endpoint to Manage Theft Protection
 app.get('/api/manage-theft-protection', async (req, res) => {
   console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
   let { domain, enable } = req.query;
-  
+
   if (!domain || enable === undefined) {
       return res.status(400).json({ success: false, message: "Missing required parameters: domain and enable." });
   }
 
-  const isTheftProtection = enable === 'true'; // Converts to boolean
+  const isTheftProtection = enable === 'true';
   console.log(`🔄 Parsed isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection})`);
 
   try {
@@ -1045,81 +1175,67 @@ app.get('/api/manage-theft-protection', async (req, res) => {
   }
 });
 
-// Backend: Manage Domain Lock/Unlock
-async function manageDomainLock(domainName, lock) {
+async function getDomainDetails(domainName) {
+  const connection = await pool.getConnection();
   try {
-      console.log('[LOCK-DOMAIN] 🔍 Checking for domain:', domainName);
-
-      const domainRef = admin.firestore().collection('DomainName');
-      const domainSnapshot = await domainRef
-          .where('websiteName', '==', domainName)
-          .get();
-
-      if (domainSnapshot.empty) {
-          console.warn('[LOCK-DOMAIN] ⚠️ No documents found for domain:', domainName);
-          return {
-              success: false,
-              message: `domainNameId not found for the domain ${domainName}.`,
-          };
-      }
-
-      console.log('[LOCK-DOMAIN] 📝 Found documents:');
-      domainSnapshot.forEach(doc => {
-          console.log('Document ID:', doc.id, 'Data:', doc.data());
-      });
-
-      const domainData = domainSnapshot.docs[0].data();
-      const domainNameId = domainData?.domainNameId;
-
-      if (!domainNameId) {
-          console.warn('[LOCK-DOMAIN] ⚠️ domainNameId is missing or invalid for domain:', domainName);
-          return {
-              success: false,
-              message: `domainNameId not found or invalid for the domain ${domainName}.`,
-          };
-      }
-
-      console.log('[LOCK-DOMAIN] ✅ Fetched domainNameId:', domainNameId);
-
-      // API Call to lock/unlock domain
-      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
-      
-      // 📢 Log the API URL request
-      console.log('[LOCK-DOMAIN] 🌐 API Request URL:', apiUrl);
-
-      const response = await axios.get(apiUrl);
-      console.log('[LOCK-DOMAIN] 🌐 API Response:', response.data);
-
-      if (response.data.responseMsg?.statusCode === 200) {
-          const actionText = lock ? 'locked' : 'unlocked';
-          return {
-              success: true,
-              answer: `The domain ${domainName} has been successfully ${actionText}.`,
-          };
-      } else {
-          return {
-              success: false,
-              message: response.data.responseMsg?.message || `Failed to ${lock ? 'lock' : 'unlock'} the domain ${domainName}.`,
-          };
-      }
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domainName]
+      );
+      return rows.length > 0 ? rows[0] : null;
   } catch (error) {
-      console.error('[LOCK-DOMAIN] ❌ Error managing domain lock:', error.message);
-      return {
-          success: false,
-          message: 'Failed to update domain lock status.',
-      };
+      console.error('❌ Error fetching domain details:', error);
+      return null;
+  } finally {
+      connection.release();
   }
 }
 
+async function manageDomainLock(domainName, lock) {
+  console.log(`🔒 [${new Date().toISOString()}] Managing domain lock for ${domainName} - ${lock ? 'Locked' : 'Unlocked'}`);
+
+  const domainDetails = await getDomainDetails(domainName);
+  if (!domainDetails || !domainDetails.domainNameId) {
+      return { success: false, message: `Domain ${domainName} not found.` };
+  }
+
+  const { domainNameId } = domainDetails;
+  const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
+
+  console.log(`🌍 Sending API Request: ${apiUrl}`);
+
+  try {
+      const response = await axios.get(apiUrl);
+      console.log('📨 API Response:', response.data);
+
+      return { success: response.data.responseMsg?.statusCode === 200, message: response.data?.responseMsg?.message || 'Failed to update domain lock.' };
+  } catch (error) {
+      console.error('❌ Error managing domain lock:', error);
+      return { success: false, message: 'Internal server error while managing domain lock.' };
+  }
+}
+
+// 🚀 API Route
 app.get('/api/lock-domain', async (req, res) => {
-  const { domainName, lock } = req.query;
-  console.log('[BACKEND] Received parameters:', { domainName, lock });
+  console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
-  const isLock = lock === 'true';
-  console.log('[BACKEND] Computed isLock:', isLock);
+  let { domainName, lock } = req.query;
 
-  const result = await manageDomainLock(domainName, isLock);
-  return res.json(result);
+  if (!domainName || lock === undefined) {
+      return res.status(400).json({ success: false, message: "Missing required parameters: domainName and lock." });
+  }
+
+  const isDomainLocked = lock.toLowerCase() === 'true'; // ✅ Proper conversion
+
+  console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked} (Type: ${typeof isDomainLocked})`);
+
+  try {
+      const result = await manageDomainLock(domainName, isDomainLocked);
+      return res.json(result);
+  } catch (error) {
+      console.error('❌ API error:', error);
+      return res.status(500).json({ success: false, message: 'Internal server error while updating domain lock.' });
+  }
 });
 
 app.get('/api/balance', async (req, res) => {
@@ -1179,64 +1295,69 @@ async function manageDomainSuspension(domainName, suspend) {
   try {
       console.log('[SUSPEND-DOMAIN] 🔍 Checking for domain:', domainName);
 
-      const domainRef = admin.firestore().collection('DomainName');
-      const domainSnapshot = await domainRef
-          .where('websiteName', '==', domainName)
-          .get();
+      // Extract only the domain name part (removes any prefix like "Suspend/Unsuspend")
+      const domain = domainName.replace(/^(Suspend\/Unsuspend\s+)/, '').trim();
 
-      if (domainSnapshot.empty) {
-          console.warn('[SUSPEND-DOMAIN] ⚠️ No documents found for domain:', domainName);
+      console.log('[SUSPEND-DOMAIN] ✅ Domain extracted:', domain);
+
+      // Get a connection from the pool
+      connection = await pool.getConnection();
+
+      // Fetch domainNameId from DomainName table using websiteName
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domain]
+      );
+
+      // Check if the domain was found
+      if (rows.length === 0) {
+          console.error(`❌ Domain ${domain} not found.`);
           return {
               success: false,
-              message: `domainNameId not found for the domain ${domainName}.`,
+              message: `domainNameId not found for the domain ${domain}.`,
           };
       }
 
-      console.log('[SUSPEND-DOMAIN] 📝 Found documents:');
-      domainSnapshot.forEach(doc => {
-          console.log('Document ID:', doc.id, 'Data:', doc.data());
-      });
-
-      const domainData = domainSnapshot.docs[0].data();
-      const domainNameId = domainData?.domainNameId;
-
-      if (!domainNameId) {
-          console.warn('[SUSPEND-DOMAIN] ⚠️ domainNameId is missing or invalid for domain:', domainName);
-          return {
-              success: false,
-              message: `domainNameId not found or invalid for the domain ${domainName}.`,
-          };
-      }
+      // Extract domainNameId
+      const domainNameId = rows[0].domainNameId;
 
       console.log('[SUSPEND-DOMAIN] ✅ Fetched domainNameId:', domainNameId);
 
       // API Call to suspend/unsuspend domain
-      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainSuspend?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainSuspend=${suspend}`;
-      
-      // 📢 Log the API URL request
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainSuspend?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&isDomainSuspend=${suspend}`;
+
+      // Log the API URL request
       console.log('[SUSPEND-DOMAIN] 🌐 API Request URL:', apiUrl);
 
+      // Send request to suspend/unsuspend domain
       const response = await axios.get(apiUrl);
       console.log('[SUSPEND-DOMAIN] 🌐 API Response:', response.data);
 
+      // Check if the response is successful and return appropriate message
       if (response.data.responseMsg?.statusCode === 200) {
           const actionText = suspend ? 'suspended' : 'unsuspended';
           return {
               success: true,
-              answer: `The domain ${domainName} has been successfully ${actionText}.`,
+              answer: `The domain ${domain} has been successfully ${actionText}.`,
           };
       } else {
           return {
               success: false,
-              message: response.data.responseMsg?.message || `Failed to ${suspend ? 'suspend' : 'unsuspend'} the domain ${domainName}.`,
+              message: response.data.responseMsg?.message || `Failed to ${suspend ? 'suspend' : 'unsuspend'} the domain ${domain}.`,
           };
       }
+
   } catch (error) {
       console.error('[SUSPEND-DOMAIN] ❌ Error managing domain suspension:', error.message);
       return {
           success: false,
           message: 'Failed to update domain suspension status.',
       };
+  } finally {
+      // Release the connection back to the pool
+      if (connection) {
+          connection.release();
+      }
   }
 }
 
@@ -1244,69 +1365,71 @@ app.get('/api/suspend-domain', async (req, res) => {
   const { domainName, suspend } = req.query;
   console.log('[BACKEND] Received parameters:', { domainName, suspend, type: typeof suspend });
 
+  // Ensure suspend is a boolean
   const isSuspend = suspend === 'true';
   console.log('[BACKEND] Computed isSuspend:', isSuspend);
 
+  // Call the function to manage domain suspension
   const result = await manageDomainSuspension(domainName, isSuspend);
+
+  // Return the result
   return res.json(result);
 });
-
 //----------------------------------------------------- Privacy Protection Management --------------------------------------------------------//
 
-async function managePrivacyProtection(domainName, enable) {
+async function managePrivacyProtection(domainName, enableProtection) {
   try {
       console.log('[PRIVACY-PROTECTION] 🔍 Checking for domain:', domainName);
 
-      const domainRef = admin.firestore().collection('DomainName');
-      const domainSnapshot = await domainRef
-          .where('websiteName', '==', domainName)
-          .get();
+      // Extract only the domain name part (removes any prefix like "Enable/disable privacy protection for")
+      const domain = domainName.replace(/^Enable\/disable\sprivacy\sprotection\sfor\s+/i, '').trim();
 
-      if (domainSnapshot.empty) {
-          console.warn('[PRIVACY-PROTECTION] ⚠️ No documents found for domain:', domainName);
+      console.log('[PRIVACY-PROTECTION] ✅ Domain extracted:', domain);
+
+      // Proceed with fetching from database
+      connection = await pool.getConnection();
+
+      // Fetch domainNameId from DomainName table using websiteName
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domain]
+      );
+
+      // Check if the domain was found
+      if (rows.length === 0) {
+          console.error(`❌ Domain ${domain} not found.`);
           return {
               success: false,
-              message: `domainNameId not found for the domain ${domainName}.`,
+              message: `domainNameId not found for the domain ${domain}.`,
           };
       }
 
-      console.log('[PRIVACY-PROTECTION] 📝 Found documents:');
-      domainSnapshot.forEach(doc => {
-          console.log('Document ID:', doc.id, 'Data:', doc.data());
-      });
-
-      const domainData = domainSnapshot.docs[0].data();
-      const domainNameId = domainData?.domainNameId;
-
-      if (!domainNameId) {
-          console.warn('[PRIVACY-PROTECTION] ⚠️ domainNameId is missing or invalid for domain:', domainName);
-          return {
-              success: false,
-              message: `domainNameId not found or invalid for the domain ${domainName}.`,
-          };
-      }
+      // Extract domainNameId
+      const domainNameId = rows[0].domainNameId;
 
       console.log('[PRIVACY-PROTECTION] ✅ Fetched domainNameId:', domainNameId);
 
       // API Call to enable/disable privacy protection
-      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainPrivacyProtection?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&iswhoisprotected=${enable}`;
-      
-      // 📢 Log the API URL request
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManagePrivacyProtection?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&enableProtection=${enableProtection}`;
+
+      // Log the API URL request
       console.log('[PRIVACY-PROTECTION] 🌐 API Request URL:', apiUrl);
 
+      // Send request to enable/disable privacy protection
       const response = await axios.get(apiUrl);
       console.log('[PRIVACY-PROTECTION] 🌐 API Response:', response.data);
 
+      // Check if the response is successful and return appropriate message
       if (response.data.responseMsg?.statusCode === 200) {
-          const actionText = enable ? 'enabled' : 'disabled';
+          const actionText = enableProtection ? 'enabled' : 'disabled';
           return {
               success: true,
-              answer: `Privacy protection has been successfully ${actionText} for ${domainName}.`,
+              answer: `Privacy protection for domain ${domain} has been successfully ${actionText}.`,
           };
       } else {
           return {
               success: false,
-              message: response.data.responseMsg?.message || `Failed to ${enable ? 'enable' : 'disable'} privacy protection for ${domainName}.`,
+              message: response.data.responseMsg?.message || `Failed to ${enableProtection ? 'enable' : 'disable'} privacy protection for the domain ${domain}.`,
           };
       }
   } catch (error) {
@@ -1315,20 +1438,29 @@ async function managePrivacyProtection(domainName, enable) {
           success: false,
           message: 'Failed to update privacy protection status.',
       };
+  } finally {
+      // Release the connection back to the pool
+      if (connection) {
+          connection.release();
+      }
   }
 }
 
-// API Route to handle privacy protection requests
-app.get('/api/privacy-protection', async (req, res) => {
-  const { domainName, enable } = req.query;
-  console.log('[BACKEND] Received parameters:', { domainName, enable, type: typeof enable });
+app.get('/api/manage-privacy-protection', async (req, res) => {
+  const { domainName, enableProtection } = req.query;
+  console.log('[BACKEND] Received parameters:', { domainName, enableProtection, type: typeof enableProtection });
 
-  const isEnable = enable === 'true';
-  console.log('[BACKEND] Computed isEnable:', isEnable);
+  // Ensure enableProtection is a boolean
+  const isEnableProtection = enableProtection === 'true';
+  console.log('[BACKEND] Computed isEnableProtection:', isEnableProtection);
 
-  const result = await managePrivacyProtection(domainName, isEnable);
+  // Call the function to manage privacy protection
+  const result = await managePrivacyProtection(domainName, isEnableProtection);
+
+  // Return the result
   return res.json(result);
 });
+
 
 // Function to Update Name Servers
 async function updateNameServer(domainName, nameServers) {
@@ -1585,35 +1717,6 @@ function findClosestAction(userQuery) {
   return bestMatch;
 }
 
-// Extract relevant API details from PDF
-async function extractRelevantText(userQuery) {
-  const matchedAction = findClosestAction(userQuery);
-  if (!matchedAction) {
-      return `❌ The requested action **"${userQuery}"** was not found in our API documentation.`;
-  }
-
-  const pdfBuffer = fs.readFileSync('CR_API_Document_V7.pdf');
-  const data = await pdf(pdfBuffer);
-  const content = data.text;
-
-  const regex = new RegExp(`${matchedAction}[\\s\\S]*?(?=\\n\\n|$)`, "i");
-  const match = content.match(regex);
-
-  return match ? `✅ **API Details for ${matchedAction}:**\n\n${match[0]}` : 
-      `⚠️ No specific details found for **"${matchedAction}"**.`;
-}
-
-// API Route
-app.post('/api/get-api-details', async (req, res) => {
-  try {
-      const responseText = await extractRelevantText(req.body.query);
-      res.json({ success: true, answer: responseText });
-  } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ success: false, message: "Server error while fetching API details." });
-  }
-});
-
 app.get('/api/domain-auth-code', async (req, res) => {
   const { domain } = req.query;
 
@@ -1834,7 +1937,7 @@ const allowedTopics = [
 // Refined predefined answers with improved grammar, chatbot tone, and categorized responses
 const predefinedAnswers = {
   // Register Domain
-  "How do I register a domain?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration. Popular domain TLD prices: .com - $11.99, .net - $13.59, .co.in - $5.49, .in - $7.29, .org - $8.99, .ai - $84.09, .io - $36.29, .co - $12.29.",
+  "How do I register a domain?": "To register a domain click the 'Register Domain' button below, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration. Popular domain TLD prices: .com - $11.99, .net - $13.59, .co.in - $5.49, .in - $7.29, .org - $8.99, .ai - $84.09, .io - $36.29, .co - $12.29.",
 //
   "Where can I register domains?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
 
@@ -1852,7 +1955,7 @@ const predefinedAnswers = {
 //
   "Give me a list of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
 //
-  "What actions can I do here on the chatbot?": "You can check domain availability, get domain suggestions, and ask domain-related queries.",
+  "What actions can I do here on the chatbot?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
 //
   "How can I view the auth code for a domain?": "You can find the auth code in your domain management panel under transfer settings.",
 //
@@ -2036,27 +2139,6 @@ app.post('/api/domain-queries', async (req, res) => {
     }
   }
 
-  // ✅ New Condition: Check for Domain Registration
-  const isRegisterQuery = lowerQuery.includes('register') || lowerQuery.includes('domain registration');
-
-  if (isRegisterQuery) {
-    return res.json({
-      success: true,
-      triggerDomainSection: true,
-      answer: 'I can assist you with domain registration. Please visit the register domain name section to proceed.',
-    });
-  }
-
-  const isTransferQuery = lowerQuery.includes('transfer') || lowerQuery.includes('domain transfer');
-
-  if (isTransferQuery) {
-    return res.json({
-      success: true,
-      triggerDomainSection: true,
-      answer: 'I can assist you with domain transfer. Please visit the transfer domain name section to proceed.',
-    });
-  }
-
 // Check for Domain Information or Specific Registration Date Request
 if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain') || lowerQuery.includes('when was this domain registered'))) {
   console.log('[DOMAIN-QUERIES] 📝 Domain information requested for:', domainName);
@@ -2212,20 +2294,6 @@ if (domainName && (lowerQuery.includes('suspend ') || lowerQuery.includes('unsus
   return res.json(result);
 }
 
-if (domainName) {
-  try {
-    const whoisData = await whois(domainName);
-    if (lowerQuery.includes('name servers')) {
-      return res.json({ success: true, answer: `Name servers for ${domainName}: ${whoisData.nameServers || 'Not available'}` });
-    }
-    if (lowerQuery.includes('registration date')) {
-      return res.json({ success: true, answer: `Domain ${domainName} was registered on: ${whoisData.creationDate || 'Not available'}` });
-    }
-  } catch (error) {
-    console.error('WHOIS lookup failed:', error);
-  }
-}
-
   // Step 3: Check if the query is domain-related using Fuse.js
   const isDomainRelated = fuse2.search(query).length > 0;
 
@@ -2233,7 +2301,7 @@ if (domainName) {
     return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
   }
 
-  // Step 4: Use Cohere API for AI-Generated Responses (if no predefined match)
+  /* Step 4: Use Cohere API for AI-Generated Responses (if no predefined match)
   try {
     const cohereResponse = await axios.post(
       'https://api.cohere.ai/v1/generate',
@@ -2252,7 +2320,7 @@ if (domainName) {
     console.error('Cohere API error:', error);
   }
 
-  return res.status(400).json({ success: false, message: 'Unable to process your request.' });
+  return res.status(400).json({ success: false, message: 'Unable to process your request.' });*/
 });
 
 const dns = require('dns').promises;

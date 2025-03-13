@@ -238,7 +238,7 @@ body {
 #info-box {
   position: absolute;
   top: 34%;
-  left: 75%;
+  left: 19%;
   width: 40%;
   background: #fff;
   padding: 10px;
@@ -1093,7 +1093,8 @@ body {
   display: flex;
   justify-content: center;
   gap: 10px;
-  width: 100%;
+  width: 97%;
+  margin-left: 4px;
 }
 
 .button-group button {
@@ -1126,7 +1127,6 @@ body {
 
 /* Button Styling */
 #domain-registration-section button {
-  padding: 12px;
   background-color: #066;
   color: white;
   border: none;
@@ -1136,7 +1136,6 @@ body {
   font-weight: bold;
   transition: background-color 0.3s ease;
   cursor: pointer;
-  margin-top: 10px;
   width: 100%;
   max-width: 260px;
 }
@@ -1337,10 +1336,8 @@ input:checked + .slider:before {
 
 /* Container styles */
 #theft-protection-toggle-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
+  display: none; 
+  flex-direction: column; /* Or appropriate layout */
 }
 
 #theft-protection-wrapper {
