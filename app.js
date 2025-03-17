@@ -5,15 +5,8 @@ const crypto = require('crypto');
 const session = require('express-session');
 const mysql = require('mysql2/promise');
 const axios = require('axios');
-const { OpenAI } = require('openai');
-const whois2 = require('whois-json');
 const Fuse = require('fuse.js');
-const admin = require('firebase-admin');
-const { info } = require('console');
-const qs = require('qs');
-const fs = require('fs');
 const moment = require('moment');
-const pdf = require('pdf-parse');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -71,17 +64,17 @@ function checkSession(req, res, next) {
 }
 
 const startQuestions = {
-  "What features does this platform offer?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What are the features of this platform?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What are the key features of this platform?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What does this platform offer?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What features can I use on this platform?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
+  "What features does this platform offer?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What are the features of this platform?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What are the key features of this platform?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What does this platform offer?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What features can I use on this platform?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
 
-  "What can this chatbot do?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What all can this chatbot do?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What is this chatbot capable of?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What can I do with this chatbot?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
-  "What can the chatbot do for me?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
+  "What can this chatbot do?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What all can this chatbot do?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What is this chatbot capable of?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What can I do with this chatbot?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
+  "What can the chatbot do for me?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
 
   "Can I use this platform for domain registration and management?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
   "Is domain registration possible on this platform?": "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
@@ -181,7 +174,7 @@ app.post('/ask-question', (req, res) => {
   return res.json({ answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
-// Tester login without checking Firebase
+// Tester login without checking in db
 app.post('/api/tester-login', logSession, (req, res) => {
   const { email } = req.body;
 
@@ -228,19 +221,14 @@ app.post('/api/check-email', async (req, res) => {
     if (users.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `Email not found in our records.<a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>Or enter your registered email ID to continue.`
+        message: `Email not found in our records. You can Signup easily by clicking on the buttons below.<br> <a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a><br>Or enter your registered email ID to continue.`
       });
     }
 
-    // ✅ Generate OTP
+    // ✅ OTP generation but NOT inserting into DB
     const otp = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 60000);
-
-    // ✅ Store OTP in MySQL (Replace with your actual OTP table structure)
-    const otpQuery = "INSERT INTO otp_records (email, otp, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?";
-    await pool.query(otpQuery, [normalizedEmail, otp, expiresAt, otp, expiresAt]);
-
-    // ✅ Send OTP email
+    
+    // ✅ Send OTP email (Without storing in DB)
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: normalizedEmail,
@@ -249,7 +237,7 @@ app.post('/api/check-email', async (req, res) => {
     };
     await transporter.sendMail(mailOptions);
 
-    res.json({ success: true, message: 'OTP sent to your email address.', otpRequired: true });
+    res.json({ success: true, message: 'OTP sent to your email address.', otpRequired: true, otp }); // ✅ Sending OTP in response for now
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ success: false, message: "Internal server error." });
@@ -1244,24 +1232,23 @@ app.get('/api/balance', async (req, res) => {
       return res.status(401).json({ success: false, message: 'User not authenticated.' });
   }
 
+  let connection;
   try {
-      let resellerId;
+      connection = await pool.getConnection(); // ✅ Get a connection from the pool
 
-      if (req.session.email === 'aichatbot@iwantdemo.com') {
-          resellerId = 15272;
-          console.log('🔍 [BALANCE API] Using test resellerId:', resellerId);
-      } else {
-          const usersRef = admin.firestore().collection('Client');
-          const querySnapshot = await usersRef.where('UserName', '==', req.session.email).get();
+      // 🔍 Fetch `resellerId` from `Client` table using `UserName`
+      const [clientRows] = await connection.execute(
+          "SELECT ResellerId FROM Client WHERE UserName = ? LIMIT 1",
+          [req.session.email]
+      );
 
-          if (querySnapshot.empty) {
-              console.warn('⚠️ [BALANCE API] ResellerId not found for email:', req.session.email);
-              return res.status(404).json({ success: false, message: 'ResellerId not found.' });
-          }
-
-          resellerId = querySnapshot.docs[0].data().clientId;
-          console.log('🔍 [BALANCE API] ResellerId fetched from Firebase:', resellerId);
+      if (clientRows.length === 0 || !clientRows[0].ResellerId) {
+          console.warn('⚠️ [BALANCE API] ResellerId not found for email:', req.session.email);
+          return res.status(404).json({ success: false, message: 'ResellerId not found.' });
       }
+
+      const resellerId = clientRows[0].ResellerId;
+      console.log('🔍 [BALANCE API] ResellerId fetched from MySQL:', resellerId);
 
       // 🌍 Prepare and log the API request URL
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&resellerId=${resellerId}`;
@@ -1288,8 +1275,11 @@ app.get('/api/balance', async (req, res) => {
   } catch (error) {
       console.error('❌ [BALANCE API] Error fetching balance:', error.message);
       return res.status(500).json({ success: false, message: 'Error fetching balance.' });
+  } finally {
+      if (connection) connection.release(); // ✅ Ensure the connection is released
   }
 });
+
 
 async function manageDomainSuspension(domainName, suspend) {
   try {
@@ -1937,7 +1927,7 @@ const allowedTopics = [
 // Refined predefined answers with improved grammar, chatbot tone, and categorized responses
 const predefinedAnswers = {
   // Register Domain
-  "How do I register a domain?": "To register a domain click the 'Register Domain' button below, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration. Popular domain TLD prices: .com - $11.99, .net - $13.59, .co.in - $5.49, .in - $7.29, .org - $8.99, .ai - $84.09, .io - $36.29, .co - $12.29.",
+  "How do I register a domain?": "To register a domain click the 'Register Domain' button below, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
 //
   "Where can I register domains?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
 
@@ -1955,7 +1945,7 @@ const predefinedAnswers = {
 //
   "Give me a list of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
 //
-  "What actions can I do here on the chatbot?": "This platform offers a comprehensive set of domain management features, including domain registration, transfer, renewal, and availability checks. Users can manage name servers, add child name servers, enable or disable theft protection, lock or unlock domains, and suspend or unsuspend domains. The platform also supports privacy protection, premium domain registration, API access for automation, and integration with WHMCS. Additionally, users can check domain-related reports, view expiration details, retrieve auth codes, and manage payment options. A chatbot assists with queries, and customer support is available for further assistance.",
+  "What actions can I do here on the chatbot?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
 //
   "How can I view the auth code for a domain?": "You can find the auth code in your domain management panel under transfer settings.",
 //
@@ -2248,23 +2238,22 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
       return res.status(401).json({ success: false, message: "User not authenticated." });
   }
 
+  let connection;
   try {
-      let resellerId;
+      connection = await pool.getConnection(); // ✅ Get a connection from the pool
 
-      // 🔍 Hardcoded ResellerId for testing
-      if (req.session.email === "aichatbot@iwantdemo.com") {
-          resellerId = 15272;
-      } else {
-          // 🔍 Fetch ResellerId from Firebase using UserName (email)
-          const usersRef = admin.firestore().collection("Client");
-          const querySnapshot = await usersRef.where("UserName", "==", req.session.email).get();
+      // 🔍 Fetch `resellerId` from `Client` table using `UserName`
+      const [clientRows] = await connection.execute(
+          "SELECT ResellerId FROM Client WHERE UserName = ? LIMIT 1",
+          [req.session.email]
+      );
 
-          if (querySnapshot.empty) {
-              return res.status(404).json({ success: false, message: "ResellerId not found." });
-          }
-
-          resellerId = querySnapshot.docs[0].data().clientId; // Assuming `clientId` is the ResellerId
+      if (clientRows.length === 0 || !clientRows[0].ResellerId) {
+          return res.status(404).json({ success: false, message: "ResellerId not found." });
       }
+
+      const resellerId = clientRows[0].ResellerId;
+      console.log("🔍 [BALANCE QUERY] ResellerId fetched from MySQL:", resellerId);
 
       // 🌍 Fetch balance from ConnectReseller API
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${process.env.API_KEY}&resellerId=${resellerId}`;
@@ -2282,8 +2271,10 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
           });
       }
   } catch (error) {
-      console.error("Error fetching balance:", error);
+      console.error("❌ [BALANCE QUERY] Error fetching balance:", error.message);
       return res.status(500).json({ success: false, message: "Error fetching balance." });
+  } finally {
+      if (connection) connection.release(); // ✅ Ensure the connection is released
   }
 }
 

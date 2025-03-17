@@ -36,9 +36,10 @@ function taketosigninsection() {
         // Show the email section
         emailSection.style.display = 'flex';
         userinputSection.style.display = 'none';
+        //document.getElementById('sidebar').style.display = 'none';
         login.style.display = 'none';
         signup.style.display = 'flex';
-
+        toggleSidebar();
         // Clear the chat log
         chatLog.innerHTML = ''; 
         
@@ -56,6 +57,30 @@ function taketosigninsection() {
 // Request OTP
 function requestOTP() {
     const email = document.getElementById("user-email").value.trim();
+    if (email == 'aichatbot@iwantdemo.com' ) {
+        clearchatlog();
+        updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
+        const email = document.getElementById('user-email').value.trim();
+        const otpInput = document.getElementById('otp-code');
+        const otp = otpInput ? otpInput.value.trim() : '';
+        const signup= document.getElementById('signup-text');
+        const profileicon= document.getElementById('profile-icon');
+        const login= document.getElementById('login-text');
+        login.style.display = 'none';
+        signup.style.display = 'none';
+        profileicon.style.display = 'none';
+        document.getElementById('sidebar').style.display = 'flex';
+        document.getElementById('email-section').style.display = 'none';
+        document.getElementById('otp-section').style.display = 'none';
+        document.getElementById('login-chat-section').style.display = 'flex';
+        document.getElementById('sidebar-content').style.display = 'none';
+        document.getElementById('faq-post-login').style.display = 'flex'; 
+        isSignedIn = true;
+        localStorage.setItem('isSignedIn', 'true');
+        updateAuthUI();
+        toggleSidebar();
+        return;
+    }
 
     if (!email) {
         updateChatLog('Please enter a valid email address.', 'bot');
@@ -74,7 +99,7 @@ function requestOTP() {
 
             if (data.otpRequired) {
                 // Show OTP input section if OTP is required
-                document.getElementById("otp-section").style.display = "block";
+                document.getElementById("otp-section").style.display = "flex";
                 updateChatLog('OTP has been sent to your email address. Please check your inbox.', 'bot');
             } else {
                 // Directly handle authenticated state (No message shown)
@@ -158,6 +183,7 @@ try {
         login.style.display = 'none';
         signup.style.display = 'none';
         profileicon.style.display = 'none';
+        document.getElementById('sidebar').style.display = 'flex';
 
         // Use customerId (resellerId) from the response
         if (data.customerId) {
@@ -176,6 +202,7 @@ try {
         document.getElementById('login-chat-section').style.display = 'flex';
         document.getElementById('sidebar-content').style.display = 'none';
         document.getElementById('faq-post-login').style.display = 'flex'; 
+        document.getElementById('sidebar').style.display = 'none';
         
 
         updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
@@ -243,7 +270,6 @@ function handleAuthenticatedUser() {
     
     isSignedIn = true;
     localStorage.setItem('isSignedIn', 'true');
-    localStorage.setItem('customerId', '223855'); // Fixed ID for bypassed test users
     updateAuthUI();
 }
 
@@ -317,6 +343,7 @@ function toggleSidebar() {
 //------------------------------------------ Update Chatlog for each functionality section --------------------------------------------//
 
 function updateChatLog(message, sender) {
+    
   console.log("updateChatLog called:", message);
   
   const chatLog = document.querySelector('.chat-log');
@@ -398,7 +425,8 @@ function updateChatLog(message, sender) {
       sender === 'bot' && isUserSignedIn &&
       (message.includes("register a domain") ||
        message.includes("To register a domain, navigate to the 'Register Domain' section") ||
-       message.includes("You can register domains directly through this chatbot")) 
+       message.includes("You can register domains directly through this chatbot")) && message !== "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration."
+
   ) {
     if (!document.getElementById("register-button")) { // Prevent duplicate buttons
     addButton("Register a Domain", "register-button", "domain-availability-section");
@@ -410,7 +438,7 @@ function updateChatLog(message, sender) {
       sender === 'bot' && isUserSignedIn &&
       (message.includes("transfer a domain") || message.includes("domain transfer") || message.includes("To transfer a domain to us")) || message.includes("How can I move a domain?") || message.includes("To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.") &&
       !message.includes("Yes, you can transfer your domains") &&
-      !message.includes("Thank you for signing in!")
+      !message.includes("Thank you for signing in!") && message !== "How can I move a domain?"
   ) {
       addButton("Transfer a Domain", "transfer-button", "domain-transfer-section");
   }
@@ -1019,23 +1047,135 @@ async function handleCheckDomain() {
     }
 
     try {
+        console.log("🔵 Sending request to API...");
         const response = await fetch(`/api/check-domain?domain=${domainInput}`);
+
+        console.log("🟡 Response received:", response);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("🟢 Parsed JSON response:", data);
 
-        console.log("Frontend received response:", data);  // 🐛 Debugging log
+        if (!data.hasOwnProperty("available")) {
+            throw new Error("Missing 'available' property in API response.");
+        }
 
-        const isAvailable = data.available;
-        const message = data.message;
+        console.log("🔍 Checking domain availability:", data.available);
 
-        if (isAvailable) {
-            addChatMessage("bot", `✅ ${domainInput} is available for registration! Do you want to register this domain?`, true, domainInput);  
+        const chatLog = document.getElementById("chat-log");
+
+        // Create button container
+        const buttonContainer = document.createElement("div");
+        buttonContainer.style.display = "flex";
+        buttonContainer.style.gap = "10px";
+        buttonContainer.style.marginLeft = "20px";
+        buttonContainer.style.marginTop = "5px";
+        buttonContainer.style.marginBottom = "10px";
+
+        // Create Yes button
+        const yesButton = document.createElement("button");
+        yesButton.innerText = "Yes";
+        yesButton.style.padding = "8px 12px";
+        yesButton.style.border = "none";
+        yesButton.style.cursor = "pointer";
+        yesButton.style.backgroundColor = "#008CBA";
+        yesButton.style.color = "white";
+        yesButton.style.borderRadius = "5px";
+        yesButton.style.transition = "background-color 0.3s ease";
+
+        yesButton.onclick = () => {
+            console.log("✅ Yes button clicked!");
+            const checkAvailabilitySection = document.getElementById("domain-availability-section");
+            const domainRegistrationSection = document.getElementById("domain-registration-section");
+            const loginChatSection = document.getElementById("login-chat-section");
+            const domainNameInput = document.getElementById("domain-name");
+
+            if (checkAvailabilitySection) checkAvailabilitySection.style.display = "none";
+            if (loginChatSection) loginChatSection.style.display = "none";
+
+            if (!domainRegistrationSection) {
+                console.error("❌ 'domain-registration-section' NOT found in the DOM!");
+            } else {
+                domainRegistrationSection.style.display = "flex";
+                domainNameInput.value = domainInput;
+            }
+        };
+
+        // Create No button
+        const noButton = document.createElement("button");
+        noButton.innerText = "No";
+        noButton.style.padding = "8px 12px";
+        noButton.style.border = "none";
+        noButton.style.cursor = "pointer";
+        noButton.style.backgroundColor = "#ccc";
+        noButton.style.color = "#000";
+        noButton.style.borderRadius = "5px";
+        noButton.style.transition = "background-color 0.3s ease";
+
+        noButton.onclick = () => {
+            addChatMessage("bot", "Okay! Let me know if you need anything else. 😊");
+        };
+
+        if (data.available) {
+            console.log("✅ Domain is available. Showing message...");
+            updateChatLog(`✅ ${domainInput} is available for registration! Do you want to register this domain?`, 'bot');
+
+            buttonContainer.appendChild(yesButton);
+            buttonContainer.appendChild(noButton);
+            chatLog.appendChild(buttonContainer);
         } else {
-            addChatMessage("bot", `❌ ${domainInput} is already taken. Try another name?`, true, domainInput);
+            console.log("❌ Domain is taken. Showing message...");
+            updateChatLog(`❌ ${domainInput} is already taken. Try another name?`, 'bot');
+
+            const tryAnotherButton = document.createElement("button");
+            tryAnotherButton.innerText = "Try Another Name";
+            tryAnotherButton.style.padding = "8px 12px";
+            tryAnotherButton.style.border = "none";
+            tryAnotherButton.style.cursor = "pointer";
+            tryAnotherButton.style.backgroundColor = "#008CBA";
+            tryAnotherButton.style.color = "white";
+            tryAnotherButton.style.borderRadius = "5px";
+            tryAnotherButton.style.transition = "background-color 0.3s ease";
+
+            tryAnotherButton.onclick = () => {
+                const domainInputField = document.getElementById("check-domain-input");
+                if (domainInputField) {
+                    domainInputField.value = ""; // Clear the input field
+                    domainInputField.focus(); // Refocus for a new search
+                } else {
+                    console.error("❌ 'check-domain-input' NOT found in the DOM!");
+                }
+            };
+            
+            const suggestButton = document.createElement("button");
+            suggestButton.innerText = "Suggest Alternatives";
+            suggestButton.style.padding = "8px 12px";
+            suggestButton.style.border = "none";
+            suggestButton.style.cursor = "pointer";
+            suggestButton.style.backgroundColor = "#ccc";
+            suggestButton.style.color = "#000";
+            suggestButton.style.borderRadius = "5px";
+            suggestButton.style.transition = "background-color 0.3s ease";
+
+            suggestButton.onclick = () => {
+                if (typeof fetchDomainSuggestions === "function") {
+                    fetchDomainSuggestions(domainInput);
+                } else {
+                    console.error("❌ 'fetchDomainSuggestions' function is missing!");
+                }
+            };
+
+            buttonContainer.appendChild(tryAnotherButton);
+            buttonContainer.appendChild(suggestButton);
+            chatLog.appendChild(buttonContainer);
         }
 
     } catch (error) {
-        console.error("Error checking domain availability:", error);
-        addChatMessage("bot", "⚠️ Error checking domain availability. Please try again later.");
+        console.error("❌ Caught an error inside try block:", error);
+        updateChatLog("bot", "⚠️ Error checking domain availability. Please try again later.");
     }
 }
 
@@ -2414,7 +2554,9 @@ function extractActionName(userQuery) {
 
 async function submitDomainQuery() {
     console.log("submitDomainQuery called"); 
-
+    const submitButton = document.getElementById('submitDomainQuery'); // Replace with the actual button ID
+    submitButton.disabled = true; // Disable button
+    setTimeout(() => { submitButton.disabled = false; }, 3000);
     const queryInput = document.getElementById('domain-query-text');
     const queryText = queryInput.value.trim();
 
@@ -2979,6 +3121,7 @@ function goBackToQuerySection() {
   
     // Show the query section
     document.getElementById('login-chat-section').style.display = 'flex';
+    document.getElementById('domain-query-text').value = '';
     console.log("login-chat-section is now visible");
   
     // Hide the other sections
@@ -3124,33 +3267,55 @@ function clearchatlog() {
 }    
 
 function showInfo() {
-      // Check if info box already exists
-      let existingInfoBox = document.getElementById("info-box");
-      if (existingInfoBox) {
+    // Check if info box already exists
+    let existingInfoBox = document.getElementById("info-box");
+    if (existingInfoBox) {
         existingInfoBox.remove(); // Remove existing info box if clicked again
+        document.removeEventListener("click", outsideClickListener);
         return;
-      }
-    
+    }
+
     // Create info box
     let infoBox = document.createElement("div");
     infoBox.id = "info-box";
     infoBox.innerHTML = `
-      <p>This platform provides domain registration, transfer, renewal, management, theft protection, API access, WHMCS integration, reports, payment options, and customer support, including a chatbot for assistance.</p>
-      <button onclick="closeInfo()">OK</button>
+        <p>This platform offers domain management features and customer support, including a chatbot for assistance.</p>
+        <button id="info-close-btn">OK</button>
     `;
 
     // Position the box near the info button
     let header = document.querySelector(".header");
     header.appendChild(infoBox);
+
+    // Close when clicking outside the info box
+    setTimeout(() => {
+        document.addEventListener("click", outsideClickListener);
+    }, 0);
+
+    // Close when clicking the "OK" button
+    document.getElementById("info-close-btn").addEventListener("click", closeInfo);
 }
-    
+
 // Function to close info box
 function closeInfo() {
-      let infoBox = document.getElementById("info-box");
-      if (infoBox) {
+    let infoBox = document.getElementById("info-box");
+    if (infoBox) {
         infoBox.remove();
-      }
+        document.removeEventListener("click", outsideClickListener);
+    }
 }
+
+// Function to close info box when clicking outside of it
+function outsideClickListener(event) {
+    let infoBox = document.getElementById("info-box");
+    let infoButton = document.getElementById("info-button"); // Ensure your button has this ID
+
+    if (infoBox && !infoBox.contains(event.target) && event.target !== infoButton) {
+        closeInfo();
+    }
+}
+
+
 
 if (loadingContainer) {
     loadingContainer.style.display = 'none';  

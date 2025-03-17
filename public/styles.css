@@ -63,7 +63,7 @@ body {
 
 #toggle-sidebar {
   cursor: pointer;
-  background: #1abc9c;
+  background: #3b3b3b;
   color: white;
   padding: 10px;
   font-weight: 600;
@@ -239,7 +239,7 @@ body {
   position: absolute;
   top: 34%;
   left: 19%;
-  width: 40%;
+  width: 65%;
   background: #fff;
   padding: 10px;
   border-radius: 8px;
@@ -2031,18 +2031,16 @@ login-chat-wrapper button:disabled {
 /* Tablets & Small Laptops (768px - 1023px) */
 @media (max-width: 1023px) {
   #chat-container {
-    width: 90vw;
-    height: 80vh;
     display: flex;
+    width: 65vh;
     flex-direction: row; /* Ensure chatbox is next to sidebar */
     border-radius: 15px;
     position: fixed;
-    bottom: 10px;
-    right: 10px;
+    bottom: 90px;
+    right: 15px;
   }
 
   #sidebar {
-    width: 200px;
     height: 100%;
     background: #3b3b3b;
     display: flex;
@@ -2064,14 +2062,13 @@ login-chat-wrapper button:disabled {
 /* Mobile Devices (Below 768px) */
 @media (max-width: 768px) {
   #chat-container {
-    width: 90vw;
-    height: 80vh;
+    width: 50vh;
     display: flex;
     flex-direction: row; /* Ensure chatbox is next to sidebar */
     border-radius: 15px;
     position: fixed;
-    bottom: 10px;
-    right: 10px;
+    bottom: 90px;
+    right: 15px;
   }
 
   #sidebar {
@@ -2099,7 +2096,7 @@ login-chat-wrapper button:disabled {
     width: 92%;
     text-align: center;
     padding: 10px;
-    background: #16a085;
+    background: #3b3b3b;
     color: white;
     font-weight: 600;
     cursor: pointer;
@@ -2117,11 +2114,19 @@ login-chat-wrapper button:disabled {
 /* Extra Small Devices (Below 480px) */
 @media (max-width: 480px) {
   #chat-container {
-    width: 90vw;
-    height: 90vh;
+    width: 44vh;
     border-radius: 5;
   }
-
+  .faq-list li {
+    padding: 8px;
+    background: #066;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: white;
+    font-size: 12px;
+  }
 
   #chatbox {
     width: 100%;
@@ -2129,13 +2134,23 @@ login-chat-wrapper button:disabled {
     display: flex;
     flex-direction: column;
   }
+  #sidebar {
+    width: 30%;
+    height: auto;
+    text-align: center;
+    padding: 10px;
+    display: flex
+;
+    justify-content: space-around;
+    background: #3b3b3b;
+}
 
   /* Show toggle button to open sidebar */
   #toggle-sidebar {
     width: 100%;
     text-align: center;
     padding: 10px;
-    background: #16a085;
+    background: #3b3b3b;
     color: white;
     font-weight: 600;
     cursor: pointer;
