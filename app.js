@@ -130,6 +130,69 @@ const startQuestions = {
   "How do I pay for services after signing up?": "After signing up, you can pay for services directly through the platform's payment portal.",
 };
 
+const regexPatterns = [
+  {
+    pattern: /\b(what|which)\b.*\b(features|capabilities|services|offer|provide)\b.*\b(platform|chatbot|system|site)\b/i,
+    answer: startQuestions["What features does this platform offer?"]
+  },
+  {
+    pattern: /\b(what|which|how|can)\b.*\b(chatbot)\b.*\b(do|capable of|help|assist)\b/i,
+    answer: startQuestions["What can this chatbot do?"]
+  },
+  {
+    pattern: /\b(can|is it possible to|how to|how do I|where can I)\b.*\b(register|buy|purchase|obtain|manage|use)\b.*\b(domain(s)?|TLD(s)?)\b/i,
+    answer: startQuestions["Can I register a domain on this platform?"]
+  },
+  {
+    pattern: /\b(what|how|steps|process|where)\b.*\b(sign up|register|create account|join|get started)\b/i,
+    answer: startQuestions["How do I sign up for this platform?"]
+  },
+  {
+    pattern: /\b(do I|is it|can I|necessary|required|need to)\b.*\b(account|sign up|register)\b.*\b(use|access|features|platform)\b/i,
+    answer: startQuestions["Do I need an account to access all features?"]
+  },
+  {
+    pattern: /\b(how|where|can I|steps to|what is the way to)\b.*\b(search|check|find|lookup)\b.*\b(domain(s)?|availability|good domain name)\b/i,
+    answer: startQuestions["How can I search for a domain name?"]
+  },
+  {
+    pattern: /\b(what|which|how|is it possible to)\b.*\b(details|information|requirements|needed)\b.*\b(register|buy|purchase)\b.*\b(domain(s)?)\b/i,
+    answer: startQuestions["What details are required to register a domain?"]
+  },
+  {
+    pattern: /\b(do you|can I|does this platform)\b.*\b(premium domain(s)?|special domains|exclusive domains|high-value domains|expensive domains)\b/i,
+    answer: startQuestions["Do you support premium domain registration?"]
+  },
+  {
+    pattern: /\b(what|which|how|does this platform|do you)\b.*\b(payment(s)?|pay|methods|options|ways)\b/i,
+    answer: startQuestions["What payment methods are supported?"]
+  },
+  {
+    pattern: /\b(discount(s)?|offers|deals|sign-up bonus|promo code|new user deal|special offer)\b/i,
+    answer: startQuestions["Are there any discounts or offers for new users?"]
+  },
+  {
+    pattern: /\b(can I|how do I|is it possible to)\b.*\b(transfer|move|migrate)\b.*\b(existing domain(s)?|current domain(s)?|domains)\b/i,
+    answer: startQuestions["Can I transfer my existing domains to this platform?"]
+  },
+  {
+    pattern: /\b(how|where|who|can I|contact|get help|support|customer service|assistance)\b/i,
+    answer: startQuestions["contact support"]
+  },
+  {
+    pattern: /\b(demo|trial|walkthrough|tour|presentation|example)\b.*\b(platform|system|service|features|chatbot)\b/i,
+    answer: startQuestions["Can I get a demo of the platform?"]
+  },
+  {
+    pattern: /\b(guide|tutorial|manual|new user guide|instructions|help)\b/i,
+    answer: startQuestions["Is there a guide for new users?"]
+  },
+  {
+    pattern: /\b(api|integration|developer support|automate|programmatic access)\b/i,
+    answer: startQuestions["Does your platform provide an API for domain management?"]
+  }
+];
+
 
 // Helper function to normalize user input
 function normalizeText(text) {
@@ -154,6 +217,12 @@ app.post('/ask-question', (req, res) => {
   // Prioritize exact matches first
   if (normalizedStartQuestions[normalizedUserQuestion]) {
     return res.json({ answer: normalizedStartQuestions[normalizedUserQuestion] });
+  }
+
+  for (const { pattern, answer } of regexPatterns) {
+    if (pattern.test(userQuestion)) {
+      return res.json({ answer });
+    }
   }
 
   const domainKeywords = ["domain", "register", "dns", "transfer", "premium"];
@@ -1200,76 +1269,51 @@ async function getDomainDetails(domainName) {
   }
 }
 
-let pendingRequests = new Map(); // Stores AbortControllers to cancel conflicting requests
-
-async function manageDomainLock(domainName, lock) {
-  console.log(`🔒 [${new Date().toISOString()}] Managing domain lock for ${domainName} - ${lock ? 'Locked' : 'Unlocked'}`);
+async function manageDomainLockStatus(domainName, lock) {
+  console.log(`🔒 Managing domain lock for ${domainName}: ${lock ? 'Locked' : 'Unlocked'}`);
 
   const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails || !domainDetails.domainNameId) {
-      return { success: false, message: `Domain ${domainName} not found.` };
+      return { success: false, message: `❌ Domain ${domainName} not found.` };
   }
 
   const { domainNameId } = domainDetails;
-  let apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
+  const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
 
   console.log(`🌍 Sending API Request: ${apiUrl}`);
 
-  // ✅ Use AbortController to cancel any conflicting requests
-  const controller = new AbortController();
-  const signal = controller.signal;
+  try {
+      const response = await axios.get(apiUrl);
+      console.log('📨 API Response:', response.data);
 
-  if (pendingRequests.has(domainName)) {
-      let prevLockState = pendingRequests.get(domainName).lockState;
-      if (prevLockState !== lock) {
-          console.log(`🚫 Cancelling previous request for ${domainName} (was: ${prevLockState ? 'Locked' : 'Unlocked'}, new: ${lock ? 'Locked' : 'Unlocked'})`);
-          pendingRequests.get(domainName).controller.abort();
-          pendingRequests.delete(domainName);
+      if (response.data.responseMsg?.statusCode === 200) {
+          return { success: true, message: `✅ Domain ${domainName} has been successfully ${lock ? "locked" : "unlocked"}.` };
       }
+
+      return { success: false, message: `⚠️ API Error: ${response.data.responseMsg?.message || "Failed to update domain lock status."}` };
+  } catch (error) {
+      console.error('❌ Error managing domain lock:', error);
+      return { success: false, message: '⚠️ Internal server error while managing domain lock.' };
+  }
+}
+
+// ✅ API Route
+app.get('/api/lock-domain', async (req, res) => {
+  console.log(`📥 Received API request:`, req.query);
+
+  const { domainName, lock } = req.query;
+  if (!domainName || (lock !== "true" && lock !== "false")) {
+      return res.status(400).json({ success: false, message: "⚠️ Missing or invalid parameters: domainName and lock." });
   }
 
-  // Store the request along with the requested lock state
-  pendingRequests.set(domainName, { controller, lockState: lock });
+  const isDomainLocked = lock === 'true';
+  console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked}`);
 
-  return await sendApiRequest(apiUrl, signal);
-}
-
-// ✅ Helper function to send API request with abort support
-async function sendApiRequest(url, signal) {
-    try {
-        const response = await axios.get(url, { signal });
-        console.log('📨 API Response:', response.data);
-        return { success: response.data.responseMsg?.statusCode === 200, message: response.data?.responseMsg?.message || 'Failed to update domain lock.' };
-    } catch (error) {
-        if (axios.isCancel(error)) {
-            console.warn('🚫 API Request Cancelled:', error.message);
-            return { success: false, message: 'API request was cancelled.' };
-        }
-        console.error('❌ Error managing domain lock:', error);
-        return { success: false, message: 'Internal server error while managing domain lock.' };
-    }
-}
-
-app.get('/api/lock-domain', async (req, res) => {
-    console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
-
-    let { domainName, lock } = req.query;
-
-    if (!domainName || lock === undefined) {
-        return res.status(400).json({ success: false, message: "Missing required parameters: domainName and lock." });
-    }
-
-    const isDomainLocked = lock.toLowerCase() === 'true'; // ✅ Convert to boolean
-    console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked} (Type: ${typeof isDomainLocked})`);
-
-    try {
-        // 🚨 Ensure we only call manageDomainLock ONCE per request
-        return res.json(await manageDomainLock(domainName, isDomainLocked));
-    } catch (error) {
-        console.error('❌ API error:', error);
-        return res.status(500).json({ success: false, message: 'Internal server error while updating domain lock.' });
-    }
+  const result = await manageDomainLockStatus(domainName, isDomainLocked);
+  return res.json(result);
 });
+
+
 
 app.get('/api/balance', async (req, res) => {
   if (!req.session || !req.session.email) {
@@ -1327,89 +1371,79 @@ app.get('/api/balance', async (req, res) => {
 
 
 async function manageDomainSuspension(domainName, suspend) {
+  let connection;
   try {
       console.log('[SUSPEND-DOMAIN] 🔍 Checking for domain:', domainName);
 
-      // Extract only the domain name part (removes any prefix like "Suspend/Unsuspend")
-      const domain = domainName.replace(/^(Suspend\/Unsuspend\s+)/, '').trim();
+      // Normalize domain name
+      const domain = domainName.trim().toLowerCase();
+      console.log('[SUSPEND-DOMAIN] ✅ Extracted and Normalized Domain:', domain);
 
-      console.log('[SUSPEND-DOMAIN] ✅ Domain extracted:', domain);
-
-      // Get a connection from the pool
+      // Get database connection
       connection = await pool.getConnection();
 
-      // Fetch domainNameId from DomainName table using websiteName
+      // Fetch domainNameId from database
       const [rows] = await connection.execute(
           "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
           [domain]
       );
 
-      // Check if the domain was found
       if (rows.length === 0) {
           console.error(`❌ Domain ${domain} not found.`);
-          return {
-              success: false,
-              message: `domainNameId not found for the domain ${domain}.`,
-          };
+          return { success: false, message: `domainNameId not found for ${domain}.` };
       }
 
-      // Extract domainNameId
       const domainNameId = rows[0].domainNameId;
-
       console.log('[SUSPEND-DOMAIN] ✅ Fetched domainNameId:', domainNameId);
 
-      // API Call to suspend/unsuspend domain
+      // API URL
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainSuspend?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&isDomainSuspend=${suspend}`;
 
-      // Log the API URL request
-      console.log('[SUSPEND-DOMAIN] 🌐 API Request URL:', apiUrl);
+      console.log('[SUSPEND-DOMAIN] 🌐 Sending API Request:', apiUrl);
 
-      // Send request to suspend/unsuspend domain
+      // Send API request
       const response = await axios.get(apiUrl);
       console.log('[SUSPEND-DOMAIN] 🌐 API Response:', response.data);
 
-      // Check if the response is successful and return appropriate message
-      if (response.data.responseMsg?.statusCode === 200) {
-          const actionText = suspend ? 'suspended' : 'unsuspended';
+      if (response.data?.responseMsg?.statusCode === 200) {
           return {
               success: true,
-              answer: `The domain ${domain} has been successfully ${actionText}.`,
+              answer: `✅ Domain ${domain} has been successfully ${suspend ? 'suspended' : 'unsuspended'}.`,
           };
       } else {
           return {
               success: false,
-              message: response.data.responseMsg?.message || `Failed to ${suspend ? 'suspend' : 'unsuspend'} the domain ${domain}.`,
+              message: response.data?.responseMsg?.message || `Failed to ${suspend ? 'suspend' : 'unsuspend'} ${domain}.`,
           };
       }
 
   } catch (error) {
-      console.error('[SUSPEND-DOMAIN] ❌ Error managing domain suspension:', error.message);
-      return {
-          success: false,
-          message: 'Failed to update domain suspension status.',
-      };
+      console.error('[SUSPEND-DOMAIN] ❌ Error:', error.message || error);
+      return { success: false, message: '⚠️ Failed to update domain suspension status. Please try again later.' };
   } finally {
-      // Release the connection back to the pool
-      if (connection) {
-          connection.release();
-      }
+      if (connection) connection.release();
   }
 }
 
+// ✅ API Route
 app.get('/api/suspend-domain', async (req, res) => {
   const { domainName, suspend } = req.query;
-  console.log('[BACKEND] Received parameters:', { domainName, suspend, type: typeof suspend });
+  console.log('[BACKEND] Received Request:', { domainName, suspend });
 
-  // Ensure suspend is a boolean
-  const isSuspend = suspend === 'true';
+  // Validate domainName
+  if (!domainName) {
+      return res.status(400).json({ success: false, message: "❌ Missing domainName parameter." });
+  }
+
+  // Convert suspend to a proper boolean
+  const isSuspend = String(suspend).toLowerCase() === 'true';
   console.log('[BACKEND] Computed isSuspend:', isSuspend);
 
-  // Call the function to manage domain suspension
+  // Process suspension
   const result = await manageDomainSuspension(domainName, isSuspend);
-
-  // Return the result
   return res.json(result);
 });
+
 //----------------------------------------------------- Privacy Protection Management --------------------------------------------------------//
 
 async function managePrivacyProtection(domainName, enableProtection) {
@@ -1471,27 +1505,23 @@ async function managePrivacyProtection(domainName, enableProtection) {
 
 // ✅ Fixed API Route with More Logs
 app.get('/api/manage-privacy-protection', async (req, res) => {
-  const { domainName, enableProtection } = req.query;
+  const { domainName, enable } = req.query;
 
   console.log('[BACKEND] 🛠 Received API Request with Parameters:', req.query);
-  console.log(`[BACKEND] 🔄 Received enableProtection as: "${enableProtection}" (Type: ${typeof enableProtection})`);
 
   if (!domainName) {
       console.error("[BACKEND] ❌ No domain name received.");
       return res.json({ success: false, message: "Missing domainName parameter." });
   }
 
-  // Ensure enableProtection is properly converted to Boolean
-  const isEnableProtection = enableProtection === 'true';
-  console.log(`[BACKEND] 🔄 Computed enableProtection Boolean: ${isEnableProtection}`);
+  // Convert "enabled"/"disabled" to boolean
+  const isEnableProtection = enable === 'true';
 
   console.log(`[BACKEND] 🚀 Calling managePrivacyProtection() for ${domainName}`);
   const result = await managePrivacyProtection(domainName, isEnableProtection);
 
   return res.json(result);
 });
-
-
 
 // Function to Update Name Servers
 async function updateNameServer(domainName, nameServers) {
@@ -2238,41 +2268,6 @@ if (domainName && (lowerQuery.includes('domain information') || lowerQuery.inclu
   }
 }
 
-if (domainName && (lowerQuery.includes('enable privacy protection') || lowerQuery.includes('disable privacy protection'))) {
-  console.log(`🛡️ [${new Date().toISOString()}] Privacy protection request detected for: ${domainName}`);
-
-  const enable = lowerQuery.includes('enable');
-  const result = await managePrivacyProtection(domainName, enable);
-  return res.json(result);
-}
-
-// Check for Domain Lock/Unlock in Chatbot Queries
-if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().includes('unlock '))) {
-  console.log('[DOMAIN-QUERIES] 🔒 Domain lock/unlock requested for:', domainName);
-
-  const lock = query.toLowerCase().includes('lock');
-  const unlock = query.toLowerCase().includes('unlock');
-
-  if (!lock && !unlock) {
-      return res.json({
-          success: false,
-          answer: 'Please specify whether you want to lock or unlock the domain.',
-      });
-  }
-
-  try {
-      const result = await manageDomainLock(domainName, lock);
-      return res.json(result);
-  } catch (error) {
-      console.error('[DOMAIN-QUERIES] ❌ Error managing domain lock:', error.message);
-      return res.status(500).json({
-          success: false,
-          message: 'Failed to update domain lock status.',
-      });
-  }
-}
-
-
 // ✅ Detect Balance Inquiry
 if (lowerQuery.includes("current balance") || lowerQuery.includes("available funds")) {
   if (!req.session || !req.session.email) {
@@ -2317,13 +2312,6 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
   } finally {
       if (connection) connection.release(); // ✅ Ensure the connection is released
   }
-}
-
-if (domainName && (lowerQuery.includes('suspend ') || lowerQuery.includes('unsuspend '))) {
-  console.log('[DOMAIN-QUERIES] 🚦 Domain suspend/unsuspend requested for:', domainName);
-  const isSuspend = lowerQuery.includes('suspend');
-  const result = await manageDomainSuspension(domainName, isSuspend);
-  return res.json(result);
 }
 
   // Step 3: Check if the query is domain-related using Fuse.js
