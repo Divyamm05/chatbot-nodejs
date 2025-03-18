@@ -1295,7 +1295,6 @@ body {
   display: inline-block;
   width: 100px;
   height: 34px;
-  display: none;
 }
 
 .switch input {
@@ -1315,7 +1314,6 @@ body {
   transition: .4s;
   border-radius: 50px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 0 10px;
 }
@@ -1336,29 +1334,36 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(66px);
+  transform: translateX(60px);
 }
 
 #toggle-text-enable, #toggle-text-disable {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: bold;
   color: black;
-  transition: opacity 0.4s ease-in-out;
-  opacity: 0;  /* Initially hide both texts */
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Hide both texts by default */
+#toggle-text-enable {
+  display: none;
+}
+#toggle-text-disable {
+  display: none;
 }
 
 #theft-protection-toggle-container {
-  display: none;  /* Initially hide the toggle container */
+  display: none;
   justify-content: center;
   align-items: center;
 }
 
-input:checked + .slider #toggle-text-enable {
-  opacity: 1;  /* Show "Enable" when checked */
+input:checked + .slider + #toggle-text-enable {
+  opacity: 1;
 }
 
-input:not(:checked) + .slider #toggle-text-disable {
-  opacity: 1;  /* Show "Disable" when unchecked */
+input:not(:checked) + .slider + #toggle-text-disable {
+  opacity: 1;
 }
 
 /* Domain Renewal Button */

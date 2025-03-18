@@ -610,10 +610,10 @@ let tooltipDate = null;
 function fillChatInputWithPlaceholder(template) {
     const chatInput = document.getElementById('domain-query-text');
     const submitButton = document.getElementById('submitDomainQuery');
-    const toggleContainer = document.getElementById('theft-protection-toggle-container');
-    const lockToggleContainer = document.getElementById('domain-lock-toggle-container');
-    const suspendToggleContainer = document.getElementById('domain-suspend-toggle-container');
-    const privacyContainer = document.getElementById('domain-privacy-toggle-container');
+    const theftDropdown = document.getElementById('theft-protection-dropdown-container');
+    const lockToggle = document.getElementById('domain-lock-dropdown-container');
+    const suspendToggle = document.getElementById('domain-suspend-toggle-container');
+    const privacyToggle = document.getElementById('domain-privacy-dropdown');
 
     chatInput.value = template;
     chatInput.focus();
@@ -628,54 +628,43 @@ function fillChatInputWithPlaceholder(template) {
     }
     console.log("Extracted Action Name:", actionName);
 
-    // Lock toggle
-    const domainMatch = document.getElementById('theft-protection-input');
-    if (domainMatch) {
-        lockToggleContainer.style.display = 'block';
-        submitButton.style.width = '60%';
-        console.log("Lock toggle visible for:", domainMatch[1]);
-        fetchDomainLockStatus(domainMatch[1]);
-    }
+     // Always show submit button
+     submitButton.style.display = 'block';
 
-    if ((/theft protection for (.+)/i.test(template))) {
-        toggleContainer.style.display = 'flex';  // Show the toggle container
-        submitButton.style.width = '60%';  // Adjust the button width if needed
-        console.log("✅ Theft protection toggle should now be visible");
+     if (!lockToggle) {
+        console.error("❌ Lock toggle container not found! Check the HTML ID.");
     } else {
-        toggleContainer.style.display = 'none';  // Hide the toggle container if condition is not met
-        console.log("❌ ERROR: Element #theft-protection-toggle-container not found in the DOM.");
-    }
-    // Privacy protection toggle
-    const privacyMatch = template.match(/privacy protection (\S+)/i);
-    if (privacyMatch) {
-        privacyContainer.style.display = 'flex';
-        submitButton.style.width = '60%';
-        console.log("Privacy toggle visible for:", privacyMatch[1]);
-        fetchPrivacyProtectionStatus(privacyMatch[1]);
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    const chatInput = document.getElementById('domain-query-text');
-    const submitButton = document.getElementById('submitDomainQuery');
-    const toggleContainer = document.getElementById('theft-protection-toggle-container');
-
-    function checkForTheftProtection() {
-        const inputValue = chatInput.value.trim();
-
-        if (inputValue.startsWith("Enable/disable theft protection for ")) {
-            toggleContainer.style.display = 'flex';  // Show toggle
-            submitButton.style.width = '55%';
-            console.log("✅ Theft protection toggle is now visible.");
+        console.log("✅ Lock toggle container found.");
+    
+        // Ensure Lock Dropdown Visibility
+        if (/how do I (lock|unlock)\/?(lock|unlock)? (.+)/i.test(template)) {
+            lockToggle.style.display = 'block';
+            console.log("✅ Domain lock dropdown is now visible.");
         } else {
-            toggleContainer.style.display = 'none'; // Hide if text doesn't match
+            lockToggle.style.display = 'none';
         }
     }
+    
 
-    // Trigger when the user types or pastes something
-    chatInput.addEventListener('input', checkForTheftProtection);
-});
+    if (/privacy protection (.+)/i.test(template)) {
+        privacyToggle.style.display = 'block';
+        console.log("✅ Privacy protection toggle is now visible.");
 
+        // Save template globally to use in submitDomainQuery()
+        window.currentTemplate = template;
+    } else {
+        privacyToggle.style.display = 'none';
+        console.log("❌ No match found, hiding dropdown.");
+    }
+    
+     // Suspend Toggle Visibility
+     if (/suspend domain (.+)/i.test(template)) {
+         suspendToggle.style.display = 'block';
+         console.log("✅ Suspend toggle is now visible.");
+     } else {
+         suspendToggle.style.display = 'none';
+     }
+}
 
 function highlightPlaceholder(inputElement, template, placeholder, tooltipText, tooltipRef) {
     let startPos = template.indexOf(placeholder);
@@ -786,163 +775,40 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-//--------------------------------------------------------- Hide all toggles ---------------------------------------------------------//
- function hidealltoggles() {
-    document.getElementById("theft-protection-toggle-container").style.display = 'none';
-    document.getElementById("domain-lock-toggle-container").style.display = 'none';
-    document.getElementById("domain-suspend-toggle-container").style.display = 'none';
-    document.getElementById("domain-privacy-toggle-container").style.display = 'none';
-    hideTooltips();
- }
-
-function hideexceptthefttoggle(){
-    document.getElementById("domain-lock-toggle-container").style.display = 'none';
-    document.getElementById("domain-suspend-toggle-container").style.display = 'none';
-    document.getElementById("domain-privacy-toggle-container").style.display = 'none';
-    hideTooltips();
- }
-
- function hideexceptlocktoggle(){
-    document.getElementById("domain-suspend-toggle-container").style.display = 'none';
-    document.getElementById("domain-privacy-toggle-container").style.display = 'none';
-    document.getElementById("theft-protection-toggle-container").style.display = 'none';
-    hideTooltips();
- }
-
- function hideexceptprivacytoggle(){
-    document.getElementById("domain-lock-toggle-container").style.display = 'none';
-    document.getElementById("domain-suspend-toggle-container").style.display = 'none';
-    document.getElementById("theft-protection-toggle-container").style.display = 'none';
-    hideTooltips();
- }
-
- function hideexceptsuspendtoggle(){
-    document.getElementById("domain-lock-toggle-container").style.display = 'none';
-    document.getElementById("domain-privacy-toggle-container").style.display = 'none';
-    document.getElementById("theft-protection-toggle-container").style.display = 'none';
-    hideTooltips();
- }
-
 //------------------------------------------------------ Domain Theft Section --------------------------------------------------------//
 
-function showTheftProtectionToggle() {
-    const toggleContainer = document.getElementById('theft-protection-toggle-container');
-    const submitButton = document.getElementById('submitDomainQuery');
-    const toggleElement = document.getElementById('theft-protection-toggle');
+function manageTheftProtection() {
+    const domainName = document.getElementById("theft-protection-domain-name").value;
+    const action = document.getElementById("theft-protection-dropdown").value;
 
-    if (!toggleContainer || !submitButton || !toggleElement) {
-        console.error("❌ Toggle container, toggle element, or submit button not found!");
+    if (!domainName || !action) {
+        updateChatLog("⚠️ Please enter a domain name and select an action.", "bot");
         return;
     }
 
-    console.log("✅ Showing Theft Protection Toggle...");
+    // Convert action to boolean for backend
+    const isEnabled = action === "enabled";
 
-    // ✅ Ensure the toggle starts in an enabled state
-    toggleElement.checked = true;  // Set it ON by default
-    console.log("✅ [INIT] Theft Protection enabled by default.");
+    console.log(`🔒 Managing Theft Protection for ${domainName}: ${isEnabled ? "Enabled" : "Disabled"}`);
 
-    // Create a parent wrapper if not already existing
-    let actionContainer = document.getElementById('action-container');
-    if (!actionContainer) {
-        actionContainer = document.createElement('div');
-        actionContainer.id = 'action-container';
+    // Send API request
+    fetch(`/api/manage-theft-protection?domainName=${domainName}&enable=${isEnabled}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("📩 Full API Response:", data); // ✅ Logs full response
 
-        // Insert before the submit button
-        submitButton.parentNode.insertBefore(actionContainer, submitButton);
-
-        // Move both elements inside
-        actionContainer.appendChild(toggleContainer);
-        actionContainer.appendChild(submitButton);
-    }
-
-    // Apply flex styles directly
-    actionContainer.style.display = 'flex';
-    actionContainer.style.alignItems = 'center';
-    actionContainer.style.gap = '10px'; // Space between elements
-    actionContainer.style.width = '100%'; // Make it full width
-
-    // Ensure toggle container is visible
-    toggleContainer.style.display = 'flex';
-    toggleContainer.style.visibility = 'visible';
-    toggleContainer.style.opacity = '1';
-
-    // Adjust button width to prevent layout breaking
-    submitButton.style.width = '100%';
-
-    console.log("Final computed style:", window.getComputedStyle(toggleContainer).display);
-}
-
-let domainForTheftProtection = null;
-let isTheftProtectionEnabled = true;
-
-window.onload = function() {
-    const checkbox = document.getElementById('theft-protection-toggle');
-    handleTheftProtectionToggle(checkbox);  // To set the initial state correctly
-  };
-
-  function handleTheftProtectionToggle(checkbox) {
-    const enableText = document.getElementById('toggle-text-enable');
-    const disableText = document.getElementById('toggle-text-disable');
-    if (checkbox.checked) {
-      enableText.style.opacity = '1'; // Show "Enable" text
-      disableText.style.opacity = '0'; // Hide "Disable" text
-    } else {
-      enableText.style.opacity = '0'; // Hide "Enable" text
-      disableText.style.opacity = '1'; // Show "Disable" text
-    }
-  }
-
-async function submitTheftProtectionRequest(domain, isTheftProtection = true) {
-    try {
-        console.log(`🚀 [API REQUEST] Sending request for ${domain}. isTheftProtection: ${isTheftProtection}`);
-
-        updateChatLog(`Requesting to ${isTheftProtection ? 'enable' : 'disable'} theft protection for ${domain}...`, 'bot');
-
-        const response = await fetch(`/api/manage-theft-protection?domain=${encodeURIComponent(domain)}&enable=${isTheftProtection}`, {
-            method: 'GET'
+            // Check if API response contains the expected success message
+            if (data.message === "Domain Theif Manage Successfully") {
+                const statusText = isEnabled ? "enabled" : "disabled";
+                updateChatLog(`🔐 Theft Protection for ${domainName} ${statusText} successfully.`, "bot");
+            } else {
+                updateChatLog(data.message, "bot"); // Show other API messages as-is
+            }
+        })
+        .catch(error => {
+            console.error("❌ Error managing theft protection:", error);
+            updateChatLog("⚠️ Unable to update theft protection at this time.", "bot");
         });
-
-        if (!response.ok) throw new Error(`Failed to update theft protection. Status: ${response.status}`);
-
-        const result = await response.json();
-        console.log('📨 [API RESPONSE] Full Response:', JSON.stringify(result, null, 2));
-
-        // ✅ Extract the correct message from response
-        const responseMsg = result?.message || null; // Adjusted to match actual API response
-
-        if (!responseMsg) {
-            console.error("❌ [ERROR] Missing response message in API response:", JSON.stringify(result, null, 2));
-            updateChatLog("⚠️ Unexpected response format. Please try again.", 'bot');
-            return;
-        }
-
-        console.log(`📢 [DEBUG] Extracted response message: ${responseMsg}`);
-
-        let finalMessage = "⚠️ No response message received.";
-
-        if (responseMsg === "Domain Theif Manage Successfully") {
-            finalMessage = isTheftProtection ? "✅ Theft protection enabled successfully." : "✅ Theft protection disabled successfully.";
-        } else if (responseMsg === "Domain Theif Manage Failed") {
-            finalMessage = isTheftProtection ? "⚠️ Theft protection already enabled." : "⚠️ Theft protection already disabled.";
-        }
-
-        console.log(`💬 [CHAT UPDATE] Final message: ${finalMessage}`);
-        updateChatLog(finalMessage, 'bot');
-
-        // 🌟 Reset UI after showing response
-        setTimeout(() => {
-            document.getElementById('domain-query-text').value = '';
-            document.getElementById('theft-protection-toggle').checked = isTheftProtection;
-            document.getElementById('theft-protection-toggle-container').style.display = '';
-            document.getElementById('submitDomainQuery').style.width = '100%';
-
-            console.log("🔄 [UI RESET] Input cleared, toggle updated, styles reset.");
-        });
-
-    } catch (error) {
-        console.error(`❌ [ERROR] While managing theft protection:`, error);
-        updateChatLog('⚠️ An error occurred while updating theft protection. Please try again.', 'bot');
-    }
 }
 
 
@@ -2412,66 +2278,72 @@ function showPrivacyProtectionToggle() {
     console.log("Final computed style:", window.getComputedStyle(toggleContainer).display);
 };
 
-// Store the privacy protection state and domain globally
-let domainForPrivacyProtection = null;
-let isPrivacyProtectionEnabled = true;
+document.getElementById("privacy-select").addEventListener("change", function() {
+    console.log(`[DEBUG] 📌 Updated Privacy Selection: "${this.value}"`);
+});
 
-// Function to handle the toggle switch for privacy protection
-function handlePrivacyProtectionToggle(toggleElement) {
-    let domain = document.getElementById('domain-query-text').value.trim();
-    
-    if (!domain) {
-        updateChatLog('Please enter a valid domain before managing privacy protection.', 'bot');
-        toggleElement.checked = !toggleElement.checked; // Revert toggle
+async function sendPrivacySetting(template) {
+    console.log("[FRONTEND] 🛠 Function sendPrivacySetting() called");
+
+    const privacyMatch = template.match(/^Enable\/disable privacy protection for (.+)/i);
+    if (!privacyMatch) {
+        console.error("[FRONTEND] ❌ Could not extract domain name from:", template);
+        alert("❌ Invalid domain format.");
         return;
     }
 
-    isPrivacyProtectionEnabled = toggleElement.checked;
-    domainForPrivacyProtection = domain;
+    const domainName = privacyMatch[1].trim();
+    console.log(`[FRONTEND] 🌍 Extracted Domain Name: "${domainName}"`);
 
-    console.log('🔒 Privacy Protection toggle updated:', { domainForPrivacyProtection, isPrivacyProtectionEnabled });
-}
+    const privacySelect = document.getElementById("privacy-select");
+    if (!privacySelect) {
+        console.error("[FRONTEND] ❌ Dropdown element not found!");
+        alert("❌ Privacy setting dropdown is missing.");
+        return;
+    }
 
+    // ✅ Get the selected dropdown value
+    const privacyValue = privacySelect.value.trim().toLowerCase();
+    const enableProtection = privacyValue === "enable";
+    
+    console.log(`[FRONTEND] 🔍 Selected Dropdown Value: "${privacyValue}"`);
+    console.log(`[FRONTEND] 🔄 Converted Boolean Value: ${enableProtection}`);
 
-// Function to make the API request for enabling/disabling privacy protection
-async function submitPrivacyProtectionRequest(domain, isPrivacyEnabled) {
     try {
-        console.log(`Submitting privacy protection request for ${domain}. Enable: ${isPrivacyEnabled}`);
+        const url = `/api/manage-privacy-protection?domainName=${encodeURIComponent(domainName)}&enableProtection=${enableProtection}`;
+        console.log(`[FRONTEND] 🚀 Sending API request -> enableProtection: ${enableProtection}, URL: ${url}`);
 
-        const response = await fetch(`/api/privacy-protection?domainName=${encodeURIComponent(domain)}&enable=${isPrivacyEnabled}`, {
-            method: 'GET'
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to update privacy protection status. Status: ${response.status}`);
+        const data = await response.json();
+        console.log("[FRONTEND] 🌐 Server Response:", data);
+
+        if (data.success) {
+            alert(`✅ Privacy protection successfully ${enableProtection ? "enabled" : "disabled"} for ${domainName}`);
+        } else {
+            alert(`❌ Failed to update privacy protection: ${data.message}`);
         }
-
-        const result = await response.json();
-        updateChatLog(result.message || 'Operation completed.', 'bot');
-
-        const togglePrivacyContainer = document.getElementById('privacy-protection-toggle-container');
-        if (togglePrivacyContainer) {
-            togglePrivacyContainer.style.display = 'none';
-        }
-
     } catch (error) {
-        console.error('Error with privacy protection request:', error);
-        updateChatLog('An error occurred while processing your request.', 'bot');
+        console.error("[FRONTEND] ❌ Error sending privacy update:", error);
+        alert("❌ An error occurred while updating privacy protection.");
     }
 }
 
-//----------------------------------------------------- Lock Domain Section --------------------------------------------------------//
 
-function showDomainLockToggle() {
-    const toggleContainer = document.getElementById('domain-lock-toggle-container');
+//----------------------------------------------------- Lock Domain Section --------------------------------------------------------//
+function showDomainLockDropdown() {
+    const dropdownContainer = document.getElementById('domain-lock-dropdown-container');
     const submitButton = document.getElementById('submitDomainQuery');
 
-    if (!toggleContainer || !submitButton) {
-        console.error("❌ Lock toggle container or submit button not found!");
+    if (!dropdownContainer || !submitButton) {
+        console.error("❌ Lock dropdown container or submit button not found!");
         return;
     }
 
-    console.log("✅ Showing Domain Lock Toggle...");
+    console.log("✅ Showing Domain Lock Dropdown...");
 
     // Check if action container exists; if not, create it
     let actionContainer = document.getElementById('action-container');
@@ -2489,50 +2361,79 @@ function showDomainLockToggle() {
         submitButton.parentNode.insertBefore(actionContainer, submitButton);
     }
 
-    // Append elements inside actionContainer
-    actionContainer.appendChild(toggleContainer);
-    actionContainer.appendChild(submitButton);
-
-    // Ensure toggle container is visible
-    toggleContainer.style.display = 'flex';
-    toggleContainer.style.visibility = 'visible';
-    toggleContainer.style.opacity = '1';
-
-    // Set flex properties to align items properly
-    toggleContainer.style.flexShrink = '0'; // Prevent shrinking
-    submitButton.style.flexGrow = '1'; // Allow button to take remaining space
-
-    console.log("Final computed style:", window.getComputedStyle(toggleContainer).display);
-}
-
-let domainToLock = null;
-let isDomainLocked = true;
-
-// Function to handle the toggle switch for domain lock/unlock
-function handleDomainLockToggle(toggleElement) {
-    let domain = document.getElementById('domain-query-text').value.trim();
-
-    // Extract the actual domain name from the input
-    const match = domain.match(/(?:lock|unlock) (\S+)/i);
-    if (match) {
-        domain = match[1]; // Extract the correct domain name
-        console.log(`🔍 Extracted domain: ${domain}`);
+    // Ensure dropdown is only added once
+    if (!actionContainer.contains(dropdownContainer)) {
+        actionContainer.appendChild(dropdownContainer);
+    }
+    if (!actionContainer.contains(submitButton)) {
+        actionContainer.appendChild(submitButton);
     }
 
-    if (!domain) {
-        updateChatLog('❌ Please enter a valid domain before managing domain lock.', 'bot');
-        toggleElement.checked = false; // Reset toggle to avoid confusion
-        console.warn(`⚠️ No valid domain extracted, reverting toggle to: ${toggleElement.checked}`);
+    // Ensure dropdown container is visible
+    dropdownContainer.style.display = 'flex';
+    dropdownContainer.style.visibility = 'visible';
+    dropdownContainer.style.opacity = '1';
+
+    console.log("Final computed style:", window.getComputedStyle(dropdownContainer).display);
+}
+
+// Function to handle domain lock selection from dropdown
+function handleDomainLockDropdown() {
+    let domainInput = document.getElementById('domain-query-text').value.trim();
+    const dropdown = document.getElementById('domain-lock-dropdown');
+
+    if (!dropdown) {
+        console.error("❌ Lock dropdown element not found!");
         return;
     }
 
-    isDomainLocked = toggleElement.checked; 
-    console.log(`🔒 [TOGGLE] Updated isDomainLocked: ${isDomainLocked}`);
+    // Extract only the domain name from the input field
+    const match = domainInput.match(/(?:lock|unlock)\s+(\S+\.\S+)/i);
+    if (match) {
+        domainInput = match[1];  // Extracted domain
+        console.log(`🔍 Extracted domain: ${domainInput}`);
+    } else {
+        console.warn("⚠️ Could not extract a valid domain.");
+        updateChatLog("❌ Please enter a valid domain before managing domain lock.", "bot");
+        return;
+    }
 
-    domainToLock = domain;
+    lockAction = dropdown.value;  // Get selected value (lock/unlock)
+    domainToLock = domainInput;   // ✅ Store the correct domain name
+    console.log(`🔒 [DROPDOWN] Selected action: ${lockAction}, Domain: ${domainToLock}`);
 }
 
-async function submitDomainLockRequest(domain, isDomainLocked) {
+
+document.getElementById('submitDomainQuery').addEventListener('click', () => {
+    if (!domainToLock) {
+        console.warn("⚠️ No valid domain extracted.");
+        updateChatLog('❌ Please enter a valid domain before managing domain lock.', 'bot');
+        return;
+    }
+
+    const dropdown = document.getElementById('domain-lock-dropdown');
+    if (!dropdown) {
+        console.error("❌ Lock dropdown element not found!");
+        return;
+    }
+
+    const lockAction = dropdown.value;
+    console.log(`🔒 [DROPDOWN] Selected action before submit: ${lockAction}, Domain: ${domainToLock}`);
+
+    // Convert "lock"/"unlock" to boolean
+    const isDomainLocked = lockAction === "lock";
+
+    // ✅ Prevent duplicate calls
+    if (submitDomainQuery.disabled) return;
+
+    submitDomainQuery.disabled = true; // Disable button to prevent double-clicks
+    submitDomainQuery.textContent = "Processing...";
+
+    // Call API request function with correct values
+    submitDomainLockRequest(domainToLock, isDomainLocked);
+});
+
+async function submitDomainLockRequest(domain, isDomainLocked) {  // ✅ Now accepts boolean directly
     const submitButton = document.getElementById('submitDomainQuery');
     const inputField = document.getElementById('domain-query-text');
 
@@ -2561,10 +2462,10 @@ async function submitDomainLockRequest(domain, isDomainLocked) {
             inputField.value = "";
         }, 500);
 
-        // ✅ Hide toggle container after successful request
-        const toggleLockContainer = document.getElementById('domain-lock-toggle-container');
-        if (toggleLockContainer) {
-            toggleLockContainer.style.display = 'none';
+        // ✅ Hide dropdown container after successful request
+        const dropdownContainer = document.getElementById('domain-lock-dropdown-container');
+        if (dropdownContainer) {
+            dropdownContainer.style.display = 'none';
         }
 
     } catch (error) {
@@ -2618,6 +2519,7 @@ function extractActionName(userQuery) {
 //------------------------------------------- Submit Domain query after login Section ----------------------------------------------//
 
 async function submitDomainQuery() {
+    const inputElement = document.getElementById("domain-query-text");
     console.log("submitDomainQuery called"); 
     const submitButton = document.getElementById('submitDomainQuery'); // Replace with the actual button ID
     submitButton.disabled = true; // Disable button
@@ -3009,35 +2911,39 @@ if (tldMatch) {
         return;
     }
 
-    const authCodeMatch = queryText.match(/what is the auth code for (.+)/i);
-    if (authCodeMatch) {
-        const domainName = authCodeMatch[1].trim();
+    const authCodeRegex = /(?:what is|give me|get|fetch|show|provide)\s+(?:the\s+)?auth(?:orization)?\s+code\s+(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
 
-        try {
-            console.log('Fetching auth code for:', domainName);
-            const response = await fetch(`/api/domain-auth-code?domain=${encodeURIComponent(domainName)}`);
+const authCodeMatch = queryText.match(authCodeRegex); // 🔥 Match against user input
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data. Status: ${response.status}`);
-            }
+if (authCodeMatch) {
+    const domainName = authCodeMatch[1].trim();
 
-            const data = await response.json();
-            console.log('Auth code response:', data);
+    try {
+        console.log('Fetching auth code for:', domainName);
+        const response = await fetch(`/api/domain-auth-code?domain=${encodeURIComponent(domainName)}`);
 
-            if (data.success) {
-                console.log('Auth Code:', data.authCode);
-                updateChatLog(`Auth Code for ${domainName}: ${data.authCode}`, 'bot');
-            } else {
-                updateChatLog(`${data.message}`, 'bot');
-            }          
-
-        } catch (error) {
-            console.error("Error fetching auth code:", error);
-            updateChatLog("Unable to fetch auth code at this time.", 'bot');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data. Status: ${response.status}`);
         }
 
-        document.getElementById("domain-query-text").value = "";
+        const data = await response.json();
+        console.log('Auth code response:', data);
+
+        if (data.success) {
+            console.log('Auth Code:', data.authCode);
+            updateChatLog(`Auth Code for ${domainName}: ${data.authCode}`, 'bot');
+        } else {
+            updateChatLog(`${data.message}`, 'bot');
+        }          
+
+    } catch (error) {
+        console.error("Error fetching auth code:", error);
+        updateChatLog("Unable to fetch auth code at this time.", 'bot');
     }
+
+    document.getElementById("domain-query-text").value = "";
+}
+
 
     const domainregisterMatch = queryText.match(/when was (.+) domain registered/i);
     if (domainregisterMatch) {
@@ -3109,48 +3015,101 @@ if (balanceMatch) {
     return;
 }
 
-let lastTooltipTime = 0; // Store the last time the tooltip was shown
+const theftProtectionSection = document.getElementById("theft-protection-section"); // Ensure this exists in your HTML
+const theftProtectionDropdown = document.getElementById("theft-protection-dropdown");
+const theftProtectionDomainInput = document.getElementById("theft-protection-domain-name");
 
-const theftregex = /(?:.*\s)?\b(enable|disable)?\s*(?:theft protection)\s*(?:for\s+([\w.-]+))?/i;
-const inputElement = document.getElementById('domain-query-text');
+if (!inputElement) {
+    console.error("❌ Input field not found!");
+} else {
+    const usersInput = inputElement.value.trim();
+    console.log(`📝 User Input: "${usersInput}"`);
 
-if (inputElement) {
-    const userInput = inputElement.value.trim(); // Get user input
-    const theftmatch = userInput.match(theftregex); // Match regex against input
+    // Regex to match "enable/disable theft protection for domain.com"
+    const theftRegex = /(?:^|\s)(enable|disable)(?:\/(enable|disable))?\s+theft\s+protection\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    const theftMatch = usersInput.match(theftRegex);
 
-    if (theftmatch) {  // ✅ Correctly check if the regex found a match
-        const submitButton = document.getElementById('submitDomainQuery');
-        const toggleContainer = document.getElementById('theft-protection-toggle-container');
+    if (theftMatch) {
+        console.log("✅ Theft Protection command detected in input.");
+        
+        const action1 = theftMatch[1];  // "enable" or "disable"
+        const action2 = theftMatch[2] || null; // Optional second action
+        const domain = theftMatch[3];  // Extracted domain
 
-        if (toggleContainer && submitButton) {
-            toggleContainer.style.display = 'flex';
-            submitButton.style.width = '55%';
+        const selectedAction = action2 ? action2 : action1;
+        console.log(`📌 Selected Action: ${selectedAction}`);
 
-            // 🛠 Extract the domain dynamically from user input
-            const domain = theftmatch[2] || "mydomain.com"; // Default if no domain found
-            inputElement.value = `Enable/disable theft protection for ${domain}`;
+        // Set dropdown value based on extracted action
+        theftProtectionDropdown.value = selectedAction.toLowerCase() === "enable" ? "enabled" : "disabled";
 
-            // ⏳ Check if 30 seconds have passed since the last tooltip
-            const now = Date.now();
-            if (now - lastTooltipTime > 30000) {  // 30 seconds = 30000 ms
-                lastTooltipTime = now; // Update last tooltip time
+        // Populate domain input field
+        theftProtectionDomainInput.value = domain;
 
-                if (typeof highlightPlaceholder === "function") {
-                    const tooltipRef = highlightPlaceholder(inputElement, inputElement.value, domain, "Enter your Domain Name");
+        // Show Theft Protection Section
+        theftProtectionSection.style.display = "block";
+        document.getElementById('login-chat-section').style.display = 'none';
+    }
+}
 
-                    // ⏳ Hide tooltip after 5 seconds
-                    setTimeout(() => {
-                        if (tooltipRef) {
-                            tooltipRef.remove();
-                        }
-                    }, 5000);
-                }
-            } else {
-                console.log("⏳ [TOOLTIP] Skipped - Shown within the last 30 seconds.");
-            }
-        } else {
-            console.error("❌ [ERROR] Missing elements: submit button or toggle container.");
+document.getElementById('submitDomainQuery').addEventListener('click', function () {
+    const domainInput = document.getElementById('domain-query-text').value.trim();
+
+    if (!domainInput) {
+        updateChatLog('❌ Please enter a domain name.', 'bot');
+        console.warn("⚠️ No domain name provided.");
+        return;
+    }
+
+    // Determine if the action is related to domain lock/unlock
+    if (/how do I (lock|unlock) (\S+)/i.test(domainInput)) {
+        console.log("🔒 Lock/Unlock domain action detected.");
+
+        // Ensure dropdown is visible
+        showDomainLockDropdown();
+
+        // Get selected value from dropdown
+        handleDomainLockDropdown();
+
+        // Trigger API request with extracted domain and action
+        submitDomainLockRequest(domainToLock, lockAction);
+    } else {
+        updateChatLog("⚠️ No recognized action found in the query.", "bot");
+        console.warn("❌ No valid action detected in the query.");
+    }
+});
+
+if (!inputElement) {
+    console.error("❌ Input field not found!");
+} else {
+    const userInput = inputElement.value.trim();
+    console.log(`📝 User Input: "${userInput}"`);
+
+    // ✅ Extract "Enable/Disable privacy protection for domain.com"
+    const privacyRegex = /\b(enable|disable)\s+privacy\s+protection\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    const privacyMatch = userInput.match(privacyRegex);
+    
+    console.log(`[DEBUG] 🔍 Running Privacy Regex: ${privacyRegex}`);
+    console.log(`[DEBUG] 📌 Regex Match Result:`, privacyMatch);
+    
+    if (privacyMatch) {
+        console.log("✅ Privacy Protection command detected in input.");
+        
+        const action = privacyMatch[1].toLowerCase();  // "enable" or "disable"
+        const domain = privacyMatch[2];  // Extracted domain
+
+        console.log(`📌 Action: ${action}`);
+        console.log(`🌍 Domain: ${domain}`);
+
+        const isEnablePrivacy = action === "enable";
+        console.log(`🔄 Converted Boolean Value: ${isEnablePrivacy}`);
+
+        // 🔥 Prevent duplicate API calls
+        if (!window.apiCallTriggered) {
+            window.apiCallTriggered = true;
+            sendPrivacySetting(domain, isEnablePrivacy); // ✅ Pass extracted values directly
         }
+    } else {
+        console.log("❌ No valid privacy protection command detected.");
     }
 }
 
@@ -3169,7 +3128,7 @@ if (inputElement) {
             submitButton.style.width = '55%';
 
             // 🛠 Extract the domain dynamically from user input
-            const domain = theftmatch[2] || "mydomain.com"; // Default if no domain found
+            const domain = lockmatch[2] || "mydomain.com"; // Default if no domain found
             inputElement.value = `Lock/Unlock ${domain}`;
 
             // ⏳ Check if 30 seconds have passed since the last tooltip
@@ -3178,7 +3137,7 @@ if (inputElement) {
                 lastTooltipTime = now; // Update last tooltip time
 
                 if (typeof highlightPlaceholder === "function") {
-                    const tooltipRef = highlightPlaceholder(inputElement, inputElement.value, domain, "Enter your Domain Name");
+                    //const tooltipRef = highlightPlaceholder(inputElement, inputElement.value, domain, "Enter your Domain Name");
 
                     // ⏳ Hide tooltip after 5 seconds
                     setTimeout(() => {
@@ -3234,19 +3193,6 @@ if (updatechildnamematch) {
     console.log(`Domain Name: ${domainName}`); // Optionally log the extracted domain name
 } else {
     console.log("No match found.");
-}
-
-// Handle domain suspension request if the toggle was changed
-if (domainToSuspend !== null) {
-  await submitDomainSuspendRequest(domainToSuspend, isDomainSuspend);
-  domainToSuspend = null; // Reset after submission
-  return;
-}
-
-if (domainForPrivacyProtection !== null) {
-    await submitPrivacyProtectionRequest(domainForPrivacyProtection, isPrivacyProtectionEnabled);
-    domainForPrivacyProtection = null; // Reset after submission
-    return;
 }
 
     // Fallback to existing backend query handling
@@ -3399,6 +3345,14 @@ document.addEventListener("DOMContentLoaded", function () {
             buttons[currentIndex].focus();  
         }
     });
+});
+
+// Function to handle Enter key press
+document.getElementById("domain-query-text").addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Prevent default form submission behavior
+        submitDomainQuery(); // Call the function
+    }
 });
 
 //-------------------------------------------------- Extra  functions Section ------------------------------------------------------//

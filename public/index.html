@@ -8,10 +8,10 @@
 </head>
 <body>
   
-  <!-- Assistant Icon -->
+<!---------------------------------------------------------- Assistant Icon ---------------------------------------------------------->
   <div id="assistant-logo" onclick="toggleChatbox()">💬</div>
   <div class="background-container">
-    <iframe src="https://www.connectreseller.com/" class="background-website"></iframe>
+    <!-- <iframe src="https://www.connectreseller.com/" class="background-website"></iframe> -->
   <div id="chat-container" style="display: none;">
     <div id="sidebar">
       <button id="toggle-sidebar" onclick="toggleSidebar()">
@@ -69,7 +69,7 @@
     </div>    
     </div>
 
-  <!-- Chatbox -->
+  <!------------------------------------------------------------- Chatbox --------------------------------------------------------------->
   <div id="chatbox" class="minimized">
 
     <div class="header">
@@ -83,26 +83,27 @@
     </div>
     <div class="chat-log" id="chat-log">
       <div class="message bot-message" id="initial-message">Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊</div>
-      <!-- Auth Buttons Container -->
+      
+<!-------------------------------------------------------- Auth Buttons Container -------------------------------------------------------->
       <div id="auth-buttons-container" style="display: none;">
         <a href="https://india.connectreseller.com/signup" target="_blank"><button class="signup-button" onclick="">Sign Up</button></a>
         <button class="login-button" onclick="taketosigninsection()">Login</button>
       </div>
 
-      <!-- Register Buttons Container -->
+<!------------------------------------------------------ Register Buttons Container ------------------------------------------------------>
       <div id="register-buttons-container" style="display: none;">
         <button class="register-button" onclick="goToRegisterDomainSection()">Register a Domain</button>
       </div>
     </div>
 
 
-    <!-- User Input Section -->
+<!---------------------------------------------------------- User Input Section --------------------------------------------------------->
 <div class="chat-input" id="user-input-section">
   <input type="text" id="user-question" placeholder="Ask a question..." autofocus>
   <button id="submit-question" onclick="processUserQuestion()">Ask</button>
 </div>
 
-<!-- Email Section (Initially Hidden) -->
+<!---------------------------------------------------------- Email Section -------------------------------------------------------------->
 <div class="chat-input" id="email-section" style="display: none;">
   <input type="email" id="user-email" placeholder="Enter your email" autofocus>
   <div id="email-buttons">
@@ -111,7 +112,7 @@
   </div>
 </div>
 
-    <!-- OTP Section -->
+<!---------------------------------------------------------- OTP Section ---------------------------------------------------------->
     <div class="chat-input" style="display:none" id="otp-section">
       <input type="text" id="otp-code" placeholder="Enter OTP">
       <button id="verify-otp" onclick="verifyOTP()">Verify</button>
@@ -120,69 +121,105 @@
 
     <div class="chat-input" style="display:none" id="login-chat-section">
       <input type="text" id="domain-query-text" placeholder="Enter your query...">
-
-<!-- Toggle Switch Container -->
-<div id="theft-protection-toggle-container">
-  <div id="theft-protection-wrapper">
-    <label class="switch">
-      <input type="checkbox" id="theft-protection-toggle" checked onchange="handleTheftProtectionToggle(this)">
-      <span class="slider round">
-        <span id="toggle-text-enable">Enable Theft Protection</span> <!-- Text for "Enable" -->
-        <span id="toggle-text-disable">Disable Theft Protection</span> <!-- Text for "Disable" -->
-      </span>
-    </label>
-  </div>
-</div>
-
-<div id="domain-lock-toggle-container" style="display:none; align-items: center; gap: 10px;">
-  <div id="domain-lock-wrapper">
-    <label class="switch">
-      <input type="checkbox" id="domain-lock-toggle" checked onchange="handleDomainLockToggle(this)">
-      <span class="slider round">
-        <span class="slider-text on">Locked</span>
-        <span class="slider-text off">Unlocked</span>
-      </span>
-    </label>
-  </div>
-</div>
-
-<div id="domain-suspend-toggle-container" style="display:none;">
-  <div id="domain-suspend-wrapper">
-    <label class="switch">
-      <input type="checkbox" id="domain-suspend-toggle" checked onchange="handleDomainSuspendToggle(this)">
-      <span class="slider round">
-        <span class="slider-text on" id="slider-text-on">Suspend</span>
-        <span class="slider-text off" id="slider-text-off">Unsuspend</span>
-      </span>
-    </label>
-  </div>
-</div>
-
-<div id="domain-privacy-toggle-container" style="display:none; align-items: center; gap: 10px;">
-  <div id="domain-privacy-wrapper">
-    <label class="switch">
-      <input type="checkbox" id="domain-privacy-toggle" checked onchange="handlePrivacyProtectionToggle(this)">
-      <span class="slider round">
-        <span class="slider-text on">Enable Privacy
-          Protection
-        </span>
-        <span class="slider-text off">Disable Privacy
-          Protection
-        </span>
-      </span>
-    </label>
-  </div>
-</div>
   
-      <button id="submitDomainQuery" onclick="submitDomainQuery()">Submit</button>
+      <!-- Action Container for Dropdown & Submit Button -->
+      <div id="action-container" style="display: flex; align-items: center; gap: 10px; width: 100%;">
+  
+          <!-- Submit Button (Always Visible) -->
+          <button id="submitDomainQuery" onclick="submitDomainQuery()">Submit</button>
+      </div>
+  
       <div id="loading-container" style="display:none;"></div>
   </div>
+  
     
     <div id="suggest-buttons-container" style="display: none;">
       <button class="suggest-button" onclick="showDomainSection()">Get domain name suggestions</button>
     </div>
+
+<!------------------------------------------------------- Theft Protection Section ----------------------------------------------------->
+    <div id="theft-protection-section" class="chat-input" style="display: none;">
+      <div class="domain-registration-wrapper">
+        <div class="input-group">
+          <input type="text" id="theft-protection-domain-name" placeholder="Domain Name" required>
+        </div>
+        <div class="input-group">
+          <select id="theft-protection-dropdown" required>
+            <option value="" disabled selected>Select Action</option>
+            <option value="enabled">Enable Theft Protection</option>
+            <option value="disabled">Disable Theft Protection</option>
+          </select>
+        </div>
     
-    <!-- Domain Availability Section -->
+        <div class="button-group">
+          <button onclick="manageTheftProtection()">Update Theft Protection</button>
+          <button onclick="goBackToQuerySection()">Back</button>
+        </div>
+      </div>
+    </div>
+
+<!-------------------------------------------------------- Privacy Protection Section ---------------------------------------------------->
+<div id="privacy-protection-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+      <div class="input-group">
+          <input type="text" id="privacy-protection-domain-name" placeholder="Domain Name" required>
+      </div>
+      <div class="input-group">
+          <select id="privacy-protection-dropdown" required>
+              <option value="" disabled selected>Select Action</option>
+              <option value="enabled">Enable Privacy Protection</option>
+              <option value="disabled">Disable Privacy Protection</option>
+          </select>
+      </div>
+      <div class="button-group">
+          <button onclick="managePrivacyProtection()">Update Privacy Protection</button>
+          <button onclick="goBackToQuerySection()">Back</button>
+      </div>
+  </div>
+</div>
+
+<!----------------------------------------------------- Domain Lock Section ----------------------------------------------------------->
+<div id="domain-lock-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+      <div class="input-group">
+          <input type="text" id="domain-lock-name" placeholder="Domain Name" required>
+      </div>
+      <div class="input-group">
+          <select id="domain-lock-dropdown" required>
+              <option value="" disabled selected>Select Action</option>
+              <option value="locked">Lock Domain</option>
+              <option value="unlocked">Unlock Domain</option>
+          </select>
+      </div>
+      <div class="button-group">
+          <button onclick="manageDomainLock()">Update Lock Status</button>
+          <button onclick="goBackToQuerySection()">Back</button>
+      </div>
+  </div>
+</div>
+
+<!--------------------------------------------------- Domain Suspension Section --------------------------------------------------------->
+<div id="domain-suspension-section" class="chat-input" style="display: none;">
+  <div class="domain-registration-wrapper">
+      <div class="input-group">
+          <input type="text" id="domain-suspension-name" placeholder="Domain Name" required>
+      </div>
+      <div class="input-group">
+          <select id="domain-suspension-dropdown" required>
+              <option value="" disabled selected>Select Action</option>
+              <option value="suspended">Suspend Domain</option>
+              <option value="unsuspended">Unsuspend Domain</option>
+          </select>
+      </div>
+      <div class="button-group">
+          <button onclick="manageDomainSuspension()">Update Suspension Status</button>
+          <button onclick="goBackToQuerySection()">Back</button>
+      </div>
+  </div>
+</div>
+
+    
+<!----------------------------------------------------- Domain Availability Section ----------------------------------------------------->
     <div class="chat-input" style="display:none" id="domain-availability-section">
         <div id="domain-check-wrapper">
           <input type="text" id="check-domain-input" placeholder="Enter domain to check availability">
@@ -190,7 +227,8 @@
         </div>
         <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
       </div>
-          <!-- Domain Renewal Section -->
+
+<!-------------------------------------------------------- Domain Renewal Section -------------------------------------------------------->
 <div id="domain-renewal-section" class="chat-input" style="display: none;">
   <div class="domain-registration-wrapper">
     <div class="input-group">
@@ -213,7 +251,8 @@
     </div>
   </div>
 </div>
-<!-- Name Server Update Section -->
+
+<!----------------------------------------------------- Name Server Update Section ----------------------------------------------------->
 <div class="name-server-container" id="name-server-container">
   <div id="name-server-update-section" class="chat-input">
       <div class="input-group">
@@ -234,7 +273,7 @@
 </div>
 
 
-<!-- Add Child Name Server Section -->
+<!---------------------------------------------------------- Add Child Name Server Section --------------------------------------->
 <div id="add-child-name-server-section" class="chat-input" style="display: none;">
     
   <div class="input-group">
@@ -257,7 +296,8 @@
 
   <div id="child-ns-status"></div>
 </div>
-<!-- Domain Registration Section (Hidden initially) -->
+
+<!----------------------------------------------- Domain Registration Section --------------------------------------------------------->
 <div id="domain-registration-section" class="chat-input" style="display: none;">
   <div class="domain-registration-wrapper">
     <div class="input-group">
@@ -281,7 +321,7 @@
   </div>
 </div>
 
-<!-- Additional domain settings section (visible post-registration) -->
+<!----------------------------------------------- Additional domain settings section ---------------------------------------------------->
 <div id="additional-settings-section" class="chat-input" style="display: none;">
   <div class="domain-registration-wrapper">
     <div class="input-group">
@@ -357,7 +397,7 @@
   </div>
 </div>
 
-    <!-- Domain Transfer Section-->
+<!---------------------------------------------------------- Domain Transfer Section ---------------------------------------------------->
     <div id="domain-transfer-section" class="chat-input" style="display: none;">
   
       <div class="domain-transfer-wrapper">
@@ -389,19 +429,7 @@
 
     </div>
 
-
-
-    <!-- Domain Options Section after OTP verification -->
-    <div id="domain-options" style="display:none;">
-      <div class="button-container">
-        <button id="get-domain-suggestions-btn" onclick="showDomainSection()" tabindex="0">Get Domain Name Suggestions</button>
-        <button id="more-options-btn" onclick="askMoreOptions()" tabindex="1">More Options</button>
-      </div>
-    </div>
-
-
-
-    <!-- Domain Suggestions Section -->
+<!---------------------------------------------------------- Domain Suggestions Section ------------------------------------------------>
     <div id="domain-options-next" style="display:none;">
       <div class="button-container">
         <button onclick="getMoreSuggestions()">More Suggestions for this Domain</button>
@@ -410,7 +438,8 @@
     </div>
 
 </div>
-  <!-- JavaScript -->
+
+<!---------------------------------------------------------- JavaScript ----------------------------------------------------------------->
   <script src="script.js" defer></script>
 </body>
 </html>

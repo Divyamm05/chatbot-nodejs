@@ -1100,30 +1100,41 @@ app.get('/api/domain-info', async (req, res) => {
 const BASE_URL = "https://api.connectreseller.com/ConnectReseller";
 const API_KEY = process.env.CONNECT_RESELLER_API_KEY;
 async function getDomainDetails(domainName) {
+  if (domainCache.has(domainName)) {
+      console.log(`✅ Using cached details for ${domainName}`);
+      return domainCache.get(domainName);
+  }
+
   let connection;
   try {
       connection = await pool.getConnection();
 
-      // Fetch domainNameId from DomainName table using websiteName
       const [rows] = await connection.execute(
           "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
           [domainName]
       );
 
-      if (rows.length === 0) {
-          console.error(`❌ Domain ${domainName} not found.`);
+      if (rows.length === 0 || !rows[0]?.domainNameId) {
+          console.error(`❌ Domain ${domainName} not found or missing ID.`);
           return null;
       }
 
-      return { domainNameId: rows[0].domainNameId };
+      const domainDetails = { domainNameId: rows[0].domainNameId };
+
+      // 🔥 Store in cache (expires after 10 minutes)
+      domainCache.set(domainName, domainDetails);
+      setTimeout(() => domainCache.delete(domainName), 600000); // 10 min expiration
+
+      return domainDetails;
   } catch (error) {
       console.error('❌ Error fetching domain details from database:', error);
       return null;
   } finally {
-      if (connection) connection.release(); // Release the connection back to the pool
+      if (connection) connection.release();
   }
 }
 
+// Function to manage theft protection
 async function manageTheftProtection(domainName, enable) {
   console.log(`🔐 [${new Date().toISOString()}] Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
 
@@ -1139,35 +1150,39 @@ async function manageTheftProtection(domainName, enable) {
 
   try {
       const response = await axios.get(apiUrl);
-      console.log('📨 API Response:', response.data);
+      console.log('📨 Full API Response:', JSON.stringify(response.data, null, 2));
 
-      return { success: true, message: response.data?.responseMsg?.message || 'Failed to update theft protection.' };
+      return { 
+          success: response.data?.responseMsg?.statusCode === 200, 
+          message: response.data?.responseMsg?.message || 'Failed to update theft protection.'
+      };
   } catch (error) {
       console.error('❌ Error managing theft protection:', error);
       return { success: false, message: 'Internal server error while managing theft protection.' };
   }
 }
 
+// API Route
 app.get('/api/manage-theft-protection', async (req, res) => {
   console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
-  let { domain, enable } = req.query;
-
-  if (!domain || enable === undefined) {
-      return res.status(400).json({ success: false, message: "Missing required parameters: domain and enable." });
+  const { domainName, enable } = req.query;
+  if (!domainName || enable === undefined) {
+      return res.status(400).json({ success: false, message: "Missing required parameters: domainName and enable." });
   }
 
-  const isTheftProtection = enable === 'true';
-  console.log(`🔄 Parsed isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection})`);
+  const isTheftProtection = enable === 'true'; // Convert to boolean
+  console.log(`🔄 Parsed isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection}, Raw: ${enable})`);
 
   try {
-      const result = await manageTheftProtection(domain, isTheftProtection);
-      return res.json(result);
+      const result = await manageTheftProtection(domainName, isTheftProtection);
+      res.json(result);
   } catch (error) {
       console.error('❌ API error:', error);
-      return res.status(500).json({ success: false, message: 'Internal server error while updating theft protection.' });
+      res.status(500).json({ success: false, message: 'Internal server error while updating theft protection.' });
   }
 });
+
 
 async function getDomainDetails(domainName) {
   const connection = await pool.getConnection();
@@ -1185,6 +1200,8 @@ async function getDomainDetails(domainName) {
   }
 }
 
+let pendingRequests = new Map(); // Stores AbortControllers to cancel conflicting requests
+
 async function manageDomainLock(domainName, lock) {
   console.log(`🔒 [${new Date().toISOString()}] Managing domain lock for ${domainName} - ${lock ? 'Locked' : 'Unlocked'}`);
 
@@ -1194,42 +1211,64 @@ async function manageDomainLock(domainName, lock) {
   }
 
   const { domainNameId } = domainDetails;
-  const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
+  let apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainLock?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&isDomainLocked=${lock}`;
 
   console.log(`🌍 Sending API Request: ${apiUrl}`);
 
-  try {
-      const response = await axios.get(apiUrl);
-      console.log('📨 API Response:', response.data);
+  // ✅ Use AbortController to cancel any conflicting requests
+  const controller = new AbortController();
+  const signal = controller.signal;
 
-      return { success: response.data.responseMsg?.statusCode === 200, message: response.data?.responseMsg?.message || 'Failed to update domain lock.' };
-  } catch (error) {
-      console.error('❌ Error managing domain lock:', error);
-      return { success: false, message: 'Internal server error while managing domain lock.' };
+  if (pendingRequests.has(domainName)) {
+      let prevLockState = pendingRequests.get(domainName).lockState;
+      if (prevLockState !== lock) {
+          console.log(`🚫 Cancelling previous request for ${domainName} (was: ${prevLockState ? 'Locked' : 'Unlocked'}, new: ${lock ? 'Locked' : 'Unlocked'})`);
+          pendingRequests.get(domainName).controller.abort();
+          pendingRequests.delete(domainName);
+      }
   }
+
+  // Store the request along with the requested lock state
+  pendingRequests.set(domainName, { controller, lockState: lock });
+
+  return await sendApiRequest(apiUrl, signal);
 }
 
-// 🚀 API Route
+// ✅ Helper function to send API request with abort support
+async function sendApiRequest(url, signal) {
+    try {
+        const response = await axios.get(url, { signal });
+        console.log('📨 API Response:', response.data);
+        return { success: response.data.responseMsg?.statusCode === 200, message: response.data?.responseMsg?.message || 'Failed to update domain lock.' };
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.warn('🚫 API Request Cancelled:', error.message);
+            return { success: false, message: 'API request was cancelled.' };
+        }
+        console.error('❌ Error managing domain lock:', error);
+        return { success: false, message: 'Internal server error while managing domain lock.' };
+    }
+}
+
 app.get('/api/lock-domain', async (req, res) => {
-  console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
+    console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
-  let { domainName, lock } = req.query;
+    let { domainName, lock } = req.query;
 
-  if (!domainName || lock === undefined) {
-      return res.status(400).json({ success: false, message: "Missing required parameters: domainName and lock." });
-  }
+    if (!domainName || lock === undefined) {
+        return res.status(400).json({ success: false, message: "Missing required parameters: domainName and lock." });
+    }
 
-  const isDomainLocked = lock.toLowerCase() === 'true'; // ✅ Proper conversion
+    const isDomainLocked = lock.toLowerCase() === 'true'; // ✅ Convert to boolean
+    console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked} (Type: ${typeof isDomainLocked})`);
 
-  console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked} (Type: ${typeof isDomainLocked})`);
-
-  try {
-      const result = await manageDomainLock(domainName, isDomainLocked);
-      return res.json(result);
-  } catch (error) {
-      console.error('❌ API error:', error);
-      return res.status(500).json({ success: false, message: 'Internal server error while updating domain lock.' });
-  }
+    try {
+        // 🚨 Ensure we only call manageDomainLock ONCE per request
+        return res.json(await manageDomainLock(domainName, isDomainLocked));
+    } catch (error) {
+        console.error('❌ API error:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error while updating domain lock.' });
+    }
 });
 
 app.get('/api/balance', async (req, res) => {
@@ -1374,88 +1413,84 @@ app.get('/api/suspend-domain', async (req, res) => {
 //----------------------------------------------------- Privacy Protection Management --------------------------------------------------------//
 
 async function managePrivacyProtection(domainName, enableProtection) {
+  let connection;
   try {
-      console.log('[PRIVACY-PROTECTION] 🔍 Checking for domain:', domainName);
+      console.log(`[PRIVACY-PROTECTION] 🛠 Function managePrivacyProtection() called for ${domainName}`);
+      console.log(`[PRIVACY-PROTECTION] 🔄 Received enableProtection: ${enableProtection} (Type: ${typeof enableProtection})`);
 
-      // Extract only the domain name part (removes any prefix like "Enable/disable privacy protection for")
-      const domain = domainName.replace(/^Enable\/disable\sprivacy\sprotection\sfor\s+/i, '').trim();
-
+      // Extract domain name
+      const domain = domainName.trim();
       console.log('[PRIVACY-PROTECTION] ✅ Domain extracted:', domain);
 
-      // Proceed with fetching from database
+      // Fetch database connection
       connection = await pool.getConnection();
 
-      // Fetch domainNameId from DomainName table using websiteName
+      // Fetch domainNameId
+      console.log('[PRIVACY-PROTECTION] 🔍 Fetching domainNameId from database...');
       const [rows] = await connection.execute(
           "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
           [domain]
       );
 
-      // Check if the domain was found
       if (rows.length === 0) {
-          console.error(`❌ Domain ${domain} not found.`);
-          return {
-              success: false,
-              message: `domainNameId not found for the domain ${domain}.`,
-          };
+          console.error(`❌ Domain ${domain} not found in the database.`);
+          return { success: false, message: `domainNameId not found for ${domain}.` };
       }
 
-      // Extract domainNameId
       const domainNameId = rows[0].domainNameId;
-
       console.log('[PRIVACY-PROTECTION] ✅ Fetched domainNameId:', domainNameId);
 
-      // API Call to enable/disable privacy protection
-      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManagePrivacyProtection?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&enableProtection=${enableProtection}`;
+      // ✅ Correct API Endpoint
+      const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainPrivacyProtection?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&domainNameId=${domainNameId}&iswhoisprotected=${enableProtection}`;
+      console.log('[PRIVACY-PROTECTION] 🌐 FINAL API Call:', apiUrl);
 
-      // Log the API URL request
-      console.log('[PRIVACY-PROTECTION] 🌐 API Request URL:', apiUrl);
-
-      // Send request to enable/disable privacy protection
+      // API Request
       const response = await axios.get(apiUrl);
       console.log('[PRIVACY-PROTECTION] 🌐 API Response:', response.data);
 
-      // Check if the response is successful and return appropriate message
+      // Handle API response
       if (response.data.responseMsg?.statusCode === 200) {
           const actionText = enableProtection ? 'enabled' : 'disabled';
           return {
               success: true,
-              answer: `Privacy protection for domain ${domain} has been successfully ${actionText}.`,
+              answer: `Privacy protection for ${domain} has been successfully ${actionText}.`,
           };
       } else {
           return {
               success: false,
-              message: response.data.responseMsg?.message || `Failed to ${enableProtection ? 'enable' : 'disable'} privacy protection for the domain ${domain}.`,
+              message: response.data.responseMsg?.message || `Failed to update privacy protection for ${domain}.`,
           };
       }
   } catch (error) {
-      console.error('[PRIVACY-PROTECTION] ❌ Error managing privacy protection:', error.message);
-      return {
-          success: false,
-          message: 'Failed to update privacy protection status.',
-      };
+      console.error('[PRIVACY-PROTECTION] ❌ Error:', error.message);
+      return { success: false, message: 'Failed to update privacy protection status.' };
   } finally {
-      // Release the connection back to the pool
-      if (connection) {
-          connection.release();
-      }
+      if (connection) connection.release();
   }
 }
 
+// ✅ Fixed API Route with More Logs
 app.get('/api/manage-privacy-protection', async (req, res) => {
   const { domainName, enableProtection } = req.query;
-  console.log('[BACKEND] Received parameters:', { domainName, enableProtection, type: typeof enableProtection });
 
-  // Ensure enableProtection is a boolean
+  console.log('[BACKEND] 🛠 Received API Request with Parameters:', req.query);
+  console.log(`[BACKEND] 🔄 Received enableProtection as: "${enableProtection}" (Type: ${typeof enableProtection})`);
+
+  if (!domainName) {
+      console.error("[BACKEND] ❌ No domain name received.");
+      return res.json({ success: false, message: "Missing domainName parameter." });
+  }
+
+  // Ensure enableProtection is properly converted to Boolean
   const isEnableProtection = enableProtection === 'true';
-  console.log('[BACKEND] Computed isEnableProtection:', isEnableProtection);
+  console.log(`[BACKEND] 🔄 Computed enableProtection Boolean: ${isEnableProtection}`);
 
-  // Call the function to manage privacy protection
+  console.log(`[BACKEND] 🚀 Calling managePrivacyProtection() for ${domainName}`);
   const result = await managePrivacyProtection(domainName, isEnableProtection);
 
-  // Return the result
   return res.json(result);
 });
+
 
 
 // Function to Update Name Servers
@@ -2201,15 +2236,6 @@ if (domainName && (lowerQuery.includes('domain information') || lowerQuery.inclu
           message: 'Failed to fetch domain information.'
       });
   }
-}
-
-
-if (domainName && (lowerQuery.includes('enable theft protection') || lowerQuery.includes('disable theft protection'))) {
-  console.log(`🔐 [${new Date().toISOString()}] Theft protection request detected for: ${domainName}`);
-
-  const enable = lowerQuery.includes('enable');
-  const result = await manageTheftProtection(domainName, enable);
-  return res.json(result);
 }
 
 if (domainName && (lowerQuery.includes('enable privacy protection') || lowerQuery.includes('disable privacy protection'))) {
