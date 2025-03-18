@@ -21,7 +21,7 @@ const SESSION_TIMEOUT = 30 * 60 * 1000;
 app.use(session({
   secret: 'your_secret_key',  
   resave: false,              
-  saveUninitialized: true,    
+  saveUninitialized: false,    
   cookie: { secure: false },  
 }));
 
@@ -206,13 +206,6 @@ app.post('/api/check-email', async (req, res) => {
   const normalizedEmail = email.trim().toLowerCase(); // ✅ Always store email in lowercase
   req.session.email = normalizedEmail;
 
-  // ✅ Tester & AI Chatbot Bypass Logic
-  const bypassEmails = ["tester@abc.com", "aichatbot@iwantdemo.com"];
-  if (bypassEmails.includes(normalizedEmail)) {
-    req.session.otpVerified = true; // ✅ Mark as verified without OTP
-    return res.json({ success: true, otpRequired: false });
-  }
-
   try {
     const connection = await pool.getConnection(); // ✅ Get a connection from the pool
     const [users] = await connection.query("SELECT clientId FROM Client WHERE UserName = ?", [normalizedEmail]);
@@ -345,6 +338,19 @@ app.post('/api/verify-otp', async (req, res) => {
       console.error('Error during OTP verification:', error);
       res.status(500).json({ success: false, message: 'Internal server error.' });
   }
+});
+
+app.post('/api/mock-authenticate', (req, res) => {
+  const { email } = req.body;
+
+  if (email === 'aichatbot@iwantdemo.com') {
+      req.session.email = email;
+      req.session.verified = true;  // ✅ Ensures session is marked authenticated
+
+      return res.json({ success: true, message: "User authenticated." });
+  }
+
+  return res.status(401).json({ success: false, message: 'Unauthorized' });
 });
 
 const domainRegistrationService = async (params) => {
@@ -1457,25 +1463,25 @@ async function updateNameServer(domainName, nameServers) {
   try {
       console.log(`[UPDATE-NS] 🔍 Checking domain: ${domainName}`);
 
-      // Fetch domainNameId from Firestore
-      const domainRef = db.collection('DomainName');
-      const domainSnapshot = await domainRef.where('websiteName', '==', domainName).get();
+      // Establish connection to MySQL database
+      const connection = await pool.getConnection();
 
-      if (domainSnapshot.empty) {
+      // Fetch domainNameId from the DomainName table using websiteName (domainName)
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domainName]
+      );
+
+      // Check if domainNameId was found
+      if (rows.length === 0) {
           console.warn(`[UPDATE-NS] ⚠️ No domain found for: ${domainName}`);
           return { success: false, message: `Domain ${domainName} not found.` };
       }
 
-      const domainData = domainSnapshot.docs[0].data();
-      const domainId = domainData?.domainNameId;
-      
-      if (!domainId) {
-          console.warn(`[UPDATE-NS] ⚠️ domainNameId missing for ${domainName}`);
-          return { success: false, message: `Invalid domain ID for ${domainName}.` };
-      }
-
+      const domainId = rows[0].domainNameId;
       console.log(`[UPDATE-NS] ✅ Found domainId: ${domainId}`);
 
+      // Proceed with name server update if valid
       if (!Array.isArray(nameServers) || nameServers.length === 0 || nameServers.length > 13) {
           return { success: false, message: "Invalid number of name servers. You must provide 1 to 13 name servers." };
       }
@@ -1531,21 +1537,27 @@ app.get('/update-name-servers', async (req, res) => {
 
 // 📌 Function to Add Child Name Server (Correct Order)
 async function addChildNameServer(domainName, ipAddress, hostname) {
+  let connection;
   try {
       console.log(`[ADD-CHILD-NS] 🔍 Checking domain: ${domainName}`);
 
-      // Fetch domainNameId from Firestore
-      const domainRef = db.collection('DomainName');
-      const domainSnapshot = await domainRef.where('websiteName', '==', domainName).get();
+      // Establish connection to MySQL database
+      connection = await pool.getConnection();  // No need to use promise().getConnection() since pool is already promise-based
 
-      if (domainSnapshot.empty) {
+      // Fetch domainNameId from the DomainName table using domainName
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domainName]
+      );
+
+      // Check if domainNameId was found
+      if (rows.length === 0) {
           console.warn(`[ADD-CHILD-NS] ⚠️ No domain found for: ${domainName}`);
           return { success: false, message: `Domain ${domainName} not found.` };
       }
 
-      const domainData = domainSnapshot.docs[0].data();
-      const domainNameId = domainData?.domainNameId;
-      
+      const domainNameId = rows[0].domainNameId;
+
       if (!domainNameId) {
           console.warn(`[ADD-CHILD-NS] ⚠️ domainNameId missing for ${domainName}`);
           return { success: false, message: `Invalid domain ID for ${domainName}.` };
@@ -1571,6 +1583,8 @@ async function addChildNameServer(domainName, ipAddress, hostname) {
   } catch (error) {
       console.error(`[ADD-CHILD-NS] ❌ Error:`, error);
       return { success: false, message: "Error processing child name server." };
+  } finally {
+      if (connection) connection.release();  // Ensure connection is released back to the pool
   }
 }
 
@@ -2231,6 +2245,7 @@ if (domainName && (query.toLowerCase().includes('lock ') || query.toLowerCase().
       });
   }
 }
+
 
 // ✅ Detect Balance Inquiry
 if (lowerQuery.includes("current balance") || lowerQuery.includes("available funds")) {

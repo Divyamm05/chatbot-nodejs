@@ -1284,11 +1284,18 @@ body {
   transition: opacity 0.2s ease-out;
 }
 
+#theft-protection-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .switch {
   position: relative;
   display: inline-block;
-  width: 120px;
-  height: 22px;
+  width: 100px;
+  height: 34px;
+  display: none;
 }
 
 .switch input {
@@ -1305,20 +1312,23 @@ body {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 22px;
+  transition: .4s;
+  border-radius: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 16px;
-  width: 16px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.4s;
+  height: 26px;
+  width: 26px;
   border-radius: 50%;
+  left: 4px;
+  background-color: white;
+  transition: .4s;
 }
 
 input:checked + .slider {
@@ -1326,117 +1336,29 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(90px);
+  transform: translateX(66px);
 }
 
-.hidden {
-  opacity: 0;
-  pointer-events: none;
+#toggle-text-enable, #toggle-text-disable {
+  font-size: 10px;
+  font-weight: bold;
+  color: black;
+  transition: opacity 0.4s ease-in-out;
+  opacity: 0;  /* Initially hide both texts */
 }
 
-/* Container styles */
 #theft-protection-toggle-container {
-  display: none; 
-  flex-direction: column; /* Or appropriate layout */
-}
-
-#theft-protection-wrapper {
-  display: flex;
+  display: none;  /* Initially hide the toggle container */
+  justify-content: center;
   align-items: center;
-  justify-content: center; /* Center the slider */
-  flex-direction: column;
-  gap: 5px;
-  width: 100%;
 }
 
-.theft-protection-text{
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
+input:checked + .slider #toggle-text-enable {
+  opacity: 1;  /* Show "Enable" when checked */
 }
 
-/* Toggle Switch Styles */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 120px; /* 150% of 60px */
-  height: 30px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 5px;
-  box-sizing: border-box;
-  font-weight: 600; /* Bold text */
-  color: black; /* Black text color */
-}
-
-/* Circle inside the slider */
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 24px;
-  width: 24px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-
-/* Text inside the slider */
-.slider-text {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  z-index: 1;
-  font-size: 10px; /* Increased font size */
-  font-weight: 600; /* Bold text */
-  color: #232222; /* Black text color */
-}
-
-/* Position the texts correctly */
-.slider-text.on {
-  right: 10px; /* "Enable" text on the right */
-}
-
-.slider-text.off {
-  left: 10px; /* "Disable" text on the left */
-}
-
-/* Checked state */
-input:checked + .slider {
-  background-color: #4caf50;
-}
-
-/* Move the slider circle fully */
-input:checked + .slider:before {
-  transform: translateX(90px); /* Adjusted for 90px width */
-}
-
-/* Hide text when not in the active state */
-input:checked + .slider .off {
-  display: none;
-}
-
-input:not(:checked) + .slider .on {
-  display: none;
+input:not(:checked) + .slider #toggle-text-disable {
+  opacity: 1;  /* Show "Disable" when unchecked */
 }
 
 /* Domain Renewal Button */
@@ -1466,9 +1388,7 @@ input:not(:checked) + .slider .on {
 }
 
 .name-server-container {
-  max-width: 400px;
-  border-radius: 8px;
-  background: #f9f9f9;
+ height: auto;
 }
 
 .input-group {

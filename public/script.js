@@ -54,34 +54,51 @@ function taketosigninsection() {
     }
 }
 
-// Request OTP
 function requestOTP() {
     const email = document.getElementById("user-email").value.trim();
-    if (email == 'aichatbot@iwantdemo.com' ) {
-        clearchatlog();
-        updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
-        const email = document.getElementById('user-email').value.trim();
-        const otpInput = document.getElementById('otp-code');
-        const otp = otpInput ? otpInput.value.trim() : '';
-        const signup= document.getElementById('signup-text');
-        const profileicon= document.getElementById('profile-icon');
-        const login= document.getElementById('login-text');
-        login.style.display = 'none';
-        signup.style.display = 'none';
-        profileicon.style.display = 'none';
-        document.getElementById('sidebar').style.display = 'flex';
-        document.getElementById('email-section').style.display = 'none';
-        document.getElementById('otp-section').style.display = 'none';
-        document.getElementById('login-chat-section').style.display = 'flex';
-        document.getElementById('sidebar-content').style.display = 'none';
-        document.getElementById('faq-post-login').style.display = 'flex'; 
-        isSignedIn = true;
-        localStorage.setItem('isSignedIn', 'true');
-        updateAuthUI();
-        toggleSidebar();
+    
+    if (email === 'aichatbot@iwantdemo.com') {
+        // 🌟 Tell backend that the special user is signed in
+        fetch('/api/mock-authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                clearchatlog();
+                document.getElementById('domain-query-text').value = ''; // Reset the input field
+                updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
+                
+                // Hide login elements
+                document.getElementById('login-text').style.display = 'none';
+                document.getElementById('signup-text').style.display = 'none';
+                document.getElementById('profile-icon').style.display = 'none';
+                document.getElementById('email-section').style.display = 'none';
+                document.getElementById('otp-section').style.display = 'none';
+                document.getElementById('login-chat-section').style.display = 'flex';
+                document.getElementById('sidebar').style.display = 'flex';
+                document.getElementById('sidebar-content').style.display = 'none';
+                document.getElementById('faq-post-login').style.display = 'flex';
+
+                isSignedIn = true;
+                localStorage.setItem('isSignedIn', 'true');
+                updateAuthUI();
+                toggleSidebar();
+            } else {
+                updateChatLog("Authentication failed. Please try again.", 'bot');
+            }
+        })
+        .catch(error => {
+            console.error("Error during authentication:", error);
+            updateChatLog("An error occurred while signing in. Please try again.", 'bot');
+        });
+
         return;
     }
 
+    // Normal authentication flow
     if (!email) {
         updateChatLog('Please enter a valid email address.', 'bot');
         return;
@@ -114,6 +131,7 @@ function requestOTP() {
         updateChatLog('An error occurred while requesting OTP. Please try again.', 'bot');
     });
 }
+
 
 // Resend OTP 
   async function resendOTP() {
@@ -206,7 +224,6 @@ try {
         
 
         updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
-
         updateAuthUI();
     } else {
         console.error("❌ OTP Verification Failed:", data.message);
@@ -458,6 +475,8 @@ function updateChatLog(message, sender) {
       (message.includes("update the name servers") || message.includes("update name servers") || message.includes("Go to your domain management panel, find DNS settings, and update the name servers accordingly."))
   ) {
       addButton("Update Name Servers", "update-button", "name-server-container");
+      document.getElementById("nameserver-container").style.width = "100%";
+      document.getElementById("update-nameserver-button-group").style.width = "100%";
   }
 
   // Renew a domain
@@ -619,13 +638,13 @@ function fillChatInputWithPlaceholder(template) {
     }
 
     if ((/theft protection for (.+)/i.test(template))) {
-        toggleContainer.style.display = 'flex';
-        submitButton.style.width = '60%';
+        toggleContainer.style.display = 'flex';  // Show the toggle container
+        submitButton.style.width = '60%';  // Adjust the button width if needed
         console.log("✅ Theft protection toggle should now be visible");
     } else {
-        console.error("❌ ERROR: Element #theft-protection-toggle-container not found in the DOM.");
+        toggleContainer.style.display = 'none';  // Hide the toggle container if condition is not met
+        console.log("❌ ERROR: Element #theft-protection-toggle-container not found in the DOM.");
     }
-
     // Privacy protection toggle
     const privacyMatch = template.match(/privacy protection (\S+)/i);
     if (privacyMatch) {
@@ -646,7 +665,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (inputValue.startsWith("Enable/disable theft protection for ")) {
             toggleContainer.style.display = 'flex';  // Show toggle
-            submitButton.style.width = '60%';
+            submitButton.style.width = '55%';
             console.log("✅ Theft protection toggle is now visible.");
         } else {
             toggleContainer.style.display = 'none'; // Hide if text doesn't match
@@ -712,24 +731,25 @@ function fillChatInputWithPlaceholderDate(template) {
 function hideTooltips() {
     if (tooltipDomain) {
         tooltipDomain.classList.add("hidden");
+
+        // Delay removal to allow the tooltip to be visible for a bit longer
         setTimeout(() => {
-            tooltipDomain.remove();
-            tooltipDomain = null;
-        }, 200);
+            if (tooltipDomain) {
+                tooltipDomain.remove();
+                tooltipDomain = null;
+            }
+        }, 5000); // Keep tooltip visible for 2 seconds before removing
     }
     if (tooltipDate) {
         tooltipDate.classList.add("hidden");
         setTimeout(() => {
-            tooltipDate.remove();
-            tooltipDate = null;
-        }, 200);
+            if (tooltipDate) {
+                tooltipDate.remove();
+                tooltipDate = null;
+            }
+        }, 2000);
     }
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-    const chatInput = document.getElementById('domain-query-text');
-    chatInput.addEventListener('input', hideTooltips);
-});
 
 function fillChatInputWithPlaceholderCategory(template) {
     const chatInput = document.getElementById('domain-query-text');
@@ -739,6 +759,33 @@ function fillChatInputWithPlaceholderCategory(template) {
     // Highlight "Category" or "DomainName" for user input
     tooltipDomain = highlightPlaceholder(chatInput, template, "Category", "Enter a category.", tooltipDomain);
 }
+document.addEventListener("DOMContentLoaded", function () {
+    const inputElement = document.getElementById('domain-query-text');
+    let tooltipRef = null; // Store tooltip reference
+
+    function hideTooltip() {
+        if (tooltipRef) {
+            tooltipRef.remove();
+            tooltipRef = null;
+        }
+    }
+
+    if (!inputElement) {
+        console.error("❌ [ERROR] Element with ID 'domain-query-text' not found.");
+        return; // Stop execution if input field is missing
+    }
+
+    // Attach event listener to hide tooltip when user types
+    inputElement.addEventListener("input", hideTooltip);
+
+    // Hide tooltip when user clicks anywhere else on the page
+    document.addEventListener("click", function (event) {
+        if (event.target !== inputElement) {
+            hideTooltip();
+        }
+    });
+});
+
 //--------------------------------------------------------- Hide all toggles ---------------------------------------------------------//
  function hidealltoggles() {
     document.getElementById("theft-protection-toggle-container").style.display = 'none';
@@ -781,23 +828,28 @@ function hideexceptthefttoggle(){
 function showTheftProtectionToggle() {
     const toggleContainer = document.getElementById('theft-protection-toggle-container');
     const submitButton = document.getElementById('submitDomainQuery');
+    const toggleElement = document.getElementById('theft-protection-toggle');
 
-    if (!toggleContainer || !submitButton) {
-        console.error("❌ Toggle container or submit button not found!");
+    if (!toggleContainer || !submitButton || !toggleElement) {
+        console.error("❌ Toggle container, toggle element, or submit button not found!");
         return;
     }
 
     console.log("✅ Showing Theft Protection Toggle...");
+
+    // ✅ Ensure the toggle starts in an enabled state
+    toggleElement.checked = true;  // Set it ON by default
+    console.log("✅ [INIT] Theft Protection enabled by default.");
 
     // Create a parent wrapper if not already existing
     let actionContainer = document.getElementById('action-container');
     if (!actionContainer) {
         actionContainer = document.createElement('div');
         actionContainer.id = 'action-container';
-        
+
         // Insert before the submit button
         submitButton.parentNode.insertBefore(actionContainer, submitButton);
-        
+
         // Move both elements inside
         actionContainer.appendChild(toggleContainer);
         actionContainer.appendChild(submitButton);
@@ -818,77 +870,74 @@ function showTheftProtectionToggle() {
     submitButton.style.width = '100%';
 
     console.log("Final computed style:", window.getComputedStyle(toggleContainer).display);
-};
+}
 
 let domainForTheftProtection = null;
 let isTheftProtectionEnabled = true;
 
-function handleTheftProtectionToggle(toggleElement) {
-    let domain = document.getElementById('domain-query-text').value.trim();
+window.onload = function() {
+    const checkbox = document.getElementById('theft-protection-toggle');
+    handleTheftProtectionToggle(checkbox);  // To set the initial state correctly
+  };
 
-    console.log(`🔄 [TOGGLE] Initial state: ${toggleElement.checked}`);
-    isTheftProtectionEnabled = toggleElement.checked;
-    console.log(`🔄 [TOGGLE] Updated isTheftProtectionEnabled: ${isTheftProtectionEnabled}`);
-
-    if (!domain) {
-        updateChatLog('Please enter a valid domain before managing theft protection.', 'bot');
-        toggleElement.checked = !isTheftProtectionEnabled;
-        console.warn(`⚠️ [TOGGLE] No domain entered, reverting toggle to: ${toggleElement.checked}`);
-        return;
+  function handleTheftProtectionToggle(checkbox) {
+    const enableText = document.getElementById('toggle-text-enable');
+    const disableText = document.getElementById('toggle-text-disable');
+    if (checkbox.checked) {
+      enableText.style.opacity = '1'; // Show "Enable" text
+      disableText.style.opacity = '0'; // Hide "Disable" text
+    } else {
+      enableText.style.opacity = '0'; // Hide "Enable" text
+      disableText.style.opacity = '1'; // Show "Disable" text
     }
+  }
 
-    const match = domain.match(/(?:enable|disable) theft protection for (\S+)/i);
-    if (match) {
-        domain = match[1];
-        console.log(`🔍 [TOGGLE] Extracted domain: ${domain}`);
-    }
-
-    console.log('🔒 [TOGGLE] Theft Protection Toggle State:', { domain, isTheftProtectionEnabled });
-
-    domainForTheftProtection = domain;
-}
-
-async function submitTheftProtectionRequest(domain, isEnabled = true) {
+async function submitTheftProtectionRequest(domain, isTheftProtection = true) {
     try {
-        console.log(`🚀 [API REQUEST] Sending request for ${domain}. isEnabled: ${isEnabled}`);
+        console.log(`🚀 [API REQUEST] Sending request for ${domain}. isTheftProtection: ${isTheftProtection}`);
 
-        updateChatLog(`Requesting to ${isEnabled ? 'enable' : 'disable'} theft protection for ${domain}...`, 'bot');
+        updateChatLog(`Requesting to ${isTheftProtection ? 'enable' : 'disable'} theft protection for ${domain}...`, 'bot');
 
-        const response = await fetch(`/api/manage-theft-protection?domain=${encodeURIComponent(domain)}&enable=${isEnabled}`, {
+        const response = await fetch(`/api/manage-theft-protection?domain=${encodeURIComponent(domain)}&enable=${isTheftProtection}`, {
             method: 'GET'
         });
 
         if (!response.ok) throw new Error(`Failed to update theft protection. Status: ${response.status}`);
 
         const result = await response.json();
-        console.log('📨 [API RESPONSE] Received:', result);
+        console.log('📨 [API RESPONSE] Full Response:', JSON.stringify(result, null, 2));
 
-        const toggleElement = document.getElementById('theft-protection-toggle');
-        const domainInput = document.getElementById('domain-query-text');
-        const toggleContainer = document.getElementById('theft-protection-toggle-container');
-        const submitButton = document.getElementById('submitDomainQuery');
+        // ✅ Extract the correct message from response
+        const responseMsg = result?.message || null; // Adjusted to match actual API response
 
-        if (!toggleElement || !domainInput || !toggleContainer || !submitButton) {
-            console.error("❌ [UI ERROR] Missing required elements!");
+        if (!responseMsg) {
+            console.error("❌ [ERROR] Missing response message in API response:", JSON.stringify(result, null, 2));
+            updateChatLog("⚠️ Unexpected response format. Please try again.", 'bot');
             return;
         }
 
-        // ✅ Simplified response message handling
-        const responseMessage = result.message || result.responseMsg?.message || result.responseData?.message || "⚠️ No response message received.";
-        updateChatLog(responseMessage, 'bot');
+        console.log(`📢 [DEBUG] Extracted response message: ${responseMsg}`);
+
+        let finalMessage = "⚠️ No response message received.";
+
+        if (responseMsg === "Domain Theif Manage Successfully") {
+            finalMessage = isTheftProtection ? "✅ Theft protection enabled successfully." : "✅ Theft protection disabled successfully.";
+        } else if (responseMsg === "Domain Theif Manage Failed") {
+            finalMessage = isTheftProtection ? "⚠️ Theft protection already enabled." : "⚠️ Theft protection already disabled.";
+        }
+
+        console.log(`💬 [CHAT UPDATE] Final message: ${finalMessage}`);
+        updateChatLog(finalMessage, 'bot');
 
         // 🌟 Reset UI after showing response
         setTimeout(() => {
-            domainInput.value = '';
-            toggleElement.checked = true;
-            toggleContainer.style.display = '';
-            toggleContainer.removeAttribute('style');
+            document.getElementById('domain-query-text').value = '';
+            document.getElementById('theft-protection-toggle').checked = isTheftProtection;
+            document.getElementById('theft-protection-toggle-container').style.display = '';
+            document.getElementById('submitDomainQuery').style.width = '100%';
 
-            submitButton.style.backgroundColor = '';
-            submitButton.style.width = '100%';
-
-            console.log("🔄 [UI RESET] Input cleared, toggle hidden, styles reset.");
-        }, 2000);
+            console.log("🔄 [UI RESET] Input cleared, toggle updated, styles reset.");
+        });
 
     } catch (error) {
         console.error(`❌ [ERROR] While managing theft protection:`, error);
@@ -1117,6 +1166,15 @@ async function handleCheckDomain() {
 
         noButton.onclick = () => {
             addChatMessage("bot", "Okay! Let me know if you need anything else. 😊");
+            const checkAvailabilitySection = document.getElementById("domain-availability-section");
+            const domainRegistrationSection = document.getElementById("domain-registration-section");
+            const loginChatSection = document.getElementById("login-chat-section");
+            const domainNameInput = document.getElementById("domain-name");
+            const queryInput = document.getElementById('domain-query-text');
+            if (checkAvailabilitySection) checkAvailabilitySection.style.display = "none";
+            if (loginChatSection) loginChatSection.style.display = "flex";
+            if (domainRegistrationSection) loginChatSection.style.display = "none";
+            queryInput.value = ""; // Clear input after processing
         };
 
         if (data.available) {
@@ -1580,6 +1638,7 @@ function confirmRegistration(domainName, duration, isAdditionalVisible) {
 
             document.getElementById('domain-registration-section').style.display = 'none';
             document.getElementById('login-chat-section').style.display = 'flex';
+            document.getElementById('additional-settings-section').style.display = 'none';
         })
         .catch(error => {
             console.error("❗ Unexpected error:", error);
@@ -2045,8 +2104,12 @@ async function updateNameServers() {
 
         if (result.success) {
             showNameServerPopup("Name Servers updated successfully!", true);
+            document.getElementById("name-server-container") = "none";
+            document.getElementById("login-chat-section").style.display = "flex";
         } else {
             showNameServerPopup("Failed to update Name Servers: " + (result.message || "Unknown error."), false);
+            document.getElementById("name-server-container") = "none";
+            document.getElementById("login-chat-section").style.display = "flex";
         }
     } catch (error) {
         console.error("[FRONTEND] ❌ Error:", error);
@@ -2159,6 +2222,8 @@ async function registerChildNameServer() {
                 result.success ? "Child Name Server added successfully!" : "Failed to add Child Name Server.",
                 result.success
             );
+            document.getElementById("add-child-name-server-section").style.display = "none";
+            document.getElementById("login-chat-section").style.height = "flex";
         } catch (error) {
             console.error("[FRONTEND] ❌ Error:", error);
             showChildNSPopup("Error connecting to server.", false);
@@ -3044,29 +3109,131 @@ if (balanceMatch) {
     return;
 }
 
-    // Handle theft protection request only if stored domain exists
-    if (domainForTheftProtection !== null) {
-        // Apply a temporary loading style
-        const button = document.getElementById("submitDomainQuery");
-        button.style.backgroundColor = "#ccc"; // Disable look
-        button.style.cursor = "not-allowed";
-    
-        await submitTheftProtectionRequest(domainForTheftProtection, isTheftProtectionEnabled);
-    
-        // Reset styles after submission
-        button.style.backgroundColor = "#007bff";
-        button.style.cursor = "pointer";
-    
-        domainForTheftProtection = null; // Reset after submission
-        return;
-    }
-    
+let lastTooltipTime = 0; // Store the last time the tooltip was shown
 
-// Handle domain lock/unlock request if the toggle was changed
-if (domainToLock !== null) {
-    await submitDomainLockRequest(domainToLock, isDomainLocked);
-    domainToLock = null; // Reset after submission
-    return;
+const theftregex = /(?:.*\s)?\b(enable|disable)?\s*(?:theft protection)\s*(?:for\s+([\w.-]+))?/i;
+const inputElement = document.getElementById('domain-query-text');
+
+if (inputElement) {
+    const userInput = inputElement.value.trim(); // Get user input
+    const theftmatch = userInput.match(theftregex); // Match regex against input
+
+    if (theftmatch) {  // ✅ Correctly check if the regex found a match
+        const submitButton = document.getElementById('submitDomainQuery');
+        const toggleContainer = document.getElementById('theft-protection-toggle-container');
+
+        if (toggleContainer && submitButton) {
+            toggleContainer.style.display = 'flex';
+            submitButton.style.width = '55%';
+
+            // 🛠 Extract the domain dynamically from user input
+            const domain = theftmatch[2] || "mydomain.com"; // Default if no domain found
+            inputElement.value = `Enable/disable theft protection for ${domain}`;
+
+            // ⏳ Check if 30 seconds have passed since the last tooltip
+            const now = Date.now();
+            if (now - lastTooltipTime > 30000) {  // 30 seconds = 30000 ms
+                lastTooltipTime = now; // Update last tooltip time
+
+                if (typeof highlightPlaceholder === "function") {
+                    const tooltipRef = highlightPlaceholder(inputElement, inputElement.value, domain, "Enter your Domain Name");
+
+                    // ⏳ Hide tooltip after 5 seconds
+                    setTimeout(() => {
+                        if (tooltipRef) {
+                            tooltipRef.remove();
+                        }
+                    }, 5000);
+                }
+            } else {
+                console.log("⏳ [TOOLTIP] Skipped - Shown within the last 30 seconds.");
+            }
+        } else {
+            console.error("❌ [ERROR] Missing elements: submit button or toggle container.");
+        }
+    }
+}
+
+const lockRegex = /(?:.*\s)?\b(lock|unlock)\s*(?:my\s*domain\s*|this\s*domain\s*)?([\w.-]+)/i;
+
+if (inputElement) {
+    const userInput = inputElement.value.trim(); // Get user input
+    const lockmatch = userInput.match(lockRegex); // Match regex against input
+
+    if (lockmatch) {  // ✅ Correctly check if the regex found a match
+        const submitButton = document.getElementById('submitDomainQuery');
+        const locktoggleContainer = document.getElementById('domain-lock-toggle-container');
+
+        if (locktoggleContainer && submitButton) {
+            locktoggleContainer.style.display = 'flex';
+            submitButton.style.width = '55%';
+
+            // 🛠 Extract the domain dynamically from user input
+            const domain = theftmatch[2] || "mydomain.com"; // Default if no domain found
+            inputElement.value = `Lock/Unlock ${domain}`;
+
+            // ⏳ Check if 30 seconds have passed since the last tooltip
+            const now = Date.now();
+            if (now - lastTooltipTime > 30000) {  // 30 seconds = 30000 ms
+                lastTooltipTime = now; // Update last tooltip time
+
+                if (typeof highlightPlaceholder === "function") {
+                    const tooltipRef = highlightPlaceholder(inputElement, inputElement.value, domain, "Enter your Domain Name");
+
+                    // ⏳ Hide tooltip after 5 seconds
+                    setTimeout(() => {
+                        if (tooltipRef) {
+                            tooltipRef.remove();
+                        }
+                    }, 5000);
+                }
+            } else {
+                console.log("⏳ [TOOLTIP] Skipped - Shown within the last 30 seconds.");
+            }
+        } else {
+            console.error("❌ [ERROR] Missing elements: submit button or toggle container.");
+        }
+    }
+}
+
+const updatenameRegex = /(change|update)\s(?:name\s)?servers?\s(for\s([^\s]+))/i;
+const userInput = document.getElementById("domain-query-text").value; // Get value of the input element
+
+const updatenamematch = userInput.match(updatenameRegex);
+
+if (updatenamematch) {
+    const domainName = updatenamematch[3]; // Extracted domain name from the regex match
+
+    // Show the "name-server-container" and hide the "login-chat-section"
+    document.getElementById("name-server-container").style.display = "flex";
+    document.getElementById("login-chat-section").style.display = "none";
+
+    // Set the extracted domain name in the input field
+    document.getElementById("domain-name-input").value = domainName;
+
+    console.log(`Domain Name: ${domainName}`); // Optionally log the extracted domain name
+} else {
+    console.log("No match found.");
+}
+
+const updatechildnameRegex = /(add|update)\schild\s(?:name\s)?server\s(for\s([^\s]+))/i;
+
+const updatechildnamematch = userInput.match(updatechildnameRegex);
+
+if (updatechildnamematch) {
+    const domainName = updatechildnamematch[3]; // Extracted domain name from the regex match
+
+    // Show the "name-server-container" and hide the "login-chat-section"
+    document.getElementById("add-child-name-server-section").style.display = "flex";
+    document.getElementById("chat-log").style.height = "60%";
+    document.getElementById("login-chat-section").style.display = "none";
+
+    // Set the extracted domain name in the input field
+    document.getElementById("child-domain-name").value = domainName;
+
+    console.log(`Domain Name: ${domainName}`); // Optionally log the extracted domain name
+} else {
+    console.log("No match found.");
 }
 
 // Handle domain suspension request if the toggle was changed
@@ -3336,12 +3503,31 @@ function goBackToPreviousSection() {
 }
 
 function goBackTouserinputsection() {
-  document.getElementById('email-section').style.display = 'none';
-  document.getElementById('signup-text').style.display = 'none';
-  document.getElementById('login-text').style.display = 'flex' ; 
-  document.getElementById('user-input-section').style.display = 'flex';
-  document.getElementById('initial-message').style.display = 'flex';  
+    document.getElementById('email-section').style.display = 'none';
+    document.getElementById('signup-text').style.display = 'none';
+    document.getElementById('login-text').style.display = 'flex'; 
+    document.getElementById('user-input-section').style.display = 'flex';
+    document.getElementById('initial-message').style.display = 'flex';  
+    document.getElementById('otp-section').style.display = 'none';
+
+    // Remove direct display style for sidebar to allow toggleSidebar() to work
+    // document.getElementById('sidebar').style.display = 'flex'; // Remove this line
+
+    // Corrected line to loop through all elements with the class "active"
+    const activeElements = document.getElementsByClassName("active");
+    for (let i = 0; i < activeElements.length; i++) {
+      activeElements[i].style.display = 'flex';
+    }
+
+    document.getElementById('faq-post-login').style.display = 'none';
+    clearchatlog();
+    document.getElementById('user-question').value = ''; // Reset the input field
+    updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
+    
+    // Call toggleSidebar to toggle sidebar visibility
+    toggleSidebar();
 }
+  
 
 async function getDomainId(domainName) {
     return 1; // Replace with actual API call if needed

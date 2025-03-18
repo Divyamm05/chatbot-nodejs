@@ -65,7 +65,6 @@
             <li onclick="fillChatInputWithPlaceholderDate('Which domains are getting deleted on dd-mm-yyyy'); hidealltoggles();">Which domains are getting deleted on <em>dd-mm-yyyy</em>?</li>
             <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy'); hidealltoggles();">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
             <li onclick="fillChatInput('How can I download the WHMCS module?'); hidealltoggles();">How can I download the WHMCS module?</li>
-            <li onclick="fillChatInput('How do I pull a domain?'); hidealltoggles();">How do I pull a domain?</li>
         </ul> 
     </div>    
     </div>
@@ -123,15 +122,13 @@
       <input type="text" id="domain-query-text" placeholder="Enter your query...">
 
 <!-- Toggle Switch Container -->
-<div id="theft-protection-toggle-container" style="display: none;">
+<div id="theft-protection-toggle-container">
   <div id="theft-protection-wrapper">
     <label class="switch">
       <input type="checkbox" id="theft-protection-toggle" checked onchange="handleTheftProtectionToggle(this)">
       <span class="slider round">
-        <span class="slider-text on">Theft Protection <br>
-          Enabled</span>
-        <span class="slider-text off">Theft Protection<br>
-          Disabled</span>
+        <span id="toggle-text-enable">Enable Theft Protection</span> <!-- Text for "Enable" -->
+        <span id="toggle-text-disable">Disable Theft Protection</span> <!-- Text for "Disable" -->
       </span>
     </label>
   </div>
@@ -227,7 +224,7 @@
               <input type="text" id="nameserver1" placeholder="Enter Name Server 1" required>
           </div>
       </div>
-      <div class="button-group-name">
+      <div class="button-group-name" id="update-nameserver-button-group">
           <button onclick="addNameServerInput()">➕ Add Name Server</button>
           <button onclick="updateNameServers()">Update Name Servers</button>
           <button onclick="goBackToQuerySection()">Back</button>
@@ -254,7 +251,7 @@
   <!-- Buttons -->
   <div class="button-group-child">
       <button onclick="addChildNameServerInput()">➕ Add Child Name Server</button>
-      <button onclick="registerChildNameServer()">Register Child Name Server</button>
+      <button onclick="registerChildNameServer()">Register</button>
       <button onclick="goBackToQuerySection()">Back</button>
   </div>
 
