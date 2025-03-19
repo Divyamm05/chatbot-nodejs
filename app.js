@@ -124,6 +124,7 @@ const startQuestions = {
   "How can I get more details about the API?": "You can find all the details, including endpoints, integration guidelines, and examples, in our API documentation: <br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
   "contact support": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; background: #007fff; color: white; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
   "How can I contact support?": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 8px; background: #007fff; color: white; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
+  "How can I login?" : "To get additional services click on the login/signup button below and manage your domains seamlessly.",
   "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" style="color: white; font-weight: bold; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
   "Is there a guide for new users?": "Yes! Signing up with us gives you access to a helpful onboarding guide, along with the latest offers on our extensive selection of TLDs.",
   "What payment methods are supported?": "We support multiple payment gateways, offering flexibility for your transactions. Additionally, we also accept offline payment methods, including cheques, for your convenience.",
@@ -132,51 +133,43 @@ const startQuestions = {
 
 const regexPatterns = [
   {
-    pattern: /\b(what|which)\b.*\b(features|capabilities|services|offer|provide)\b.*\b(platform|chatbot|system|site)\b/i,
+    pattern: /\b(features|capabilities|services|offer|provide|assist|capable of)\b/i,
     answer: startQuestions["What features does this platform offer?"]
   },
   {
-    pattern: /\b(what|which|how|can)\b.*\b(chatbot)\b.*\b(do|capable of|help|assist)\b/i,
-    answer: startQuestions["What can this chatbot do?"]
-  },
-  {
-    pattern: /\b(can|is it possible to|how to|how do I|where can I)\b.*\b(register|buy|purchase|obtain|manage|use)\b.*\b(domain(s)?|TLD(s)?)\b/i,
+    pattern: /\b(register|buy|purchase|obtain|manage|use)\b/i,
     answer: startQuestions["Can I register a domain on this platform?"]
   },
   {
-    pattern: /\b(what|how|steps|process|where)\b.*\b(sign up|register|create account|join|get started)\b/i,
+    pattern: /\b(sign up|create account|join|get started)\b/i,
     answer: startQuestions["How do I sign up for this platform?"]
   },
   {
-    pattern: /\b(do I|is it|can I|necessary|required|need to)\b.*\b(account|sign up|register)\b.*\b(use|access|features|platform)\b/i,
+    pattern: /\b(do I|is it|can I|necessary|required|need to)\b.*\b(account|sign up)\b.*\b(use|access|features|platform)\b/i,
     answer: startQuestions["Do I need an account to access all features?"]
   },
   {
-    pattern: /\b(how|where|can I|steps to|what is the way to)\b.*\b(search|check|find|lookup)\b.*\b(domain(s)?|availability|good domain name)\b/i,
+    pattern: /\b(search|check|find|lookup)\b.*\b(domain(s)?|availability|good domain name)\b/i,
     answer: startQuestions["How can I search for a domain name?"]
   },
   {
-    pattern: /\b(what|which|how|is it possible to)\b.*\b(details|information|requirements|needed)\b.*\b(register|buy|purchase)\b.*\b(domain(s)?)\b/i,
-    answer: startQuestions["What details are required to register a domain?"]
+    pattern: /\b(details|information|requirements|needed)\b.*?\b(register|buy|purchase)\b.*?\b(domain(s)?)\b/i,
+    answer: startQuestions["  "]
   },
   {
-    pattern: /\b(do you|can I|does this platform)\b.*\b(premium domain(s)?|special domains|exclusive domains|high-value domains|expensive domains)\b/i,
+    pattern: /\b(premium domain(s)?|special domains|exclusive domains|high-value domains|expensive domains)\b/i,
     answer: startQuestions["Do you support premium domain registration?"]
   },
   {
-    pattern: /\b(what|which|how|does this platform|do you)\b.*\b(payment(s)?|pay|methods|options|ways)\b/i,
+    pattern: /\b(payment(s)?|pay|methods|options|ways)\b/i,
     answer: startQuestions["What payment methods are supported?"]
   },
   {
-    pattern: /\b(discount(s)?|offers|deals|sign-up bonus|promo code|new user deal|special offer)\b/i,
-    answer: startQuestions["Are there any discounts or offers for new users?"]
-  },
-  {
-    pattern: /\b(can I|how do I|is it possible to)\b.*\b(transfer|move|migrate)\b.*\b(existing domain(s)?|current domain(s)?|domains)\b/i,
+    pattern: /\b(transfer|move|migrate)\b.*\b(domain(s)?)\b/i,
     answer: startQuestions["Can I transfer my existing domains to this platform?"]
   },
   {
-    pattern: /\b(how|where|who|can I|contact|get help|support|customer service|assistance)\b/i,
+    pattern: /\b(contact|get help|support|customer service|assistance)\b/i,
     answer: startQuestions["contact support"]
   },
   {
@@ -190,6 +183,10 @@ const regexPatterns = [
   {
     pattern: /\b(api|integration|developer support|automate|programmatic access)\b/i,
     answer: startQuestions["Does your platform provide an API for domain management?"]
+  },
+  {
+    pattern: /\b(log(ging)?\s?in|sign(ing)?\s?(up|in)|register|create account|join|get started|access account|log into|how to log in|how to sign up)\b/i,
+    answer: startQuestions["How can I login?"]
   }
 ];
 
@@ -1204,12 +1201,15 @@ async function getDomainDetails(domainName) {
 }
 
 // Function to manage theft protection
+// Function to manage theft protection
 async function manageTheftProtection(domainName, enable) {
   console.log(`🔐 [${new Date().toISOString()}] Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
 
   const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails || !domainDetails.domainNameId) {
-      return { success: false, message: `Domain ${domainName} not found.` };
+      const response = { success: false, message: `Domain ${domainName} not found.` };
+      console.log('🚫 Sending response to frontend:', response);
+      return response;
   }
 
   const { domainNameId } = domainDetails;
@@ -1221,13 +1221,25 @@ async function manageTheftProtection(domainName, enable) {
       const response = await axios.get(apiUrl);
       console.log('📨 Full API Response:', JSON.stringify(response.data, null, 2));
 
-      return { 
-          success: response.data?.responseMsg?.statusCode === 200, 
-          message: response.data?.responseMsg?.message || 'Failed to update theft protection.'
+      const isSuccess = response.data?.responseMsg?.statusCode === 200;
+      const result = {
+          success: isSuccess,
+          message: response.data?.responseMsg?.message || 'Failed to update theft protection.',
+          ...(isSuccess ? {} : { fullResponse: response.data }) // Include full response only if failure
       };
+
+      console.log('✅ Sending response to frontend:', result);
+      return result;
   } catch (error) {
       console.error('❌ Error managing theft protection:', error);
-      return { success: false, message: 'Internal server error while managing theft protection.' };
+      const errorResponse = { 
+          success: false, 
+          message: 'Internal server error while managing theft protection.', 
+          errorDetails: error 
+      };
+
+      console.log('🚫 Sending error response to frontend:', errorResponse);
+      return errorResponse;
   }
 }
 
@@ -1237,7 +1249,9 @@ app.get('/api/manage-theft-protection', async (req, res) => {
 
   const { domainName, enable } = req.query;
   if (!domainName || enable === undefined) {
-      return res.status(400).json({ success: false, message: "Missing required parameters: domainName and enable." });
+      const errorResponse = { success: false, message: "Missing required parameters: domainName and enable." };
+      console.log('🚫 Sending response to frontend:', errorResponse);
+      return res.status(400).json(errorResponse);
   }
 
   const isTheftProtection = enable === 'true'; // Convert to boolean
@@ -1245,10 +1259,18 @@ app.get('/api/manage-theft-protection', async (req, res) => {
 
   try {
       const result = await manageTheftProtection(domainName, isTheftProtection);
+      console.log('📤 Final Response to Frontend:', result);
       res.json(result);
   } catch (error) {
       console.error('❌ API error:', error);
-      res.status(500).json({ success: false, message: 'Internal server error while updating theft protection.' });
+      const errorResponse = { 
+          success: false, 
+          message: 'Internal server error while updating theft protection.', 
+          errorDetails: error 
+      };
+
+      console.log('🚫 Sending error response to frontend:', errorResponse);
+      res.status(500).json(errorResponse);
   }
 });
 

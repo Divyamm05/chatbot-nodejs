@@ -69,7 +69,7 @@ function requestOTP() {
             if (data.success) {
                 clearchatlog();
                 document.getElementById('domain-query-text').value = ''; // Reset the input field
-                updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
+                updateChatLog("Thank you for signing in 😊. You're all set to explore our 🚀 advanced features, including domain registration, renewal, transfer, and so much more. ", 'bot');
                 
                 // Hide login elements
                 document.getElementById('login-text').style.display = 'none';
@@ -223,7 +223,7 @@ try {
         document.getElementById('sidebar').style.display = 'none';
         
 
-        updateChatLog("Thank you for signing in! You're all set to explore our advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
+        updateChatLog("Thank you for signing in 😊. You're all set to explore our 🚀 advanced features, including domain registration, renewal, transfer, and so much more. ", 'bot');
         updateAuthUI();
     } else {
         console.error("❌ OTP Verification Failed:", data.message);
@@ -586,7 +586,8 @@ function checkBotResponse(response) {
       "Yes, you can register and manage domain names on this platform. SignUp/LogIn to access all features.",
       "Yes, an account is required for some advanced features.",
       "To create an account, click the Sign Up button and provide your basic details. If you are already registered, simply log in.",
-      "Yes, we offer a comprehensive API for domain management. Signup/Login to access all features."
+      "Yes, we offer a comprehensive API for domain management. Signup/Login to access all features.",
+      "To get additional services click on the login/signup button below and manage your domains seamlessly."
   ];
 
   scrollToBottom();
@@ -763,29 +764,44 @@ function manageTheftProtection() {
     const isEnabled = action === "enabled";
 
     console.log(`🔒 Managing Theft Protection for ${domainName}: ${isEnabled ? "Enabled" : "Disabled"}`);
-
+    disableChat();
     // Send API request
     fetch(`/api/manage-theft-protection?domainName=${domainName}&enable=${isEnabled}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("📩 Full API Response:", data); // ✅ Logs full response
+    .then(response => response.json())
+    .then(data => {
+        console.log("📩 Full API Response:", data); // ✅ Logs full response
 
-            // Check if API response contains the expected success message
-            if (data.message === "Domain Theif Manage Successfully") {
-                const statusText = isEnabled ? "enabled" : "disabled";
-                updateChatLog(`🔐 Theft Protection for ${domainName} ${statusText} successfully.`, "bot");
-            } else {
-                updateChatLog(data.message, "bot"); // Show other API messages as-is
-            }
-            document.getElementById('theft-protection-section').style.display = "none";
-            document.getElementById('login-chat-section').style.display = "flex";
-            document.getElementById('domain-query-text').value = "";
+        // Check if Theft Protection is already in the requested state
+        if (data.fullResponse?.responseMsg?.message === "Domain Theif Manage Failed" &&
+            data.fullResponse?.responseData?.message === "Theif protection failed") {
 
-        })
-        .catch(error => {
-            console.error("❌ Error managing theft protection:", error);
-            updateChatLog("⚠️ Unable to update theft protection at this time.", "bot");
-        });
+            const statusText = isEnabled ? "already enabled" : "already disabled";
+            updateChatLog(`⚠️ Theft Protection is ${statusText} for ${domainName}.`, "bot");
+        } 
+        // If request was successful
+        else if (data.success) {
+            const statusText = isEnabled ? "enabled" : "disabled";
+            updateChatLog(`🔐 Theft Protection for ${domainName} ${statusText} successfully.`, "bot");
+        } 
+        // For any other failure, show responseData.message
+        else {
+            updateChatLog(`⚠️ ${data.fullResponse?.responseData?.message || "An unexpected error occurred."}`, "bot");
+        }
+
+    })
+    .catch(error => {
+        console.error("❌ Error managing theft protection:", error);
+        updateChatLog("⚠️ Unable to update theft protection at this time.", "bot");
+    })
+    .finally(() => {
+        // Re-enable chat after request is complete
+        enableChat();
+
+        // Hide section & reset input
+        document.getElementById('theft-protection-section').style.display = "none";
+        document.getElementById('login-chat-section').style.display = "flex";
+        document.getElementById('domain-query-text').value = "";
+    });
 }
 
 
@@ -1131,7 +1147,12 @@ function addChatMessage(sender, message, showButtons = false, domainInput = "") 
         noButton.style.borderRadius = "5px";
         noButton.style.transition = "background-color 0.3s ease";
 
-        noButton.onclick = () => addChatMessage("bot", "Okay! Let me know if you need anything else. 😊");
+        noButton.onclick = () => { addChatMessage("bot", "Okay! Let me know if you need anything else. 😊");
+            document.getElementById("domain-availability-section").style.display= "none";
+            document.getElementById("domain-registration-section").style.display = 'none';
+            document.getElementById("login-chat-section").style.display = 'flex';
+            document.getElementById("login-chat-section").value = '';
+        }
 
         buttonContainer.appendChild(yesButton);
         buttonContainer.appendChild(noButton);
@@ -1324,6 +1345,7 @@ async function registerDomain() {
         const price = data.registrationFee;
 
         // 📝 Create confirmation box
+        const chatContainer = document.getElementById('chat-container');
         const confirmationBox = document.createElement('div');
         confirmationBox.className = 'chat-confirmation-box';
 
@@ -1411,6 +1433,7 @@ function confirmRegistration(domainName, duration, isAdditionalVisible) {
 
             document.getElementById('domain-registration-section').style.display = 'none';
             document.getElementById('login-chat-section').style.display = 'flex';
+            document.getElementById('domain-query-text').value = '';
             document.getElementById('additional-settings-section').style.display = 'none';
         })
         .catch(error => {
@@ -1445,9 +1468,8 @@ function enableChat() {
 const style = document.createElement('style');
 style.textContent = `
 .chat-confirmation-box {
-    position: absolute;
-    left: 72%;
-    width: 22%;
+    position: relative;
+    left: 28%;
     background-color: #2d2d2d;
     color: white;
     padding: 20px;
@@ -1598,6 +1620,7 @@ async function confirmDomainTransfer(domainName, authCode, isWhoisProtection) {
 
         document.getElementById('domain-transfer-section').style.display = 'none';
         document.getElementById('login-chat-section').style.display = 'flex';
+        document.getElementById('domain-query-text').value = '';
 
     } catch (error) {
         console.error('❗ Unexpected error during domain transfer:', error);
@@ -1710,20 +1733,6 @@ function closeConfirmationBox() {
     }
     enableChat();
     document.getElementById('login-chat-section').value = '';
-}
-
-
-//----------------------------------------- Extract action from api documentation section ---------------------------------------------//
-
-async function getAPIDetails(userQuery, actionName) {
-    const response = await fetch('/api/get-api-details', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userQuery, action: actionName }) // Send both query & action
-    });
-
-    const data = await response.json();
-    updateChatLog(data.answer, 'bot'); // Display response in chatbot
 }
 
 //---------------------------------------- Question to answers before verification Section --------------------------------------------//
@@ -2234,10 +2243,15 @@ async function submitDomainQuery() {
           return;
       }
     
-      const match = queryText.match(/\b(?:register|i want to register|how can i register|can you register(?: my domain)?)\b.*?\b([\w-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b/i);
+      const match = queryText.match(/\b(?:register|i want to register|how can i register|can you register(?: my domain)?)\b.*?\b([\w-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i);
+
       if (match) {
           const domainName = match[1]; // Extracted domain name
+          const duration = match[2] ? parseInt(match[2], 10) : null; // Extracted duration (if present)
+      
           console.log("Matched domain for registration:", domainName);
+          console.log("Matched duration:", duration);
+      
           updateChatLog("Before registering the domain, check its availability by clicking the 'Check Availability' button.", 'bot');
       
           // Show the domain availability section & hide the login section
@@ -2247,23 +2261,39 @@ async function submitDomainQuery() {
       
           // Prefill the domain input field
           document.getElementById("check-domain-input").value = domainName;
+      
+          // Auto-select duration in dropdown if it's valid (1,2,3,5,10)
+          const validDurations = [1, 2, 3, 5, 10];
+          if (duration && validDurations.includes(duration)) {
+              document.getElementById("duration").value = duration;
+          }
       }      
       
-      const renewMatch = queryText.match(/\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\s+([\w-]+\.[a-z]{2,})\b/i);
+      const renewMatch = queryText.match(/\b([\w-]+\.[a-z]{2,})\b.*?\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i);
 
-     
-    if (renewMatch) {
-        const domainName = renewMatch[1]; // Extracted domain name
-        console.log("Matched domain for renewal:", domainName);
-        updateChatLog("Enter duration and click renew button to renew your domain seamlessly.",'bot');
-        // Show the renewal section & hide login section
-        document.getElementById('login-chat-section').value = '';
-        document.getElementById("domain-renewal-section").style.display = "block";
-        document.getElementById("login-chat-section").style.display = "none";
-
-        // Prefill the domain input field
-        document.getElementById("renew-domain-name").value = domainName;
-    }
+      if (renewMatch) {
+          const domainName = renewMatch[1]; // Extracted domain name
+          const duration = renewMatch[2] ? parseInt(renewMatch[2], 10) : null; // Extracted duration (if present)
+      
+          console.log("Matched domain for renewal:", domainName);
+          console.log("Matched duration:", duration);
+      
+          updateChatLog("Enter duration and click renew button to renew your domain seamlessly.", 'bot');
+      
+          // Show the renewal section & hide login section
+          document.getElementById('login-chat-section').value = '';
+          document.getElementById("domain-renewal-section").style.display = "block";
+          document.getElementById("login-chat-section").style.display = "none";
+      
+          // Prefill the domain input field
+          document.getElementById("renew-domain-name").value = domainName;
+      
+          // Auto-select duration in dropdown if it's valid (1,2,3,5,10)
+          const validDurations = [1, 2, 3, 5, 10];
+          if (duration && validDurations.includes(duration)) {
+              document.getElementById("renew-duration").value = duration;
+          }
+      }      
 
     const transferMatch = queryText.match(/\btransfer\s+([a-zA-Z0-9-]+\.[a-z]{2,})/i);
     if (transferMatch) {
@@ -2663,7 +2693,7 @@ if (balanceMatch) {
     return;
 }
 
-const theftProtectionSection = document.getElementById("theft-protection-section"); // Ensure this exists in your HTML
+const theftProtectionSection = document.getElementById("theft-protection-section");
 const theftProtectionDropdown = document.getElementById("theft-protection-dropdown");
 const theftProtectionDomainInput = document.getElementById("theft-protection-domain-name");
 
@@ -2673,31 +2703,43 @@ if (!inputElement) {
     const usersInput = inputElement.value.trim();
     console.log(`📝 User Input: "${usersInput}"`);
 
-    // Regex to match "enable/disable theft protection for domain.com"
-    const theftRegex = /(?:^|\s)(enable|disable)(?:\/(enable|disable))?\s+theft\s+protection\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    // Updated Regex: Supports "theft" or "thief", handles repetition, flexible ordering
+    const theftRegex = /\b(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*\/?(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*(?:theft\s*protection|thief\s*protection)(?:,\s*theft\s*protection)?\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
     const theftMatch = usersInput.match(theftRegex);
 
     if (theftMatch) {
         console.log("✅ Theft Protection command detected in input.");
         
-        const action1 = theftMatch[1];  // "enable" or "disable"
-        const action2 = theftMatch[2] || null; // Optional second action
-        const domain = theftMatch[3];  // Extracted domain
+        let actionMatch = usersInput.match(/\b(enable|disable|on|off|switch\s+on|switch\s+off)/i);
+        let action = actionMatch ? actionMatch[1].toLowerCase() : ""; // Extract action
+        let domain = theftMatch[1] ? theftMatch[1].trim() : ""; // Extracted domain
 
-        const selectedAction = action2 ? action2 : action1;
-        console.log(`📌 Selected Action: ${selectedAction}`);
+        console.log(`📌 Extracted Domain: ${domain || "None"}`);
+        console.log(`📌 Selected Action: ${action || "None"}`);
 
-        updateChatLog("🔄 Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'.", "bot");
+        updateChatLog("🛡️ Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'.", "bot");
 
-        // Set dropdown value based on extracted action
-        theftProtectionDropdown.value = selectedAction.toLowerCase() === "enable" ? "enabled" : "disabled";
+        // Map various action words to 'enabled' or 'disabled'
+        let selectedAction = "";
+        if (action.includes("on") || action === "enable" || action === "switch on") {
+            selectedAction = "enabled";
+        } else if (action.includes("off") || action === "disable" || action === "switch off") {
+            selectedAction = "disabled";
+        }
 
-        // Populate domain input field
+        // Set dropdown value if a valid action is detected
+        if (selectedAction) {
+            theftProtectionDropdown.value = selectedAction;
+        }
+
+        // Populate the domain input field (leave blank if no domain provided)
         theftProtectionDomainInput.value = domain;
 
         // Show Theft Protection Section
         theftProtectionSection.style.display = "block";
         document.getElementById('login-chat-section').style.display = 'none';
+    } else {
+        console.log("❌ No valid Theft Protection command detected.");
     }
 }
 

@@ -577,7 +577,7 @@ body {
   width: 100%;
   background-color: #066;
   color: #ffffff;
-  border-radius: 20px;
+  border-radius: 5px;
   font-size: 14px;
   font-weight: bold;
   padding: 10px 0;
@@ -1130,7 +1130,7 @@ body {
   background-color: #066;
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: 5px;
   justify-content: center;
   font-size: 12px;
   font-weight: bold;
@@ -1955,6 +1955,10 @@ login-chat-wrapper button:disabled {
 
 /* Tablets & Small Laptops (768px - 1023px) */
 @media (max-width: 1023px) {
+#body{
+  font-weight: 500;
+}
+
   #chat-container {
     display: flex;
     width: 65vh;
