@@ -1296,6 +1296,7 @@ async function manageDomainLockStatus(domainName, lock) {
 
   const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails || !domainDetails.domainNameId) {
+      console.log(`❌ Domain details not found for: ${domainName}`);
       return { success: false, message: `❌ Domain ${domainName} not found.` };
   }
 
@@ -1306,13 +1307,21 @@ async function manageDomainLockStatus(domainName, lock) {
 
   try {
       const response = await axios.get(apiUrl);
-      console.log('📨 API Response:', response.data);
+      console.log('📨 API Response:', JSON.stringify(response.data, null, 2)); // Log full API response
 
       if (response.data.responseMsg?.statusCode === 200) {
-          return { success: true, message: `✅ Domain ${domainName} has been successfully ${lock ? "locked" : "unlocked"}.` };
+          const successMessage = `✅ Domain ${domainName} has been successfully ${lock ? "locked" : "unlocked"}.`;
+          console.log(`📤 Sending success response to frontend: ${successMessage}`);
+          return { success: true, message: successMessage };
       }
 
-      return { success: false, message: `⚠️ API Error: ${response.data.responseMsg?.message || "Failed to update domain lock status."}` };
+      const errorMessage = `⚠️ API Error: ${response.data.responseMsg?.message || "Failed to update domain lock status."}`;
+      console.log(`📤 Sending error response to frontend: ${errorMessage}`);
+      return { 
+          success: false, 
+          message: errorMessage, 
+          fullResponse: response.data // Send full API response in case of failure
+      };
   } catch (error) {
       console.error('❌ Error managing domain lock:', error);
       return { success: false, message: '⚠️ Internal server error while managing domain lock.' };
@@ -1325,6 +1334,7 @@ app.get('/api/lock-domain', async (req, res) => {
 
   const { domainName, lock } = req.query;
   if (!domainName || (lock !== "true" && lock !== "false")) {
+      console.log(`⚠️ Invalid request parameters: domainName=${domainName}, lock=${lock}`);
       return res.status(400).json({ success: false, message: "⚠️ Missing or invalid parameters: domainName and lock." });
   }
 
@@ -1332,10 +1342,9 @@ app.get('/api/lock-domain', async (req, res) => {
   console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked}`);
 
   const result = await manageDomainLockStatus(domainName, isDomainLocked);
+  console.log(`📤 Final response to frontend:`, JSON.stringify(result, null, 2)); // Log final response sent to frontend
   return res.json(result);
 });
-
-
 
 app.get('/api/balance', async (req, res) => {
   if (!req.session || !req.session.email) {
@@ -1376,7 +1385,7 @@ app.get('/api/balance', async (req, res) => {
           console.log('💰 [BALANCE API] Current Balance:', response.data.responseData);
           return res.json({
               success: true,
-              answer: `Your current balance is: $${response.data.responseData}`,
+              answer: `💰 Your current balance is: $${response.data.responseData}`,
               showInChat: true
           });
       } else {
@@ -1391,6 +1400,7 @@ app.get('/api/balance', async (req, res) => {
   }
 });
 
+//-------------------------------------------------------- Suspend Domain -------------------------------------------------------------//
 
 async function manageDomainSuspension(domainName, suspend) {
   let connection;
@@ -1427,15 +1437,18 @@ async function manageDomainSuspension(domainName, suspend) {
       const response = await axios.get(apiUrl);
       console.log('[SUSPEND-DOMAIN] 🌐 API Response:', response.data);
 
+      // Check API response
       if (response.data?.responseMsg?.statusCode === 200) {
           return {
               success: true,
               answer: `✅ Domain ${domain} has been successfully ${suspend ? 'suspended' : 'unsuspended'}.`,
           };
       } else {
+          // ❌ If failure, send full API response to the frontend
           return {
               success: false,
               message: response.data?.responseMsg?.message || `Failed to ${suspend ? 'suspend' : 'unsuspend'} ${domain}.`,
+              fullResponse: response.data
           };
       }
 
@@ -1450,23 +1463,29 @@ async function manageDomainSuspension(domainName, suspend) {
 // ✅ API Route
 app.get('/api/suspend-domain', async (req, res) => {
   const { domainName, suspend } = req.query;
-  console.log('[BACKEND] Received Request:', { domainName, suspend });
+  console.log('[BACKEND] 📥 Received Request:', { domainName, suspend });
 
   // Validate domainName
   if (!domainName) {
-      return res.status(400).json({ success: false, message: "❌ Missing domainName parameter." });
+      const errorResponse = { success: false, message: "❌ Missing domainName parameter." };
+      console.log('[BACKEND] 📤 Response to Frontend:', errorResponse);
+      return res.status(400).json(errorResponse);
   }
 
   // Convert suspend to a proper boolean
   const isSuspend = String(suspend).toLowerCase() === 'true';
-  console.log('[BACKEND] Computed isSuspend:', isSuspend);
+  console.log('[BACKEND] 🔄 Computed isSuspend:', isSuspend);
 
   // Process suspension
   const result = await manageDomainSuspension(domainName, isSuspend);
+
+  // ✅ Log the final response before sending it to the frontend
+  console.log('[BACKEND] 📤 Final Response to Frontend:', result);
+
   return res.json(result);
 });
 
-//----------------------------------------------------- Privacy Protection Management --------------------------------------------------------//
+//------------------------------------------------- Privacy Protection Management ------------------------------------------------------//
 
 async function managePrivacyProtection(domainName, enableProtection) {
   let connection;
@@ -1545,6 +1564,8 @@ app.get('/api/manage-privacy-protection', async (req, res) => {
   return res.json(result);
 });
 
+//------------------------------------------------------- Update Name Servers ---------------------------------------------------------//
+
 // Function to Update Name Servers
 async function updateNameServer(domainName, nameServers) {
   try {
@@ -1587,14 +1608,24 @@ async function updateNameServer(domainName, nameServers) {
 
       console.log(`[UPDATE-NS] 🌐 API Response:`, response.data);
 
-      if (response.data.responseMsg?.statusCode === 200) {
-          return { success: true, message: `Name Servers updated successfully!` };
-      } else {
-          return { success: false, message: response.data.responseMsg?.message || "Failed to update name servers." };
-      }
+      // Log what is being sent to the frontend
+      const result = {
+          success: response.data.responseMsg?.statusCode === 200,
+          message: response.data.responseMsg?.message || "Failed to update name servers."
+      };
+
+      // Log the final response being sent to frontend
+      console.log(`[UPDATE-NS] 📤 Response Sent to Frontend:`, result);
+
+      return result;
   } catch (error) {
       console.error(`[UPDATE-NS] ❌ Error:`, error);
-      return { success: false, message: "Error processing name servers update." };
+      const errorMessage = { success: false, message: "Error processing name servers update." };
+      
+      // Log the error response sent to the frontend
+      console.log(`[UPDATE-NS] 📤 Error Response Sent to Frontend:`, errorMessage);
+      
+      return errorMessage;
   }
 }
 
@@ -1614,13 +1645,18 @@ app.get('/update-name-servers', async (req, res) => {
       }
 
       const result = await updateNameServer(domainName, parsedNameServers);
+      
+      // Log what is being sent back to frontend
+      console.log(`[UPDATE-NS] 📤 Response Sent to Frontend:`, result);
+      
       res.json(result);
   } catch (error) {
+      console.error(`[UPDATE-NS] ❌ Error processing request:`, error);
       return res.status(400).json({ success: false, message: "Invalid nameServers JSON format." });
   }
 });
 
-
+//------------------------------------------------------ Add Child Name Servers --------------------------------------------------------//
 
 // 📌 Function to Add Child Name Server (Correct Order)
 async function addChildNameServer(domainName, ipAddress, hostname) {
@@ -2044,7 +2080,7 @@ const predefinedAnswers = {
 //    
   "Give me the list of domain registrars.": "You can view domain information in your account's domain management section or use a WHOIS lookup tool.",
 //
-  "Give me a list of high-value domain TLDs?": "High-value TLDs include .com, .net, .org, .ai, .io, .xyz, and .co.",
+  "Give me a list of high-value domain TLDs?": " 🌍 <strong>High-value TLDs include:</strong><br>🔹 .com<br>🔹 .net<br>🔹 .org<br>🔹 .ai<br>🔹 .io<br>🔹 .xyz<br>🔹 .co<br>These TLDs are considered premium due to their popularity and value in the digital market.",
 //
   "What actions can I do here on the chatbot?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
 //

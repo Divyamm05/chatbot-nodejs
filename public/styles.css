@@ -508,6 +508,12 @@ body {
   color: white;
 }
 
+#add-child-name-server-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
 
 /* Chatbox when Sidebar is Open */
 #chatbox.sidebar-open {
@@ -561,7 +567,7 @@ body {
   background-color: #066;
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -1243,7 +1249,6 @@ body {
       }
       .input-group, .ns-input input {
           width: 100%;
-          padding: 5px;
       }
       #update-status {
           margin-top: 10px;
@@ -1399,14 +1404,12 @@ input:not(:checked) + .slider + #toggle-text-disable {
 .input-group {
   display: flex;
   height: 30px;
-  padding: 2px 4px;
 }
 
 .ns-wrapper {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 5px;
 }
 
 .ns-input, .childns-input  {

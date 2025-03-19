@@ -13,7 +13,7 @@
   <div class="background-container">
     <iframe src="https://www.connectreseller.com/" class="background-website"></iframe> 
   <div id="chat-container" style="display: none;">
-    
+
 <!-------------------------------------------------------------- Sidebar ------------------------------------------------------------->
     <div id="sidebar">
       <button id="toggle-sidebar" onclick="toggleSidebar()">
@@ -47,7 +47,7 @@
             <li onclick="fillChatInput('How do I transfer IN/OUT domains?'); hidealltoggles();">How do I transfer IN/OUT domains?</li>
             <li onclick="fillChatInputWithPlaceholder('Give me domain information for mydomain.com'); hidealltoggles();">Give me domain information for <em>mydomain.com</em></li>
             <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for mydomain.com');showTheftProtectionToggle(); hideexceptthefttoggle()">Enable/disable theft protection for <em>mydomain.com</em></li>
-            <li onclick="fillChatInputWithPlaceholder('How do I lock/unlock mydomain.com'); showDomainLockToggle();hideexceptlocktoggle();">How do I lock/unlock <em>mydomain.com</em></li>
+            <li onclick="fillChatInputWithPlaceholder('Lock/unlock mydomain.com'); showDomainLockToggle();hideexceptlocktoggle();">Lock/unlock <em>mydomain.com</em></li>
             <li onclick="fillChatInput('What is my current balance in my account?'); hidealltoggles();">What is my current balance in my account?</li>
             <li onclick="fillChatInput('How much are my available funds?'); hidealltoggles();">How much are my available funds?</li>
             <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com'); showDomainSuspendToggle();hideexceptsuspendtoggle();">Suspend/Unsuspend <em>mydomain.com</em></li>
@@ -266,18 +266,17 @@
           </div>
       </div>
       <div class="button-group-name" id="update-nameserver-button-group">
-          <button onclick="addNameServerInput()">➕ Add Name Server</button>
-          <button onclick="updateNameServers()">Update Name Servers</button>
-          <button onclick="goBackToQuerySection()">Back</button>
+          <button onclick="addNameServerInput()" id="addNameServer">➕ Add Name Server</button>
+          <button onclick="updateNameServers()" id="updateNameServer">Update Name Servers</button>
+          <button onclick="goBackToQuerySection()" id="updatenamebackbutton">Back</button>
       </div>
-      <div id="update-status"></div>
   </div>
 </div>
 
 
 <!---------------------------------------------------------- Add Child Name Server Section --------------------------------------->
 <div id="add-child-name-server-section" class="chat-input" style="display: none;">
-    
+  <div id="add-child-name-server-wrapper">   
   <div class="input-group">
       <input type="text" id="child-domain-name" placeholder="Enter Domain Name" required>
   </div>
@@ -291,12 +290,13 @@
 
   <!-- Buttons -->
   <div class="button-group-child">
-      <button onclick="addChildNameServerInput()">➕ Add Child Name Server</button>
-      <button onclick="registerChildNameServer()">Register</button>
+      <button onclick="addChildNameServerInput()" id="addchildnameserver">➕ Add Child Name Server</button>
+      <button onclick="registerChildNameServer()" id="registerchildnameserver">Register</button>
       <button onclick="goBackToQuerySection()">Back</button>
   </div>
 
   <div id="child-ns-status"></div>
+  </div>
 </div>
 
 <!----------------------------------------------- Domain Registration Section --------------------------------------------------------->

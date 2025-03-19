@@ -20,7 +20,8 @@ let userEmail = '';
 const loadingContainer = document.getElementById('loading-container');
 const nameserver = document.getElementById('name-server-container');
 nameserver.style.display ='none';
-
+document.getElementById("submitDomainQuery").style.borderRadius="20px"
+document.getElementById("submit-question").style.borderRadius="20px"
 //------------------------------------------- Request OTP, Resend and Verification Section --------------------------------------------//
 
 // Show email verification section
@@ -46,7 +47,7 @@ function taketosigninsection() {
         // Add a new message asking for email ID
         const emailMessage = document.createElement('div');
         emailMessage.classList.add('message', 'bot-message');
-        emailMessage.textContent = 'Please enter your registered email id to continue.';
+        emailMessage.textContent = 'Please enter your registered email ID 📩 to continue.';
         chatLog.appendChild(emailMessage);
     } else {
         // Hide the email section
@@ -476,6 +477,7 @@ function updateChatLog(message, sender) {
       (message.toLowerCase().includes("transfer a domain") || message.includes("domain transfer") || message.includes("To transfer a domain to us")) || message.includes("How can I move a domain?") || message.includes("To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.") &&
       !message.includes("Yes, you can transfer your domains") &&
       !message.includes("Thank you for signing in!") && message !== "How can I move a domain?"
+      && !message.includes("Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.")
   ) {
       addButton("Transfer a Domain", "transfer-button", "domain-transfer-section");
   }
@@ -493,10 +495,22 @@ function updateChatLog(message, sender) {
   if (
       sender === 'bot' && isUserSignedIn &&
       (message.includes("update the name servers") || message.includes("update name servers") || message.includes("Go to your domain management panel, find DNS settings, and update the name servers accordingly."))
-  ) {
+      && !message.includes("🔄 Please enter the domain name and the name servers that need to be updated. You can add more name servers by clicking '➕ Add Name Server' button. Maximum 4 name servers can be added. Then click '🖊 Update Name Server' button to save the changes.")
+    ) {
       addButton("Update Name Servers", "update-button", "name-server-container");
       document.getElementById("nameserver-container").style.width = "100%";
       document.getElementById("update-nameserver-button-group").style.width = "100%";
+      document.getElementById("addNameServer").style.borderRadius = "5px";
+      document.getElementById("addNameServer").style.fontSize = "10px";
+      document.getElementById("addNameServer").style.height = "90%";
+      document.getElementById("updateNameServer").style.fontSize = "10px";
+      document.getElementById("updateNameServer").style.height = "90%";
+      document.getElementById("updateNameServer").style.borderRadius = "5px";
+      document.getElementById("chat-log").style.height = "60%";
+      document.getElementById("updatenamebackbutton").style.fontSize = "12px";
+      document.getElementById("updatenamebackbutton").style.height = "90%";
+      document.getElementById("domain-name-input").style.height = "85%";
+      document.getElementById("nameserver-container").style.marginTop = "-10px";
   }
 
   // Renew a domain
@@ -516,11 +530,21 @@ function updateChatLog(message, sender) {
     addButton("Add Child Nameservers", "child-ns-button", "add-child-name-server-section");
     document.getElementById("chat-log").style.height = "60%";
     document.getElementById("ns-wrapper").style.padding = "0";
-    const buttons = document.querySelectorAll(".chat-input button");
+    document.getElementById("registerchildnameserver").style.fontSize = "5px";
+    document.getElementById("registerchildnameserver").style.borderRadius = "5px";
+    document.getElementById("addchildnameserver").style.fontSize = "5px";
+    document.getElementById("addchildnameserver").style.borderRadius = "5px";
+    let buttons = document.getElementsByClassName("chat-input-button");
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].style.borderRadius = "5px";
+    }
+    let buttonGroups = document.getElementsByClassName("button-group-child");
 
-    buttons.forEach(button => {
-        button.style.fontSize = "12px"; // Adjust size as needed
-    });
+    // Loop through each element and apply the styles
+    for (let i = 0; i < buttonGroups.length; i++) {
+        buttonGroups[i].style.height = "50px"; // Adjust the height as needed
+        buttonGroups[i].style.fontSize = "16px"; // Adjust the font size as needed
+    }
 }
 
   // Show auth buttons if response matches predefined responses
@@ -1787,7 +1811,13 @@ function addNameServerInput() {
     nameServerCount++;
 
     if (nameServerCount >= 3) {
-        document.getElementById("chat-log").style.height = "59%";
+        if (window.matchMedia("(max-width: 768px)").matches) {
+            document.getElementById("chat-log").style.height = "45%";
+        }
+        if (window.matchMedia("(max-width: 400px)").matches) {
+            document.getElementById("chat-log").style.height = "40%";
+        }
+        document.getElementById("chat-log").style.height = "55%";
         document.getElementsByClassName("chat-input").style.borderRadius= "0";
         document.getElementsByClassName("chat-input").style.gap = "10px"
     }
@@ -1824,33 +1854,6 @@ function showNameServerPopup(message, isSuccess) {
     }, 5000);
 }
 
-// Function to fetch domain ID from Firebase
-async function getDomainId(domainName) {
-    try {
-        const user = firebase.auth().currentUser;
-        if (!user) {
-            console.error("User not authenticated.");
-            return null;
-        }
-
-        const db = firebase.firestore();
-        const domainRef = db.collection("domains").where("domainName", "==", domainName).limit(1);
-        const snapshot = await domainRef.get();
-
-        if (snapshot.empty) {
-            console.log(`❌ Domain ID not found for ${domainName}`);
-            return null;
-        }
-
-        const domainData = snapshot.docs[0].data();
-        console.log(`✅ Domain ID found: ${domainData.domainId}`);
-        return domainData.domainId;
-    } catch (error) {
-        console.error("❌ Error fetching domain ID:", error);
-        return null;
-    }
-}
-
 // Function to update Name Servers
 async function updateNameServers() {
     let domain = document.getElementById("domain-name-input").value.trim();
@@ -1867,16 +1870,10 @@ async function updateNameServers() {
         showNameServerPopup("Please enter the domain and at least one name server.", false);
         return;
     }
-
-    console.log(`🔍 Fetching domain ID for ${domain}...`);
-    const domainId = await getDomainId(domain);
-
-    if (!domainId) {
-        showNameServerPopup("Domain ID not found in Firebase.", false);
-        return;
-    }
-
-    let apiUrl = `/update-name-servers?domainName=${encodeURIComponent(domain)}&domainId=${domainId}&nameServers=${encodeURIComponent(JSON.stringify(nameServers))}`;
+    updateChatLog("⏳ Updating name servers... Please wait ", "bot");
+    disableChat();
+   
+    let apiUrl = `/update-name-servers?domainName=${encodeURIComponent(domain)}&nameServers=${encodeURIComponent(JSON.stringify(nameServers))}`;
 
     console.log("[FRONTEND] 📡 Sending request:", apiUrl);
 
@@ -1884,14 +1881,14 @@ async function updateNameServers() {
         const response = await fetch(apiUrl);
         const result = await response.json();
         console.log("[FRONTEND] 🌐 Server Response:", result);
-
+        enableChat();
         if (result.success) {
             showNameServerPopup("Name Servers updated successfully!", true);
-            document.getElementById("name-server-container") = "none";
+            document.getElementById("name-server-container").style.display = "none";
             document.getElementById("login-chat-section").style.display = "flex";
         } else {
             showNameServerPopup("Failed to update Name Servers: " + (result.message || "Unknown error."), false);
-            document.getElementById("name-server-container") = "none";
+            document.getElementById("name-server-container").style.display = "none";
             document.getElementById("login-chat-section").style.display = "flex";
         }
     } catch (error) {
@@ -1940,10 +1937,10 @@ function addChildNameServerInput() {
     }
 }
 
-
 // Function to show a popup message and disable chat
 function showChildNSPopup(message, isSuccess) {
     disableChat(); // Disable chat interactions
+    updateChatLog(message, 'bot'); // Update chat log with the message
 
     // Create the popup box
     const popup = document.createElement('div');
@@ -1958,7 +1955,15 @@ function showChildNSPopup(message, isSuccess) {
     closeButton.innerText = 'OK';
     closeButton.addEventListener('click', () => {
         popup.remove();
-        enableChat(); // Re-enable chat when popup is closed
+        enableChat(); // Re-enable chat interaction
+
+        // Ensure the login chat section is displayed again
+        document.getElementById("login-chat-section").style.display = "flex"; 
+
+        // If the request was successful, hide the "add-child-name-server-section"
+        if (isSuccess) {
+            document.getElementById("add-child-name-server-section").style.display = "none";
+        }
     });
 
     content.appendChild(closeButton);
@@ -1969,8 +1974,11 @@ function showChildNSPopup(message, isSuccess) {
     setTimeout(() => {
         popup.remove();
         enableChat();
+        document.getElementById("login-chat-section").style.display = "flex"; 
+        document.getElementById("domain-text-query").value = "";// Ensure visibility
     }, 5000);
 }
+
 
 // Function to handle child name server registration
 async function registerChildNameServer() {
@@ -1991,6 +1999,12 @@ async function registerChildNameServer() {
         return;
     }
 
+    // Disable chat while processing the request
+    disableChat();
+
+    // Update chat log to inform the user that we're registering child name servers
+    updateChatLog(`🚀 Registering child name servers for domain: ${domain}`, 'bot');
+
     for (const ns of nameServers) {
         const apiUrl = `/add-child-ns?domainName=${encodeURIComponent(domain)}&ipAddress=${encodeURIComponent(ns.ip)}&hostname=${encodeURIComponent(ns.hostname)}`;
 
@@ -2001,17 +2015,22 @@ async function registerChildNameServer() {
             const result = await response.json();
             console.log("[FRONTEND] 🌐 Server Response:", result);
 
+            // Show the result in the chat log
             showChildNSPopup(
                 result.success ? "Child Name Server added successfully!" : "Failed to add Child Name Server.",
                 result.success
             );
-            document.getElementById("add-child-name-server-section").style.display = "none";
-            document.getElementById("login-chat-section").style.height = "flex";
         } catch (error) {
             console.error("[FRONTEND] ❌ Error:", error);
             showChildNSPopup("Error connecting to server.", false);
         }
     }
+    
+    // Re-enable chat and adjust section visibility after the operation is done
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("login-chat-section").style.height = "flex"; // Ensure chat height is reset
+
+    enableChat(); // Re-enable the chat
 }
 
 //----------------------------------------------------- Suspend Domain Section --------------------------------------------------------//
@@ -2034,7 +2053,7 @@ function manageDomainSuspension() {
     updateChatLog(`⏳ Updating domain suspension status for ${domainName}...`, "bot");
 
     // Disable button to prevent duplicate requests
-    updateButton.disabled = true;
+    disableChat();
 
     fetch(`/api/suspend-domain?domainName=${encodeURIComponent(domainName)}&suspend=${isSuspended}`)
         .then(response => {
@@ -2046,7 +2065,21 @@ function manageDomainSuspension() {
             if (data.success) {
                 updateChatLog(`✅ Domain ${domainName} has been successfully ${isSuspended ? "suspended" : "unsuspended"}.`, "bot");
             } else {
-                updateChatLog(`⚠️ ${data.message || "Unable to process request."}`, "bot");
+                // Extract error messages
+                const responseMsg = data.fullResponse?.responseMsg?.message || "";
+                const responseDataMsg = data.fullResponse?.responseData?.message || "";
+                const responseStatusCode = data.fullResponse?.responseData?.statusCode;
+
+                // Check if domain is already suspended or unsuspended
+                if (
+                    responseMsg === "Domain Suspend Manage Failed" &&
+                    responseDataMsg === "Domain suspension failed" &&
+                    (responseStatusCode === 2305 || responseStatusCode === 2306)
+                ) {
+                    updateChatLog(`⚠️ Domain ${domainName} is already ${isSuspended ? "suspended" : "unsuspended"}.`, "bot");
+                } else {
+                    updateChatLog(`⚠️ ${responseDataMsg || "Unable to process request."}`, "bot");
+                }
             }
         })
         .catch(error => {
@@ -2054,8 +2087,10 @@ function manageDomainSuspension() {
             updateChatLog("⚠️ Unable to update domain suspension at this time. Please check your connection.", "bot");
         })
         .finally(() => {
-            // Re-enable button after request is complete
-            updateButton.disabled = false;
+            enableChat();
+            document.getElementById('domain-suspension-section').style.display = "none";
+            document.getElementById('login-chat-section').style.display = "flex";
+            document.getElementById('domain-query-text').value = "";
         });
 }
 
@@ -2077,7 +2112,7 @@ function managePrivacyProtection() {
 
     // Show loading message in chatlog
     updateChatLog(`⏳ Updating privacy protection status for ${domainName}...`, "bot");
-
+    disableChat();
     // Send API request
     fetch(`/api/manage-privacy-protection?domainName=${domainName}&enable=${isEnabled ? "true" : "false"}`)
         .then(response => response.json())
@@ -2090,10 +2125,12 @@ function managePrivacyProtection() {
             } else {
                 updateChatLog(`⚠️ ${data.message || "Unable to process request."}`, "bot"); // ❌ Show error message
             }
+            enableChat();
         })
         .catch(error => {
             console.error("❌ Error managing privacy protection:", error);
             updateChatLog("⚠️ Unable to update privacy protection at this time.", "bot");
+            enableChat();
         });
 }
 
@@ -2113,6 +2150,7 @@ function manageDomainLock() {
 
     updateChatLog(`⏳ Updating domain lock status for ${domainName}...`, "bot");
 
+    disableChat();
     fetch(`/api/lock-domain?domainName=${domainName}&lock=${isLocked ? "true" : "false"}`)
         .then(response => {
             console.log("🛜 Response Status:", response.status);
@@ -2123,12 +2161,23 @@ function manageDomainLock() {
             if (data.success) {
                 updateChatLog(`✅ Domain lock for ${domainName} has been successfully ${isLocked ? "locked" : "unlocked"}.`, "bot");
             } else {
-                updateChatLog(`⚠️ ${data.message || "Unable to process request."}`, "bot");
+                // If responseData.message exists, use it; otherwise, fallback to data.message
+                const errorMessage = data.fullResponse?.responseData?.message || data.message || "Unable to process request.";
+                updateChatLog(`⚠️ ${errorMessage}`, "bot");
             }
         })
         .catch(error => {
             console.error("❌ Fetch Error:", error);
             updateChatLog("⚠️ Unable to update domain lock at this time.", "bot");
+        })
+        .finally(() => {
+            // Re-enable chat after request is complete
+            enableChat();
+    
+            // Hide section & reset input
+            document.getElementById('domain-lock-section').style.display = "none";
+            document.getElementById('login-chat-section').style.display = "flex";
+            document.getElementById('domain-query-text').value = "";
         });
 }
 
@@ -2258,6 +2307,7 @@ async function submitDomainQuery() {
           document.getElementById('login-chat-section').value = '';
           document.getElementById("domain-availability-section").style.display = "block";
           document.getElementById("login-chat-section").style.display = "none";
+          document.getElementById('domain-query-text').value = "";
       
           // Prefill the domain input field
           document.getElementById("check-domain-input").value = domainName;
@@ -2477,11 +2527,16 @@ if (deletedDomainMatch) {
     queryInput.value = "";
 }
 
-const tldMatch = queryText.match(/\b(?:give|suggest|available|recommend|show|list|fetch|get)\s+(?:TLDs|domains|extensions|suggestions|tlds)\s*(?:for|to)?\s*([\w-]+)(?:\.([a-z]{2,}))?\??\b/i);
+const tldMatch = queryText.match(/\b(?:give|suggest|available|recommend|show|list|fetch|get)?\s*(?:TLDs|domains|extensions|suggestions|tlds)\s*(?:for|to)?\s*([\w-]+)(?:\.([a-z]{2,}))?\??\b/i);
 
 if (tldMatch) {
     const baseName = tldMatch[1].trim();  // Extract base name (e.g., "domain")
     const originalTLD = tldMatch[2] ? tldMatch[2].trim() : null; // Extract original TLD if provided
+
+    // Show message that TLD suggestions are being fetched
+    updateChatLog(`🔄 Fetching TLD suggestions for ${baseName}...`, 'bot');
+    
+    disableChat();  // Disable chat while fetching the TLDs
 
     try {
         console.log('Fetching TLD suggestions for:', baseName);
@@ -2522,33 +2577,10 @@ if (tldMatch) {
     }
 
     queryInput.value = "";  // Reset query input field
+    
+    enableChat();  // Re-enable chat after fetching
     return;
 }
-
-
-      const apiQueryMatch = queryText.match(/where can I find API for (.+)/i);
-
-      if (apiQueryMatch) {
-          const actionName = apiQueryMatch[1].trim();
-          console.log('Detected API request for action:', actionName);
-  
-          try {
-              const response = await fetch('/api/get-api-details', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ query: actionName })
-              });
-  
-              const data = await response.json();
-              if (data.success) {
-                  console.log("API Details:", data.answer);
-              } else {
-                  console.warn("No API details found.");
-              }
-          } catch (error) {
-              console.error("Error fetching API details:", error);
-          }
-      }
 
     // Handle domain information request
     const domainInfoMatch = queryText.match(/\b(?:give me|can you give me|i need|get me|fetch|show)?\s*(?:domain (?:info(?:rmation)?|details))\s*for\s+([\w.-]+\.[a-z]{2,})/i);
@@ -2670,7 +2702,7 @@ if (authCodeMatch) {
     const balanceMatch = queryText.match(/\b(?:what(?:'s| is)?|show|check|get|tell me|fetch)?\s*(?:my|the)?\s*(?:current|available)?\s*(?:balance|funds|amount|money|credit|account balance)\b/i);
 if (balanceMatch) {
     try {
-        updateChatLog(`Fetching your current balance...`, 'bot');
+        updateChatLog(`🔍 Fetching your current balance...`, 'bot');
         
         const response = await fetch(`/api/balance`, { method: 'GET' });
 
@@ -2684,6 +2716,7 @@ if (balanceMatch) {
         } else {
             updateChatLog(`Error: ${result.message}`, 'bot');
         }
+        document.getElementById('domain-query-text').value = "";
 
     } catch (error) {
         console.error('Error fetching balance:', error);
@@ -2789,24 +2822,25 @@ if (!inputElement) {
     const usersInput = inputElement.value.trim();
     console.log(`📝 User Input: "${usersInput}"`);
 
-    // Regex to match "lock/unlock domain.com"
-    const lockUnlockRegex = /(?:^|\s)(lock|unlock)\s+domain\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    // Updated Regex: Supports various lock/unlock commands
+    const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,})/i;
     const lockUnlockMatch = usersInput.match(lockUnlockRegex);
 
     if (lockUnlockMatch) {
         console.log("✅ Lock/Unlock command detected.");
 
-        const selectedAction = lockUnlockMatch[1];  // "lock" or "unlock"
-        const domain = lockUnlockMatch[2];  // Extracted domain name
+        const selectedAction = lockUnlockMatch[1];  // Extracted action: "lock", "unlock", etc.
+        const domain = lockUnlockMatch[2] ? lockUnlockMatch[2].trim() : "";  // Set to "" if undefined
 
-        console.log(`📌 Selected Action: ${selectedAction}, Domain: ${domain}`);
+        console.log(`📌 Selected Action: ${selectedAction}`);
+        console.log(`📌 Extracted Domain: "${domain || 'None'}"`); // Logs "None" when no domain is found
 
-        updateChatLog("🔄 Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.", "bot");
+        updateChatLog("📝 Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.", "bot");
 
         // Set dropdown value based on extracted action
         lockUnlockDropdown.value = selectedAction.toLowerCase() === "lock" ? "locked" : "unlocked";
 
-        // Populate domain input field
+        // Populate domain input field (empty if no domain is found)
         lockUnlockDomainInput.value = domain;
 
         // Show Lock/Unlock Section
@@ -2826,23 +2860,24 @@ if (!inputElement) {
     console.log(`📝 User Input: "${usersInput}"`);
 
     // Regex to match "suspend/unsuspend domain.com"
-    const suspendUnsuspendRegex = /(?:^|\s)(suspend|unsuspend)\s+domain\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    const suspendUnsuspendRegex = /\b(suspend|unsuspend)\b(?:\/(suspend|unsuspend))?\s*(?:the\s+)?(?:domain\s*)?(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
     const suspendUnsuspendMatch = usersInput.match(suspendUnsuspendRegex);
 
     if (suspendUnsuspendMatch) {
         console.log("✅ Suspend/Unsuspend command detected.");
 
-        const selectedAction = suspendUnsuspendMatch[1];  // "suspend" or "unsuspend"
-        const domain = suspendUnsuspendMatch[2];  // Extracted domain name
+        const selectedAction = suspendUnsuspendMatch[1] || suspendUnsuspendMatch[2];  // Extracted "suspend" or "unsuspend"
+        const domain = suspendUnsuspendMatch[3] ? suspendUnsuspendMatch[3].trim() : "";  // Empty string if domain not found
 
-        console.log(`📌 Selected Action: ${selectedAction}, Domain: ${domain}`);
+        console.log(`📌 Selected Action: ${selectedAction}`);
+        console.log(`📌 Extracted Domain: "${domain || 'None'}"`); // Logs "None" when no domain is found
 
         updateChatLog("🔄 Please enter the domain name and select 'Suspend' or 'Unsuspend' from the dropdown, then click 'Update Suspension Status'.", "bot");
-        
-        // Set dropdown value based on extracted action
+
+        // Set dropdown value
         suspendUnsuspendDropdown.value = selectedAction.toLowerCase() === "suspend" ? "suspended" : "unsuspended";
 
-        // Populate domain input field
+        // Populate domain input field (empty if no domain found)
         suspendUnsuspendDomainInput.value = domain;
 
         // Show Suspend/Unsuspend Section
@@ -2850,32 +2885,6 @@ if (!inputElement) {
         document.getElementById("login-chat-section").style.display = "none";
     }
 }
-
-document.getElementById('submitDomainQuery').addEventListener('click', function () {
-    const domainInput = document.getElementById('domain-query-text').value.trim();
-
-    if (!domainInput) {
-        updateChatLog('❌ Please enter a domain name.', 'bot');
-        console.warn("⚠️ No domain name provided.");
-        return;
-    }
-
-    // Determine if the action is related to domain lock/unlock
-    if (/how do I (lock|unlock) (\S+)/i.test(domainInput)) {
-        console.log("🔒 Lock/Unlock domain action detected.");
-
-        // Ensure dropdown is visible
-        showDomainLockDropdown();
-
-        // Get selected value from dropdown
-        handleDomainLockDropdown();
-
-        // Trigger API request with extracted domain and action
-        submitDomainLockRequest(domainToLock, lockAction);
-    } else {
-        console.warn("❌ No valid action detected in the query.");
-    }
-});
 
 if (!inputElement) {
     console.error("❌ Input field not found!");
@@ -2974,8 +2983,45 @@ if (updatenamematch) {
     console.log("No match found.");
 }
 
-const updatechildnameRegex = /(add|update)\schild\s(?:name\s)?server\s(for\s([^\s]+))/i;
+const updateNameServerRegex = /\b(?:update|change|modify)\s+name\s*servers?\s*(?:for\s+([\w.-]+\.[a-z]{2,}))?\b/i;
 
+const updateNameServerMatch = userInput.match(updateNameServerRegex);
+
+if (updateNameServerMatch) {
+    const domainName = updateNameServerMatch[1] ? updateNameServerMatch[1].trim() : ""; // Capture domain if present
+
+    // Show the "name-server-container" and hide the "login-chat-section"
+    document.getElementById("name-server-container").style.display = "flex";
+    document.getElementById("nameserver-container").style.width = "100%";
+    document.getElementById("update-nameserver-button-group").style.width = "100%";
+    document.getElementById("addNameServer").style.borderRadius = "5px";
+    document.getElementById("addNameServer").style.fontSize = "10px";
+    document.getElementById("addNameServer").style.height = "90%";
+    document.getElementById("updateNameServer").style.fontSize = "10px";
+    document.getElementById("updateNameServer").style.height = "90%";
+    document.getElementById("updateNameServer").style.borderRadius = "5px";
+    document.getElementById("chat-log").style.height = "60%";
+    document.getElementById("updatenamebackbutton").style.fontSize = "12px";
+    document.getElementById("updatenamebackbutton").style.height = "90%";
+    document.getElementById("domain-name-input").style.height = "85%";
+    document.getElementById("nameserver-container").style.marginTop = "-10px";
+    document.getElementById("login-chat-section").style.display = "none";
+    document.getElementById('domain-query-text').value = "";
+    // Set the extracted domain name in the input field (if available)
+    document.getElementById("domain-name-input").value = domainName;
+
+    updateChatLog(
+        `🔄 Please enter the domain name and the name servers that need to be updated. You can add more name servers by clicking '➕ Add Name Server' button. Maximum 4 name servers can be added. Then click '🖊 Update Name Server' button to save the changes.`,
+        "bot"
+    );
+
+    console.log(`📌 Domain Name: ${domainName || "Not provided"}`); // Log the extracted domain or indicate none
+} else {
+    console.log("❌ No match found.");
+}
+
+
+const updatechildnameRegex = /\b(how\s+(?:do|can)\s+i\s+(?:add|create|set\s*up|register)\s+(?:a\s+)?child\s+nameserver\s+for\s+([\w.-]+\.[a-z]{2,})\?|add\s+(?:a\s+)?child\s*nameserver\s+for\s+([\w.-]+\.[a-z]{2,}))\b/i;
 const updatechildnamematch = userInput.match(updatechildnameRegex);
 
 if (updatechildnamematch) {
@@ -2985,11 +3031,33 @@ if (updatechildnamematch) {
     document.getElementById("add-child-name-server-section").style.display = "flex";
     document.getElementById("chat-log").style.height = "60%";
     document.getElementById("login-chat-section").style.display = "none";
-
+    document.getElementById('domain-query-text').value = "";
     // Set the extracted domain name in the input field
     document.getElementById("child-domain-name").value = domainName;
 
     console.log(`Domain Name: ${domainName}`); // Optionally log the extracted domain name
+}
+
+else {
+    console.log("No match found.");
+}
+
+const TLdsregex = /\b(?:give|show|list|fetch|get)\s+me\s+(?:a\s+)?(?:list)\s+of\s+(?:high[-\s]*value|premium)\s+domain\s+(?:tlds|extensions|suggestions|names)\s*(?:for)?\s*([\w.-]+)\??\b/i;
+const updatetldmatch = userInput.match(TLdsregex);
+
+if (updatetldmatch) {
+    updateChatLog('🌍 <strong>High-value TLDs include:</strong><br>🔹 .com<br>🔹 .net<br>🔹 .org<br>🔹 .ai<br>🔹 .io<br>🔹 .xyz<br>🔹 .co<br>These TLDs are considered premium due to their popularity and value in the digital market.','bot');
+    document.getElementById('domain-query-text').value = "";
+} else {
+    console.log("No match found.");
+}
+
+const chatbotactions = /\b(?:what|which|can)\s+(?:tasks|actions|functions|things|services|capabilities|can)\s+(?:this\s+)?(?:chatbot|bot|assistant|ai)\s+(?:do|perform|help\s+with|assist\s+with|allow\s+me\s+to\s+do|be\s+used\s+for|help\s+with)\??\b/i;
+const chatbotactionsmatch = userInput.match(chatbotactions);
+
+if (chatbotactionsmatch) {
+    updateChatLog('This platform offers domain management, security controls, and domain status management, with customer support available for assistance.','bot');
+    document.getElementById('domain-query-text').value = "";
 } else {
     console.log("No match found.");
 }
