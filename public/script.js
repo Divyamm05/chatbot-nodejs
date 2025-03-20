@@ -2291,7 +2291,15 @@ async function submitDomainQuery() {
           }
           return;
       }
-    
+      
+const userInput3 = document.getElementById("domain-query-text")?.value || ""; // Ensure it's a string
+console.log("User Input:", userInput3); 
+
+// Convert userInput to lowercase for case-insensitive match
+const userMessage = userInput3.toLowerCase(); 
+
+
+
       const match = queryText.match(/\b(?:register|i want to register|how can i register|can you register(?: my domain)?)\b.*?\b([\w-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i);
 
       if (match) {
@@ -2360,17 +2368,21 @@ async function submitDomainQuery() {
     }
 
     if (queryText.match(/\bregistered\s+on\s+(\d{2}-\d{2}-\d{4})\b/i)) {
+        const dateMatch = queryText.match(/\d{2}-\d{2}-\d{4}/);
+    
+        if (!dateMatch) {
+            updateChatLog("⚠️ Please specify a valid date in the format dd-mm-yyyy.", 'bot');
+            return;
+        }
+    
+        const inputDate = dateMatch[0];  // Extract date as string "07-03-2025"
+        console.log(`Fetching registered domains for date: ${inputDate}`);
+    
+        updateChatLog(`📡 Fetching domains registered on: ${inputDate}`, "bot");
+    
+        disableChat(); // Disable chat while fetching data
+    
         try {
-            // Extract the date from the query
-            const dateMatch = queryText.match(/(\d{2}-\d{2}-\d{4})/);
-            if (!dateMatch) {
-                updateChatLog("⚠️ Please specify a valid date in the format dd-mm-yyyy.", 'bot');
-                return;
-            }
-    
-            const inputDate = dateMatch[1];  // "05-03-2025"
-            console.log(`Fetching registered domains for date: ${inputDate}`);
-    
             // Fetch domain registration data
             const response = await fetch(`/api/registrationdate-domains?date=${encodeURIComponent(inputDate)}`);
     
@@ -2379,12 +2391,12 @@ async function submitDomainQuery() {
             }
     
             const data = await response.json();
-            console.log('Registered domains response:', data);
+            console.log('📥 Registered domains response:', data);
+    
+            let message = `📅 Domains Registered on ${inputDate}:\n`;
     
             if (data.success && data.domains.length > 0) {
-                let message = `📅 Domains Registered on ${inputDate}:\n`;
-    
-                // Convert timestamps to human-readable date
+                // Convert input date to a Date object for comparison
                 const formattedDate = new Date(inputDate.split('-').reverse().join('-'));
                 formattedDate.setHours(0, 0, 0, 0);
     
@@ -2394,6 +2406,7 @@ async function submitDomainQuery() {
                     const domainTimestamp = creationTimestamp.toString().length === 10 ? creationTimestamp * 1000 : creationTimestamp;
                     const domainCreationDate = new Date(domainTimestamp);
                     domainCreationDate.setHours(0, 0, 0, 0);
+    
                     return domainCreationDate.getTime() === formattedDate.getTime();
                 });
     
@@ -2404,62 +2417,65 @@ async function submitDomainQuery() {
                 } else {
                     message = `⚠️ No domains were registered on ${inputDate}.`;
                 }
-    
-                updateChatLog(message, 'bot');
             } else {
-                updateChatLog(`⚠️ No domains were registered on ${inputDate}.`, 'bot');
+                message = `⚠️ No domains were registered on ${inputDate}.`;
             }
     
+            updateChatLog(message, 'bot');
+    
         } catch (error) {
-            console.error("Error fetching registered domains:", error);
+            console.error("❌ Error fetching registered domains:", error);
             updateChatLog("❌ Unable to fetch registered domains at this time.", 'bot');
         }
     
         queryInput.value = ""; // Clear input after processing
-        return;
+        enableChat(); // Re-enable chat after fetching data
     }
     
 
     const expiringDomainMatch = queryText.match(/\b(getting\s+expired|expire|expiring|expiry)\s+(on|by|before)?\s*(\d{2}-\d{2}-\d{4})\b/i);
 
-    if (expiringDomainMatch) {
-        const selectedDate = expiringDomainMatch[3].trim();
-    
-        try {
-            console.log(`📡 Fetching expiring domains for: ${selectedDate}`);
-            const response = await fetch(`/api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
-            
-            console.log(`🔄 API Request URL: /api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
-            
-            if (!response.ok) {
-                throw new Error(`❌ Failed to fetch data. Status: ${response.status}`);
-            }
-    
-            const data = await response.json();
-            console.log('📥 API Response Data:', data); // Debugging log
-    
-            if (data.success && data.domains.length > 0) {
-                let message = `⏳ Domains Expiring on ${selectedDate}:\n`;
-    
-                data.domains.forEach(domain => {
-                    message += `🔹 ${domain.domainName} \n`;
-                });
-    
-                updateChatLog(message, 'bot');
-            } else {
-                console.log(`⚠️ No domains found for ${selectedDate}`);
-                updateChatLog(`⚠️ No domains are expiring on ${selectedDate}.`, 'bot');
-            }
-        } catch (error) {
-            console.error("❌ Error fetching expiring domains:", error);
-            updateChatLog("❌ Unable to fetch expiring domains at this time.", 'bot');
+if (expiringDomainMatch) {
+    const selectedDate = expiringDomainMatch[3].trim();
+    updateChatLog(`📡 Fetching domains expired on: ${selectedDate}`, "bot");
+
+    disableChat(); // Disable chat while fetching data
+
+    try {
+        console.log(`📡 Fetching expiring domains for: ${selectedDate}`);
+        const response = await fetch(`/api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
+
+        console.log(`🔄 API Request URL: /api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
+
+        if (!response.ok) {
+            throw new Error(`❌ Failed to fetch data. Status: ${response.status}`);
         }
-    
-        queryInput.value = "";
-        return;
+
+        const data = await response.json();
+        console.log('📥 API Response Data:', data); // Debugging log
+
+        let message = `⏳ Domains Expiring on ${selectedDate}:\n`;
+
+        if (data.success && data.domains.length > 0) {
+            data.domains.forEach(domain => {
+                message += `🔹 ${domain.domainName} \n`;
+            });
+
+            updateChatLog(message, 'bot');
+        } else {
+            console.log(`⚠️ No domains found for ${selectedDate}`);
+            updateChatLog(`⚠️ No domains are expiring on ${selectedDate}.`, 'bot');
+        }
+    } catch (error) {
+        console.error("❌ Error fetching expiring domains:", error);
+        updateChatLog("❌ Unable to fetch expiring domains at this time.", 'bot');
     }
+
+    queryInput.value = ""; // Clear input after processing
+    enableChat(); // Re-enable chat after fetching data
+}
         
-    const deletedDomainMatch = queryText.match(/\b(?:which\s+domains\s+(?:are\s+)?)?(getting\s+)?(deleted|deleting|removing|removed)\s+(on|by|before)?\s*(\d{2}-\d{2}-\d{4})\b/i);
+const deletedDomainMatch = queryText.match(/\b(?:which\s+domains\s+(?:are\s+)?)?(getting\s+)?(deleted|deleting|removing|removed)\s+(on|by|before)?\s*(\d{2}-\d{2}-\d{4})\b/i);
 
 console.log("🔎 Checking for deleted domain match in query:", queryText);
 console.log("🔍 Regex Match Result:", deletedDomainMatch);
@@ -2489,9 +2505,9 @@ if (deletedDomainMatch) {
 
     console.log("📅 Expiration Date:", expirationDate);
 
-
+    updateChatLog(`📡 Fetching domains deleting on: ${selectedDate}`, "bot");
     console.log(`📡 Fetching domains expired on: ${expirationDate} (to check for deletion on ${selectedDate})`);
-
+    disableChat();
     try {
         const response = await fetch(`/api/expiring-domains?date=${encodeURIComponent(expirationDate)}`);
 
@@ -2510,24 +2526,28 @@ if (deletedDomainMatch) {
             data.domains.forEach(domain => {
                 message += `🔹 ${domain.domainName} \n`;
             });
-
+            enableChat();
             updateChatLog(message, 'bot');
         } else {
             console.log(`⚠️ No domains found for ${selectedDate}`);
             updateChatLog(`⚠️ No domains are expiring on ${selectedDate}.`, 'bot');
+            enableChat();
         }
 
             updateChatLog(message.trim() === `⏳ Domains Getting Deleted on ${selectedDate}:\n` 
                 ? `⚠️ No domains are getting deleted on ${selectedDate}.` 
                 : message, 'bot');
+                enableChat();
     } catch (error) {
         console.error("❌ Error fetching deleted domains:", error);
+        enableChat();
     }
 
     queryInput.value = "";
 }
 
-const tldMatch = queryText.match(/\b(?:give|suggest|available|recommend|show|list|fetch|get)?\s*(?:TLDs|domains|extensions|suggestions|tlds)\s*(?:for|to)?\s*([\w-]+)(?:\.([a-z]{2,}))?\??\b/i);
+const tldMatch = queryText.match(/\b(?:give|suggest|available|recommend|show|list|fetch|get)\s+(?:TLDs?|tlds?|TLds?|top\s+level\s+domains)\s*(?:for|to)?\s*([\w-]+)(?:\.([a-z]{2,}))?\??\b/);
+  
 
 if (tldMatch) {
     const baseName = tldMatch[1].trim();  // Extract base name (e.g., "domain")
@@ -2621,8 +2641,7 @@ if (tldMatch) {
         return;
     }
     
-    const authCodeRegex = /(?:what is|give me|get|fetch|show|provide)\s+(?:the\s+)?auth(?:orization)?\s+code\s+(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
-
+const authCodeRegex = /\b(?:auth(?:orization|orisation)?\s+code|epp\s+(?:code|key|for|of))\b\s*([\w.-]+\.[a-z]{2,})\b/i;
 const authCodeMatch = queryText.match(authCodeRegex); // 🔥 Match against user input
 
 if (authCodeMatch) {
@@ -2654,50 +2673,58 @@ if (authCodeMatch) {
     document.getElementById("domain-query-text").value = "";
 }
 
+const domainregisterRegex = /\bwhen\b.*?\b([\w.-]+\.[a-z]{2,})\b.*?\b(register|registered)\b|\bwhen\b.*?\b(register|registered)\b.*?\b([\w.-]+\.[a-z]{2,})\b/i;
 
-    const domainregisterMatch = queryText.match(/when was (.+) domain registered/i);
-    if (domainregisterMatch) {
-        const domainName = domainregisterMatch[1].trim();
+const userInput4 = document.getElementById("domain-query-text").value;
+const domainregisterMatch = userInput4.match(domainregisterRegex);
 
-        try {
-            console.log('Fetching domain details for:', domainName);
-            const response = await fetch(`/api/domain-info?domain=${encodeURIComponent(domainName)}`);
+console.log("✅ Matched Registration Query:", domainregisterMatch);
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data. Status: ${response.status}`);
-            }
+if (domainregisterMatch) {
+    const domainName = domainregisterMatch[1] || domainregisterMatch[4]; // Extract domain from either group 1 or 4
+    console.log(`Extracted Domain: ${domainName}`);
 
-            const data = await response.json();
-            console.log('Domain details response:', data);
+    try {
+        console.log('Fetching domain details for:', domainName);
+        const response = await fetch(`/api/domain-info?domain=${encodeURIComponent(domainName)}`);
 
-            if (data.success) {
-                console.log('Domain data:', data.domainData); 
-                
-                const timestamp = data.domainData.creationDate;
-                let registrationDate = "Not available";
-            
-                if (timestamp) {
-                    registrationDate = new Date(timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'short', day: 'numeric'
-                    });
-                }
-            
-                updateChatLog(
-                    `The domain ${domainName} was registered on ${registrationDate}.`,
-                    'bot'
-                );
-            }
-            
-
-        } catch (error) {
-            console.error("Error fetching domain details:", error);
-            updateChatLog("Unable to fetch domain details at this time.", 'bot');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data. Status: ${response.status}`);
         }
 
-        document.getElementById("domain-query-text").value = "";
+        const data = await response.json();
+        console.log('Domain details response:', data);
 
-        return;
+        if (data.success && data.domainData) {
+            console.log('Domain data:', data.domainData); 
+            
+            const timestamp = data.domainData.creationDate || null;
+            let registrationDate = "Not available";
+
+            if (timestamp) {
+                registrationDate = new Date(timestamp).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'short', day: 'numeric'
+                });
+            }
+
+            updateChatLog(
+                `📅 The domain <strong>${domainName}</strong> was registered on <strong>${registrationDate}</strong>.`,
+                'bot'
+            );
+        } else {
+            updateChatLog(
+                `❌ No registration data found for <strong>${domainName}</strong>. It might be unregistered or unavailable.`,
+                'bot'
+            );
+        }
+
+    } catch (error) {
+        console.error("Error fetching domain details:", error);
+        updateChatLog("⚠️ Unable to fetch domain details at this time.", 'bot');
     }
+
+    document.getElementById("domain-query-text").value = "";
+}
 
     const balanceMatch = queryText.match(/\b(?:what(?:'s| is)?|show|check|get|tell me|fetch)?\s*(?:my|the)?\s*(?:current|available)?\s*(?:balance|funds|amount|money|credit|account balance)\b/i);
 if (balanceMatch) {
@@ -2952,7 +2979,7 @@ if (inputElement) {
                         if (tooltipRef) {
                             tooltipRef.remove();
                         }
-                    }, 5000);
+                    }, 3500);
                 }
             } else {
                 console.log("⏳ [TOOLTIP] Skipped - Shown within the last 30 seconds.");
