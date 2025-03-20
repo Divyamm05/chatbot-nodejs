@@ -225,7 +225,7 @@ app.post('/ask-question', (req, res) => {
   const domainKeywords = ["domain", "register", "dns", "transfer", "premium"];
   if (domainKeywords.some(keyword => normalizedUserQuestion.includes(keyword))) {
     return res.json({
-      answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!"
+      answer: "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!"
     });
   }
 
@@ -237,7 +237,7 @@ app.post('/ask-question', (req, res) => {
   }
 
   // Default response if no match
-  return res.json({ answer: "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
+  return res.json({ answer: "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
 // Tester login without checking in db
@@ -2156,18 +2156,27 @@ const searchAllowedTopics = (query) => {
 };
 
 app.post('/api/domain-queries', async (req, res) => {
-  const { query } = req.body;
-  if (!query) return res.status(400).json({ success: false, message: 'Query is required.' });
+    const { query, chatHistory } = req.body; // Ensure chatHistory is passed in the request
+    if (!query) return res.status(400).json({ success: false, message: 'Query is required.' });
 
-  console.log('Received query:', query);
-  const lowerQuery = normalizeQuery(query);
-  const domainName = extractDomain(query);
+    console.log('Received query:', query);
+    const lowerQuery = normalizeQuery(query);
+    const domainName = extractDomain(query);
 
-  // Step 1: Check Predefined Answers with Fuse.js
-  const predefinedResult = searchPredefinedAnswer(query);
-  if (predefinedResult) {
-    return res.json({ success: true, answer: predefinedResult });
-  }
+    // Step 1: Check Predefined Answers with Fuse.js
+    const predefinedResult = searchPredefinedAnswer(query);
+
+    // ✅ Prevent redundant "How do I register a domain?" response
+    if (
+        query.toLowerCase().includes("register") && 
+        chatHistory && chatHistory.includes("Before registering the domain, check its availability by clicking the 'Check Availability' button.")
+    ) {
+        return res.json({ success: true, answer: null }); // Respond with null to prevent duplicate message
+    }
+
+    if (predefinedResult) {
+        return res.json({ success: true, answer: predefinedResult });
+    }
 
   // Check for Domain Name Suggestions
   const isDomainSuggestionQuery = lowerQuery.includes('suggest') && (lowerQuery.includes('domain') || lowerQuery.includes('suggestions'));
@@ -2372,14 +2381,26 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
   }
 }
 
+const domainKeywords = [
+  'domain', 'register', 'dns', 'hosting', 'availability', 'tld', 'subdomain', 'WHOIS'
+];
+
   // Step 3: Check if the query is domain-related using Fuse.js
-  const isDomainRelated = fuse2.search(query).length > 0;
-
+  const isDomainRelated = domainKeywords.some(keyword =>
+    query.toLowerCase().includes(keyword)
+  );
+  
   if (!isDomainRelated) {
-    return res.status(400).json({ success: false, message: 'Please ask only domain-related questions.' });
-  }
+    setTimeout(() => {
+        return res.status(400).json({ 
+            success: false, 
+            message: "Sorry, I can't answer that right now. Let me know if you need any other help. 😊" 
+        });
+    }, 3000);
+    return; // Prevents further execution
+}
+  // Step 4: Use Cohere API for AI-Generated Responses (if no predefined match)
 
-  /* Step 4: Use Cohere API for AI-Generated Responses (if no predefined match)
   try {
     const cohereResponse = await axios.post(
       'https://api.cohere.ai/v1/generate',
@@ -2390,15 +2411,19 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
         temperature: 0.3,
       },
       {
-        headers: { Authorization: `Bearer ${process.env.COHERE_API_KEY}` }
+        headers: { Authorization: `Bearer ${process.env.COHERE_API_KEY}` },
       }
     );
-    return res.json({ success: true, answer: cohereResponse.data.generations[0]?.text || 'No response' });
-  } catch (error) {
-    console.error('Cohere API error:', error);
-  }
 
-  return res.status(400).json({ success: false, message: 'Unable to process your request.' });*/
+    return res.json({
+      success: true,
+      answer: cohereResponse.data.generations?.[0]?.text || 'No response',
+    });
+
+  } catch (error) {
+    console.error('Cohere API error:', error.response?.data || error.message);
+    return res.status(500).json({ success: false, message: 'Cohere API request failed.' });
+  }
 });
 
 const dns = require('dns').promises;

@@ -11,7 +11,7 @@
 <!---------------------------------------------------------- Assistant Icon ---------------------------------------------------------->
   <div id="assistant-logo" onclick="toggleChatbox()">💬</div>
   <div class="background-container">
-    <iframe src="https://www.connectreseller.com/" class="background-website"></iframe> 
+    <!--<iframe src="https://www.connectreseller.com/" class="background-website"></iframe> -->
   <div id="chat-container" style="display: none;">
 
 <!-------------------------------------------------------------- Sidebar ------------------------------------------------------------->
@@ -119,6 +119,7 @@
       <input type="text" id="otp-code" placeholder="Enter OTP">
       <button id="verify-otp" onclick="verifyOTP()">Verify</button>
       <button id="resend-otp" onclick="resendOTP()">Resend</button>
+      <button id="back-otp-section" onclick="gobactkostartsection()">Back</button>
     </div>
 
     <div class="chat-input" style="display:none" id="login-chat-section">
@@ -228,7 +229,7 @@
           <button id="check-domain-button" onclick="handleCheckDomain()">Check Availability</button>
         </div>
         <button id="back-to-domain-section" onclick="goBackToQuerySection()">Back</button>
-      </div>
+    </div>
 
 <!-------------------------------------------------------- Domain Renewal Section -------------------------------------------------------->
 <div id="domain-renewal-section" class="chat-input" style="display: none;">
@@ -325,7 +326,7 @@
 
 <!----------------------------------------------- Additional domain settings section ---------------------------------------------------->
 <div id="additional-settings-section" class="chat-input" style="display: none;">
-  <div class="domain-registration-wrapper">
+  <div class="domain-registration-wrapper" id="domain-registration-wrapper">
     <div class="input-group">
       <input type="text" id="ns1" placeholder="Name Server 1">
     </div>

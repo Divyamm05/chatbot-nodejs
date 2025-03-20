@@ -89,6 +89,7 @@ function requestOTP() {
                 toggleSidebar();
             } else {
                 updateChatLog("Authentication failed. Please try again.", 'bot');
+                document.getElementById("user-email").value = "";
             }
         })
         .catch(error => {
@@ -374,7 +375,7 @@ function updateChatLog(message, sender) {
   
   // List of predefined messages to skip
   const skipMessages = [
-      "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
+      "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
       "Please login/signup to access all the features.",
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
@@ -464,12 +465,15 @@ function updateChatLog(message, sender) {
       (message.includes("register a domain") ||
        message.includes("To register a domain, navigate to the 'Register Domain' section") ||
        message.includes("You can register domains directly through this chatbot")) && message !== "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration."
-       &&  !message.includes("Before registering the domain, check its availability by clicking the 'Check Availability' button.") 
+       &&  !message.includes("Before registering the domain, check its availability by clicking the 'Check Availability' button.") &&
+       !document.querySelector('.chat-log').innerText.includes("Before registering the domain") // ✅ Directly checks chat history
   ) {
     if (!document.getElementById("register-button")) { // Prevent duplicate buttons
     addButton("Register a Domain", "register-button", "domain-availability-section");
+    document.getElementById("check-domain-button").style.borderRadius = "20px";
     }
   }
+  window.preventRegisterButton = false;
 
   // Transfer a domain
   if (
@@ -519,6 +523,7 @@ function updateChatLog(message, sender) {
       (message.toLowerCase().includes("renew a domain") || message.includes("To seamlessly renew your domain name"))
   ) {
       addButton("Renew a Domain", "renew-button", "domain-renewal-section");
+      document.getElementById("domain-renewal-wrapper").style.columnGap= "8px";
   }
 
   // Add child name servers
@@ -602,7 +607,7 @@ function scrollToAuthButtons() {
 // Checks if the given bot response requires the need to show auth buttons(sign up or log in).
 function checkBotResponse(response) {
   const botMessages = [
-      "To perform this action, you need to sign up. Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
+      "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
       "Please login/signup to access all the features.",
       "Thank you for reaching out! To access detailed pricing for TLDs and services, please sign up. Once registered, you’ll have instant access to all pricing details and exclusive offers!",
@@ -918,31 +923,36 @@ function getMoreSuggestions() {
 //-------------------------------------------------- Domain Availability Section ----------------------------------------------------//
 const checkDomainAvailability = async (domainName) => {
     try {
-      const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
-  
-      console.log(`Checking domain availability for: ${domainName}`);
-      console.log(`Request URL: ${url}`);
-  
-      const response = await axios.get(url, { headers: { "Accept": "application/json" } });
-  
-      console.log("API Response:", JSON.stringify(response.data, null, 2));
-  
-      const message = response.data?.responseMsg?.message || "Unknown response from API";
-      const isAvailable = response.data?.responseMsg?.message === "Domain Available for Registration";
-  
-      console.log(`Domain Availability: ${isAvailable}`);
-  
-      return {
-        available: isAvailable,
-        message: message,
-        responseData: response.data?.responseData || {}, // Include registrationFee
-      };
+        // Ensure the domain starts with "www." if not already present
+        if (!domainName.startsWith("www.")) {
+            domainName = `www.${domainName}`;
+        }
+
+        console.log(`Checking domain availability for: ${domainName}`);
+
+        const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
+
+        console.log(`Request URL: ${url}`);
+
+        const response = await axios.get(url, { headers: { "Accept": "application/json" } });
+
+        console.log("API Response:", JSON.stringify(response.data, null, 2));
+
+        const message = response.data?.responseMsg?.message || "Unknown response from API";
+        const isAvailable = response.data?.responseMsg?.message === "Domain Available for Registration";
+
+        console.log(`Domain Availability: ${isAvailable}`);
+
+        return {
+            available: isAvailable,
+            message: message,
+            responseData: response.data?.responseData || {}, // Include registrationFee
+        };
     } catch (error) {
-      console.error("Error checking domain availability:", error.message);
-      return { available: false, message: "Error checking domain availability." };
+        console.error("Error checking domain availability:", error.message);
+        return { available: false, message: "Error checking domain availability." };
     }
-  };
-  
+};
 
 //------------------------- Processes user input for questions without verification and update chatlog Section -----------------------//
 function processUserQuestion() {
@@ -971,11 +981,19 @@ function processUserQuestion() {
 //-------------------------------------------------- Domain Registration Section -----------------------------------------------------//
 
 async function handleCheckDomain() {
-    const domainInput = document.getElementById("check-domain-input").value.trim();
+    suggestionData = []; // Reset stored suggestions
+    suggestionIndex = 0; // Reset index
+
+    let domainInput = document.getElementById("check-domain-input").value.trim();
     
     if (!domainInput) {
         alert("Please enter a domain name.");
         return;
+    }
+
+    // Ensure the domain starts with "www."
+    if (!domainInput.startsWith("www.")) {
+        domainInput = `www.${domainInput}`;
     }
 
     updateChatLog("🔍 Checking domain availability...", "bot");
@@ -1202,6 +1220,11 @@ const SUGGESTION_BATCH_SIZE = 5; // Number of suggestions per batch
 
 async function fetchDomainSuggestions(domainInput) {
     try {
+        // Ensure "www." is removed before sending
+        if (domainInput.startsWith("www.")) {
+            domainInput = domainInput.replace(/^www\./, "");
+        }
+
         // Fetch suggestions only once and store them
         if (suggestionData.length === 0) {
             const response = await fetch(`/api/domainname-suggestions?domain=${domainInput}`);
@@ -1283,6 +1306,7 @@ function selectDomain(domainName) {
     // Ensure chatbox and registration section are visible
     chatbox.style.display = "flex";
     domainRegistrationSection.style.display = "block";
+    document.getElementById("domain-registration-wrapper").style.columnGap= "8px";
     domainAvailabilitySection.style.display = "none";
     document.getElementById('login-chat-section').style.display = "none";
 
@@ -2291,44 +2315,53 @@ async function submitDomainQuery() {
           }
           return;
       }
-      
-const userInput3 = document.getElementById("domain-query-text")?.value || ""; // Ensure it's a string
-console.log("User Input:", userInput3); 
-
-// Convert userInput to lowercase for case-insensitive match
-const userMessage = userInput3.toLowerCase(); 
-
-
 
       const match = queryText.match(/\b(?:register|i want to register|how can i register|can you register(?: my domain)?)\b.*?\b([\w-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i);
 
-      if (match) {
-          const domainName = match[1]; // Extracted domain name
-          const duration = match[2] ? parseInt(match[2], 10) : null; // Extracted duration (if present)
-      
-          console.log("Matched domain for registration:", domainName);
-          console.log("Matched duration:", duration);
-      
-          updateChatLog("Before registering the domain, check its availability by clicking the 'Check Availability' button.", 'bot');
-      
-          // Show the domain availability section & hide the login section
-          document.getElementById('login-chat-section').value = '';
-          document.getElementById("domain-availability-section").style.display = "block";
-          document.getElementById("login-chat-section").style.display = "none";
-          document.getElementById('domain-query-text').value = "";
-      
-          // Prefill the domain input field
-          document.getElementById("check-domain-input").value = domainName;
-      
-          // Auto-select duration in dropdown if it's valid (1,2,3,5,10)
-          const validDurations = [1, 2, 3, 5, 10];
-          if (duration && validDurations.includes(duration)) {
-              document.getElementById("duration").value = duration;
-          }
-      }      
-      
-      const renewMatch = queryText.match(/\b([\w-]+\.[a-z]{2,})\b.*?\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i);
+if (match) {
+    const domainName = match[1] ? match[1].trim() : "";
+    const duration = match[2] ? parseInt(match[2], 10) : null;
 
+    console.log("🔍 Extracted domain:", domainName);
+    console.log("⏳ Extracted duration:", duration);
+    console.log("📌 Domain input element:", document.getElementById("check-domain-input"));
+
+    updateChatLog("Before registering the domain, check its availability by clicking the 'Check Availability' button.", 'bot');
+// Prefill domain input field with a delay
+setTimeout(() => {
+    const domainInput = document.getElementById("check-domain-input");
+    document.getElementById("check-domain-button").style.borderRadius = "20px";
+    if (!domainInput) {
+        console.error("❌ Error: Domain input field not found!");
+        return;
+    }
+
+    console.log("📌 Setting domain name to input field:", domainName); // Debugging
+    domainInput.value = domainName;
+    domainInput.dispatchEvent(new Event("input", { bubbles: true }));
+    console.log("✅ Prefilled domain input:", domainInput.value);
+}, 100);
+    document.getElementById("domain-availability-section").style.display = "block";
+    document.getElementById("login-chat-section").style.display = "none";
+
+    document.getElementById("domain-renewal-wrapper").style.columnGap = "8px";
+    
+
+    
+
+    // Auto-select duration in dropdown
+    const validDurations = [1, 2, 3, 5, 10];
+    if (duration && validDurations.includes(duration)) {
+        document.getElementById("duration").value = duration;
+    }
+    return;
+}
+
+      
+      const renewMatch = queryText.match(
+        /\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b\s*([\w-]+\.[a-z]{2,})\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?|\b([\w-]+\.[a-z]{2,})\b.*?\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i
+      );
+      
       if (renewMatch) {
           const domainName = renewMatch[1]; // Extracted domain name
           const duration = renewMatch[2] ? parseInt(renewMatch[2], 10) : null; // Extracted duration (if present)
@@ -2351,6 +2384,7 @@ const userMessage = userInput3.toLowerCase();
           if (duration && validDurations.includes(duration)) {
               document.getElementById("renew-duration").value = duration;
           }
+          return;
       }      
 
     const transferMatch = queryText.match(/\btransfer\s+([a-zA-Z0-9-]+\.[a-z]{2,})/i);
@@ -2365,6 +2399,7 @@ const userMessage = userInput3.toLowerCase();
 
         // Prefill the domain input field
         document.getElementById("transfer-domain-name").value = domainName;
+        return;
     }
 
     if (queryText.match(/\bregistered\s+on\s+(\d{2}-\d{2}-\d{4})\b/i)) {
@@ -2430,6 +2465,7 @@ const userMessage = userInput3.toLowerCase();
     
         queryInput.value = ""; // Clear input after processing
         enableChat(); // Re-enable chat after fetching data
+        return;
     }
     
 
@@ -2473,6 +2509,7 @@ if (expiringDomainMatch) {
 
     queryInput.value = ""; // Clear input after processing
     enableChat(); // Re-enable chat after fetching data
+    return;
 }
         
 const deletedDomainMatch = queryText.match(/\b(?:which\s+domains\s+(?:are\s+)?)?(getting\s+)?(deleted|deleting|removing|removed)\s+(on|by|before)?\s*(\d{2}-\d{2}-\d{4})\b/i);
@@ -2544,6 +2581,7 @@ if (deletedDomainMatch) {
     }
 
     queryInput.value = "";
+    return;
 }
 
 const tldMatch = queryText.match(/\b(?:give|suggest|available|recommend|show|list|fetch|get)\s+(?:TLDs?|tlds?|TLds?|top\s+level\s+domains)\s*(?:for|to)?\s*([\w-]+)(?:\.([a-z]{2,}))?\??\b/);
@@ -2671,6 +2709,7 @@ if (authCodeMatch) {
     }
 
     document.getElementById("domain-query-text").value = "";
+    return;
 }
 
 const domainregisterRegex = /\bwhen\b.*?\b([\w.-]+\.[a-z]{2,})\b.*?\b(register|registered)\b|\bwhen\b.*?\b(register|registered)\b.*?\b([\w.-]+\.[a-z]{2,})\b/i;
@@ -2724,6 +2763,7 @@ if (domainregisterMatch) {
     }
 
     document.getElementById("domain-query-text").value = "";
+    return;
 }
 
     const balanceMatch = queryText.match(/\b(?:what(?:'s| is)?|show|check|get|tell me|fetch)?\s*(?:my|the)?\s*(?:current|available)?\s*(?:balance|funds|amount|money|credit|account balance)\b/i);
@@ -3088,37 +3128,87 @@ if (chatbotactionsmatch) {
 } else {
     console.log("No match found.");
 }
+// If all other conditions fail, execute this fallback
+try {
+    console.log('Sending query to backend:', queryText);
 
-    // Fallback to existing backend query handling
-    try {
-        console.log('Sending query to backend:', queryText);
+    // Disable chat input and show "Generating response... Please wait ⏳"
+    disableChat();
+    updateChatLog("Generating response... Please wait ⏳", 'bot');
 
-        const response = await fetch('/api/domain-queries', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: queryText }),
-        });
+    // Create an AbortController to handle timeouts
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data. Status: ${response.status}`);
-        }
+    // Set a timeout to show "Too many requests..." after 10 seconds
+    const timeout10s = setTimeout(() => {
+        updateChatLog("Too many requests at this moment. Please wait... ⏳", 'bot');
+    }, 10000);
 
-        const data = await response.json();
-        console.log('Backend response:', data);
+    // Set another timeout to abort the request after 20 seconds
+    const timeout20s = setTimeout(() => {
+        controller.abort();
+        removeLastBotMessage(); // Remove previous "waiting" messages
+        updateChatLog("Request timed out. Please try again later.", 'bot');
+        enableChat();
+    }, 20000);
 
-        if (data.success) {
-            if (data.answer) {
-                updateChatLog(`${data.answer}`, 'bot');
-                queryInput.value = "";
-            }
-        } else {
-            updateChatLog(`Error: ${data.message}`, 'bot');
-        }
+    const response = await fetch('/api/domain-queries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: queryText }),
+        signal // Attach the abort signal
+    });
 
-    } catch (error) {
-        console.error("Error with fetch request:", error);
+    // Clear timeouts since response was received in time
+    clearTimeout(timeout10s);
+    clearTimeout(timeout20s);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch data. Status: ${response.status}`);
     }
-    hideTooltipOnInput();
+
+    const data = await response.json();
+    console.log('Backend response:', data);
+
+    // Remove "Generating response..." and "Too many requests..." messages
+    removeLastBotMessage();
+
+    if (data.success) {
+        if (data.answer?.trim()) {
+            updateChatLog(data.answer, 'bot');
+        } else {
+            updateChatLog("Sorry, I couldn't find an answer for that.", 'bot');
+        }
+    } else {
+        updateChatLog(`Error: ${data.message}`, 'bot');
+    }
+
+} catch (error) {
+    if (error.name === 'AbortError') {
+        console.warn("Fetch request was aborted due to timeout.");
+    } else {
+        console.error("Error with fetch request:", error);
+        removeLastBotMessage();
+        updateChatLog("Sorry, I can't answer that right now. Let me know if you need any other help. 😊", 'bot');
+    }
+} finally {
+    // Re-enable chat input after response
+    enableChat();
+    document.getElementById("domain-query-text").value = "";
+}
+
+// Hide tooltip and clear input
+hideTooltipOnInput?.(); 
+
+if (queryInput) {
+    queryInput.value = ""; // Clears input field
+}
+
+if (inputElement) {
+    inputElement.value = ""; // Clears another input if applicable
+}
+
 }
 
 //----------------------------------------------- Back button after verification --------------------------------------------------//
@@ -3354,32 +3444,72 @@ function goBackToPreviousSection() {
 }
 
 function goBackTouserinputsection() {
-    document.getElementById('email-section').style.display = 'none';
-    document.getElementById('signup-text').style.display = 'none';
-    document.getElementById('login-text').style.display = 'flex'; 
-    document.getElementById('user-input-section').style.display = 'flex';
-    document.getElementById('initial-message').style.display = 'flex';  
-    document.getElementById('otp-section').style.display = 'none';
+    const emailSection = document.getElementById('email-section');
+    if (emailSection) emailSection.style.display = 'none';
 
-    // Remove direct display style for sidebar to allow toggleSidebar() to work
-    // document.getElementById('sidebar').style.display = 'flex'; // Remove this line
+    const signupText = document.getElementById('signup-text');
+    if (signupText) signupText.style.display = 'none';
 
-    // Corrected line to loop through all elements with the class "active"
-    const activeElements = document.getElementsByClassName("active");
-    for (let i = 0; i < activeElements.length; i++) {
-      activeElements[i].style.display = 'flex';
-    }
+    const loginText = document.getElementById('login-text');
+    if (loginText) loginText.style.display = 'flex';
 
-    document.getElementById('faq-post-login').style.display = 'none';
-    clearchatlog();
-    document.getElementById('user-question').value = ''; // Reset the input field
+    const userInputSection = document.getElementById('user-input-section');
+    if (userInputSection) userInputSection.style.display = 'flex';
+
+    const initialMessage = document.getElementById('initial-message');
+    if (initialMessage) initialMessage.style.display = 'flex';
+
+    const otpSection = document.getElementById('otp-section');
+    if (otpSection) otpSection.style.display = 'none';
+
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) sidebar.classList.remove("collapsed");
+
+    const chatLog = document.getElementById("chat-log");
+    if (chatLog) chatLog.innerHTML = '';
+
+    const faqPostLogin = document.getElementById('faq-post-login');
+    if (faqPostLogin) faqPostLogin.style.display = 'none';
+
+    const userQuestion = document.getElementById('user-question');
+    if (userQuestion) userQuestion.value = ''; // Reset input field
+
+    // Show all active elements
+    Array.from(document.getElementsByClassName("active")).forEach(element => {
+        element.style.display = 'flex';
+    });
+
     updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
-    
-    // Call toggleSidebar to toggle sidebar visibility
-    toggleSidebar();
 }
-  
+
 
 async function getDomainId(domainName) {
     return 1; // Replace with actual API call if needed
+}
+
+function gobactkostartsection(){
+    document.getElementById("otp-section").style.display = 'none';
+    document.getElementById("otp-code").style.display = 'none';
+    document.getElementById("verify-otp").style.display = 'none';
+    document.getElementById("resend-otp").style.display = 'none';
+    document.getElementById("email-section").style.display = 'flex';
+    document.getElementById("user-email").value = '';
+}
+
+const chatHistory = [...document.querySelectorAll('.chat-message')]
+  .map(msg => msg.textContent); // Get chat messages
+
+fetch('/api/domain-queries', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ query: userQuery, chatHistory })
+})
+  .then(res => res.json())
+  .then(data => console.log(data));
+  
+function removeLastBotMessage() {
+    const chatLog = document.getElementById('chat-log');
+    if (chatLog?.lastChild?.classList.contains('bot-message')) {
+        chatLog.removeChild(chatLog.lastChild);
+    }
 }
