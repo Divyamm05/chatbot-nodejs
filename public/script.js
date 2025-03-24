@@ -491,7 +491,7 @@ function updateChatLog(message, sender) {
   if (
       sender === 'bot' && isUserSignedIn &&
       (message.toLowerCase().includes("Check domain availability") || message.toLowerCase().includes("domain availability") || message.toLowerCase().includes("I can help you with checking domain availability!")) &&
-      !message.includes("This platform helps with domain registration, transferring domain name") && message!='🔍 Checking domain availability...'
+      !message.includes("This platform helps with domain registration, transferring domain name") && message!='🔍 Checking domain availability...' && message!="⚠️ Error checking domain availability. Please try again later."
   ) {
       addButton("Check Domain Availability", "available-button", "domain-availability-section");
   }
@@ -504,6 +504,7 @@ function updateChatLog(message, sender) {
     ) {
       addButton("Update Name Servers", "update-button", "name-server-container");
       document.getElementById("nameserver-container").style.width = "100%";
+      document.getElementById("name-server-update-section").style.display = "flex"; 
       document.getElementById("update-nameserver-button-group").style.width = "100%";
       document.getElementById("addNameServer").style.borderRadius = "5px";
       document.getElementById("addNameServer").style.fontSize = "10px";
@@ -534,6 +535,7 @@ function updateChatLog(message, sender) {
     !message.includes("Thank you for signing in!")
 ) {
     addButton("Add Child Nameservers", "child-ns-button", "add-child-name-server-section");
+    
     document.getElementById("chat-log").style.height = "60%";
     document.getElementById("ns-wrapper").style.padding = "0";
     document.getElementById("registerchildnameserver").style.fontSize = "5px";
@@ -551,6 +553,9 @@ function updateChatLog(message, sender) {
         buttonGroups[i].style.height = "50px"; // Adjust the height as needed
         buttonGroups[i].style.fontSize = "16px"; // Adjust the font size as needed
     }
+    document.getElementById("child-ns-button").addEventListener("click", () => {
+        updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
+    });
 }
 
   // Show auth buttons if response matches predefined responses
@@ -1011,6 +1016,10 @@ async function handleCheckDomain() {
 
         const data = await response.json();
         console.log("🟢 Parsed JSON response:", data);
+
+        if (data.message.includes("Error checking domain availability")) {
+            throw new Error(data.message);
+        }
 
         if (!data.hasOwnProperty("available")) {
             throw new Error("Missing 'available' property in API response.");
@@ -2317,6 +2326,46 @@ async function submitDomainQuery() {
           return;
       }
 
+      if (!inputElement) {
+        console.error("❌ Input field not found!");
+    } else {
+        const userInput = inputElement.value.trim().toLowerCase();
+        console.log(`📝 User Input: "${userInput}"`);
+    
+        // Enhanced regex to capture various greetings and specific phrases
+        const basicGreetingRegex = /^(hi|hello|hey|howdy|greetings|what(?:'s| is) up|wassup|sup|yo|good\s(?:morning|afternoon|evening|day)|how\s+are\s+you|how\s+(?:is it going|have you been|do you do)|what(?:'s| is)\s+(?:new|happening)|how's\s+(?:everything|life)|long time no see|nice to meet you|pleased to meet you|good to see you)[!.,?\s]*$/i;    
+        const greetingMatch = userInput.match(basicGreetingRegex);
+    
+        if (greetingMatch) {
+            console.log("👋 Greeting detected!");
+    
+            let response = "Hello! 😊 How can I assist you today?"; // Default response
+    
+            // Custom responses based on detected phrase
+            if (/how are you/i.test(userInput)) {
+                response = "I'm doing great! 😊 How can I help you today?";
+            } else if (/how's it going/i.test(userInput)) {
+                response = "Everything is going smoothly! 🚀 How can I assist you?";
+            } else if (/what's up|what is up|wassup|sup/i.test(userInput)) {
+                response = "I'm here and ready to help! 🤖 Let me know what you need.";
+            } else if (/what's new|what is new/i.test(userInput)) {
+                response = "Not much, just here to assist you! 🛠️ What can I do for you?";
+            } else if (/long time no see/i.test(userInput)) {
+                response = "Yes, it's been a while! ⏳ Let me know how I can help.";
+            } else if (/nice to meet you|pleased to meet you/i.test(userInput)) {
+                response = "Nice to meet you too! 🤝 What can I assist you with?";
+    
+            }
+    
+            updateChatLog(response, "bot");
+            document.getElementById("domain-query-text").value = "";
+            return;
+        } else {
+            console.log("❌ No greeting detected.");
+        }
+    }
+    
+
       const match = queryText.match(/\b(?:register|i want to register|how can i register|can you register(?: my domain)?)\b.*?\b([\w-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i);
 
 if (match) {
@@ -2358,35 +2407,40 @@ setTimeout(() => {
     return;
 }
 
-      
-      const renewMatch = queryText.match(
-        /\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b\s*([\w-]+\.[a-z]{2,})\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?|\b([\w-]+\.[a-z]{2,})\b.*?\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i
-      );
-      
-      if (renewMatch) {
-          const domainName = renewMatch[1]; // Extracted domain name
-          const duration = renewMatch[2] ? parseInt(renewMatch[2], 10) : null; // Extracted duration (if present)
-      
-          console.log("Matched domain for renewal:", domainName);
-          console.log("Matched duration:", duration);
-      
-          updateChatLog("Enter duration and click renew button to renew your domain seamlessly.", 'bot');
-      
-          // Show the renewal section & hide login section
-          document.getElementById('login-chat-section').value = '';
-          document.getElementById("domain-renewal-section").style.display = "block";
-          document.getElementById("login-chat-section").style.display = "none";
-      
-          // Prefill the domain input field
-          document.getElementById("renew-domain-name").value = domainName;
-      
-          // Auto-select duration in dropdown if it's valid (1,2,3,5,10)
-          const validDurations = [1, 2, 3, 5, 10];
-          if (duration && validDurations.includes(duration)) {
-              document.getElementById("renew-duration").value = duration;
-          }
-          return;
-      }      
+    const renewMatch = queryText.match(
+        /\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b\s*([\w-]+\.[a-z]{2,})?\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?|\b([\w-]+\.[a-z]{2,})?\b.*?\b(?:renew|renewal|can you renew|how (?:do|can) i renew|renew my|want to renew)\b(?:\s+for\s+(\d+)\s*(?:year|years)?)?/i
+    );
+
+    if (renewMatch) {
+        const domainName = renewMatch[1] || renewMatch[3] || ""; // Allow empty domain
+        const duration = renewMatch[2] ? parseInt(renewMatch[2], 10) : (renewMatch[4] ? parseInt(renewMatch[4], 10) : null);
+    
+        console.log("Matched domain for renewal:", domainName || "(none)");
+        console.log("Matched duration:", duration || "(default)");
+    
+        updateChatLog(
+            domainName
+                ? "Enter duration and click renew button to renew your domain seamlessly."
+                : "Please enter the domain name you would like to renew.",
+            "bot"
+        );
+    
+        // Show the renewal section & hide login section
+        document.getElementById('login-chat-section').value = '';
+        document.getElementById("domain-renewal-section").style.display = "block";
+        document.getElementById("login-chat-section").style.display = "none";
+    
+        // Prefill the domain input field (empty if no domain found)
+        document.getElementById("renew-domain-name").value = domainName;
+    
+        // Auto-select duration in dropdown if it's valid (1,2,3,5,10)
+        const validDurations = [1, 2, 3, 5, 10];
+        if (duration && validDurations.includes(duration)) {
+            document.getElementById("renew-duration").value = duration;
+        }
+        return;
+    }
+    
 
     const transferMatch = queryText.match(/\btransfer\s+([a-zA-Z0-9-]+\.[a-z]{2,})/i);
     if (transferMatch) {
@@ -2680,38 +2734,41 @@ if (tldMatch) {
         return;
     }
     
-const authCodeRegex = /\b(?:auth(?:orization|orisation)?\s+code|epp\s+(?:code|key|for|of))\b\s*([\w.-]+\.[a-z]{2,})\b/i;
-const authCodeMatch = queryText.match(authCodeRegex); // 🔥 Match against user input
+    const authCodeRegex = /\b([\w.-]+\.[a-z]{2,})\b(?:\s+\w+)*\s+(?:auth(?:orization|orisation)?\s*code|authcode|epp\s+(?:code|key))\b|\b(?:auth(?:orization|orisation)?\s*code|authcode|epp\s+(?:code|key))\b(?:\s+\w+)*\s+\b([\w.-]+\.[a-z]{2,})\b/i;
 
-if (authCodeMatch) {
-    const domainName = authCodeMatch[1].trim();
-
-    try {
-        console.log('Fetching auth code for:', domainName);
-        const response = await fetch(`/api/domain-auth-code?domain=${encodeURIComponent(domainName)}`);
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data. Status: ${response.status}`);
+    const authCodeMatch = queryText.match(authCodeRegex); // 🔥 Match against user input
+    
+    if (authCodeMatch) {
+        const domainName = (authCodeMatch[1] || authCodeMatch[2]).trim(); // Capture from either part
+    
+        try {
+            console.log('🔍 Fetching auth code for:', domainName);
+            const response = await fetch(`/api/domain-auth-code?domain=${encodeURIComponent(domainName)}`);
+    
+            if (!response.ok) {
+                throw new Error(`❌ Failed to fetch data. Status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log('📜 Auth code response:', data);
+    
+            if (data.success) {
+                console.log('✅ Auth Code:', data.authCode);
+                updateChatLog(`🔑 Auth Code for ${domainName}: ${data.authCode}`, 'bot');
+            } else {
+                updateChatLog(`⚠️ ${data.message}`, 'bot');
+            }          
+    
+        } catch (error) {
+            console.error("🚨 Error fetching auth code:", error);
+            updateChatLog("⚠️ Unable to fetch auth code at this time. Please try again later.", 'bot');
         }
-
-        const data = await response.json();
-        console.log('Auth code response:', data);
-
-        if (data.success) {
-            console.log('Auth Code:', data.authCode);
-            updateChatLog(`Auth Code for ${domainName}: ${data.authCode}`, 'bot');
-        } else {
-            updateChatLog(`${data.message}`, 'bot');
-        }          
-
-    } catch (error) {
-        console.error("Error fetching auth code:", error);
-        updateChatLog("Unable to fetch auth code at this time.", 'bot');
-    }
-
-    document.getElementById("domain-query-text").value = "";
-    return;
-}
+    
+        document.getElementById("domain-query-text").value = "";
+        return;
+    } else {
+        console.log("❌ No auth code request detected.");
+    }    
 
 const domainregisterRegex = /\bwhen\b.*?\b([\w.-]+\.[a-z]{2,})\b.*?\b(register|registered)\b|\bwhen\b.*?\b(register|registered)\b.*?\b([\w.-]+\.[a-z]{2,})\b/i;
 
@@ -2804,45 +2861,51 @@ if (!inputElement) {
     const usersInput = inputElement.value.trim();
     console.log(`📝 User Input: "${usersInput}"`);
 
-    // Updated Regex: Supports "theft" or "thief", handles repetition, flexible ordering
-    const theftRegex = /\b(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*\/?(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*(?:theft\s*protection|thief\s*protection)(?:,\s*theft\s*protection)?\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+// Updated Regex: Detects "theft protection" in any form, with or without action/domain
+    const theftRegex = /\b(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*\/?(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*(?:theft\s*protection|thief\s*protection)/i;
+
     const theftMatch = usersInput.match(theftRegex);
 
     if (theftMatch) {
         console.log("✅ Theft Protection command detected in input.");
-        
+
         let actionMatch = usersInput.match(/\b(enable|disable|on|off|switch\s+on|switch\s+off)/i);
         let action = actionMatch ? actionMatch[1].toLowerCase() : ""; // Extract action
-        let domain = theftMatch[1] ? theftMatch[1].trim() : ""; // Extracted domain
+
+        let domainMatch = usersInput.match(/\b([\w.-]+\.[a-z]{2,})\b/); // Detect domain name if present
+        let domain = domainMatch ? domainMatch[1].trim() : ""; // Extracted domain (or empty)
 
         console.log(`📌 Extracted Domain: ${domain || "None"}`);
         console.log(`📌 Selected Action: ${action || "None"}`);
 
-        updateChatLog("🛡️ Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'.", "bot");
+        updateChatLog(
+            domain
+                ? "🛡️ Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'."
+                : "🛡️ Please provide a domain name to enable/disable theft protection.",
+            "bot"
+        );
 
-        // Map various action words to 'enabled' or 'disabled'
         let selectedAction = "";
-        if (action.includes("on") || action === "enable" || action === "switch on") {
+        if (["on", "enable", "switch on"].includes(action)) {
             selectedAction = "enabled";
-        } else if (action.includes("off") || action === "disable" || action === "switch off") {
+        } else if (["off", "disable", "switch off"].includes(action)) {
             selectedAction = "disabled";
         }
 
-        // Set dropdown value if a valid action is detected
         if (selectedAction) {
             theftProtectionDropdown.value = selectedAction;
         }
 
-        // Populate the domain input field (leave blank if no domain provided)
-        theftProtectionDomainInput.value = domain;
-
-        // Show Theft Protection Section
+        theftProtectionDomainInput.value = domain; // Keep blank if no domain provided
         theftProtectionSection.style.display = "block";
         document.getElementById('login-chat-section').style.display = 'none';
+
+        // 🚨 Prevent further execution (Stops fallback logic)
+        return;
     } else {
-        console.log("❌ No valid Theft Protection command detected.");
+            console.log("❌ No valid Theft Protection command detected.");
+        }
     }
-}
 
 const privacyProtectionSection = document.getElementById("privacy-protection-section");
 const privacyProtectionDropdown = document.getElementById("privacy-protection-dropdown");
@@ -2877,6 +2940,7 @@ if (!inputElement) {
         // Show Privacy Protection Section
         privacyProtectionSection.style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
+        return;
     }
 }
 
@@ -2891,7 +2955,7 @@ if (!inputElement) {
     console.log(`📝 User Input: "${usersInput}"`);
 
     // Updated Regex: Supports various lock/unlock commands
-    const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,})/i;
+    const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)(?:\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,}))?/i;
     const lockUnlockMatch = usersInput.match(lockUnlockRegex);
 
     if (lockUnlockMatch) {
@@ -2914,6 +2978,7 @@ if (!inputElement) {
         // Show Lock/Unlock Section
         lockUnlockSection.style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
+        return;
     }
 }
 
@@ -2928,7 +2993,7 @@ if (!inputElement) {
     console.log(`📝 User Input: "${usersInput}"`);
 
     // Regex to match "suspend/unsuspend domain.com"
-    const suspendUnsuspendRegex = /\b(suspend|unsuspend)\b(?:\/(suspend|unsuspend))?\s*(?:the\s+)?(?:domain\s*)?(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    const suspendUnsuspendRegex = /\b(suspend|unsuspend)(?:\/(suspend|unsuspend))?\s*(?:the\s+)?(?:domain\s*)?(?:for\s+)?([\w.-]+\.[a-z]{2,})?/i;
     const suspendUnsuspendMatch = usersInput.match(suspendUnsuspendRegex);
 
     if (suspendUnsuspendMatch) {
@@ -2951,6 +3016,7 @@ if (!inputElement) {
         // Show Suspend/Unsuspend Section
         suspendUnsuspendSection.style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
+        return;
     }
 }
 
@@ -2960,34 +3026,45 @@ if (!inputElement) {
     const userInput = inputElement.value.trim();
     console.log(`📝 User Input: "${userInput}"`);
 
-    // ✅ Extract "Enable/Disable privacy protection for domain.com"
-    const privacyRegex = /\b(enable|disable)\s+privacy\s+protection\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    // ✅ Corrected Regex to allow "privacy protection" alone
+    const privacyRegex = /\b(?:enable|disable)?\s*privacy\s+protection(?:\s*for\s+([\w.-]+\.[a-z]{2,}))?/i;
     const privacyMatch = userInput.match(privacyRegex);
-    
+
     console.log(`[DEBUG] 🔍 Running Privacy Regex: ${privacyRegex}`);
     console.log(`[DEBUG] 📌 Regex Match Result:`, privacyMatch);
-    
+
     if (privacyMatch) {
         console.log("✅ Privacy Protection command detected in input.");
-        
-        const action = privacyMatch[1].toLowerCase();  // "enable" or "disable"
-        const domain = privacyMatch[2];  // Extracted domain
 
-        console.log(`📌 Action: ${action}`);
-        console.log(`🌍 Domain: ${domain}`);
+        const action = privacyMatch[1] ? privacyMatch[1].toLowerCase() : ""; // Extract action
+        const domain = privacyMatch[2] ? privacyMatch[2].trim() : ""; // Extract domain
 
-        const isEnablePrivacy = action === "enable";
-        console.log(`🔄 Converted Boolean Value: ${isEnablePrivacy}`);
+        console.log(`📌 Action: ${action || "None provided"}`);
+        console.log(`🌍 Domain: ${domain || "None provided"}`);
 
-        // 🔥 Prevent duplicate API calls
-        if (!window.apiCallTriggered) {
-            window.apiCallTriggered = true;
-            sendPrivacySetting(domain, isEnablePrivacy); // ✅ Pass extracted values directly
+        // Show Privacy Protection Section
+        document.getElementById("privacy-protection-section").style.display = "block";
+        document.getElementById('login-chat-section').style.display = 'none';
+
+        // Handle dropdown selection only if an action is provided
+        if (action) {
+            const isEnablePrivacy = action === "enable";
+            console.log(`🔄 Converted Boolean Value: ${isEnablePrivacy}`);
+
+            // Prevent duplicate API calls
+            if (!window.apiCallTriggered) {
+                window.apiCallTriggered = true;
+                sendPrivacySetting(domain, isEnablePrivacy);
+            }
+        } else {
+            console.log("⚠️ No enable/disable action provided. Prompt user for selection.");
         }
+        return;
     } else {
         console.log("❌ No valid privacy protection command detected.");
     }
 }
+
 
 const lockRegex = /(?:.*\s)?\b(lock|unlock)\s*(?:my\s*domain\s*|this\s*domain\s*)?([\w.-]+)/i;
 
@@ -3051,15 +3128,31 @@ if (updatenamematch) {
     console.log("No match found.");
 }
 
-const updateNameServerRegex = /\b(?:update|change|modify)\s+name\s*servers?\s*(?:for\s+([\w.-]+\.[a-z]{2,}))?\b/i;
+const updateNameServerRegex = /\b(?:update|change|modify)\s+\w*\s*name\s*servers?\s*(?:for|on)?\s*([\w.-]+\.[a-z]{2,})?\b/i;
 
 const updateNameServerMatch = userInput.match(updateNameServerRegex);
 
 if (updateNameServerMatch) {
     const domainName = updateNameServerMatch[1] ? updateNameServerMatch[1].trim() : ""; // Capture domain if present
 
-    // Show the "name-server-container" and hide the "login-chat-section"
-    document.getElementById("name-server-container").style.display = "flex";
+    // ✅ Ensure visibility toggle works even on repeated input
+    document.getElementById("name-server-container").style.display = "none"; 
+    void document.getElementById("name-server-container").offsetHeight; // Force reflow
+    document.getElementById("name-server-container").style.display = "flex"; 
+    document.getElementById("name-server-update-section").style.display = "flex"; 
+
+    document.getElementById("login-chat-section").style.display = "block"; 
+    setTimeout(() => {
+        document.getElementById("login-chat-section").style.display = "none";
+    }, 50); // Reset UI state
+
+    // ✅ Ensure query input is reset
+    document.getElementById("domain-query-text").value = "";
+    setTimeout(() => {
+        document.getElementById("domain-query-text").value = " ";
+    }, 10);
+
+    // ✅ UI Styling Adjustments
     document.getElementById("nameserver-container").style.width = "100%";
     document.getElementById("update-nameserver-button-group").style.width = "100%";
     document.getElementById("addNameServer").style.borderRadius = "5px";
@@ -3073,9 +3166,8 @@ if (updateNameServerMatch) {
     document.getElementById("updatenamebackbutton").style.height = "90%";
     document.getElementById("domain-name-input").style.height = "85%";
     document.getElementById("nameserver-container").style.marginTop = "-10px";
-    document.getElementById("login-chat-section").style.display = "none";
-    document.getElementById('domain-query-text').value = "";
-    // Set the extracted domain name in the input field (if available)
+
+    // ✅ Set domain name if provided
     document.getElementById("domain-name-input").value = domainName;
 
     updateChatLog(
@@ -3083,32 +3175,37 @@ if (updateNameServerMatch) {
         "bot"
     );
 
-    console.log(`📌 Domain Name: ${domainName || "Not provided"}`); // Log the extracted domain or indicate none
+    console.log(`📌 Domain Name: ${domainName || "Not provided"}`); // Log extracted domain
+    return;
 } else {
     console.log("❌ No match found.");
 }
 
+const updatechildnameRegex = /\b(?:how\s+(?:do|can)\s+i\s+(?:add|create|set\s*up|register)\s+(?:a\s+)?child\s*(?:name\s*server|nameserver)|add\s+(?:a\s+)?child\s*(?:name\s*server|nameserver)|child\s*(?:name\s*server|nameserver))(?:\s+for\s+([\w.-]+\.[a-z]{2,}))?\b/i;
 
-const updatechildnameRegex = /\b(how\s+(?:do|can)\s+i\s+(?:add|create|set\s*up|register)\s+(?:a\s+)?child\s+nameserver\s+for\s+([\w.-]+\.[a-z]{2,})\?|add\s+(?:a\s+)?child\s*nameserver\s+for\s+([\w.-]+\.[a-z]{2,}))\b/i;
 const updatechildnamematch = userInput.match(updatechildnameRegex);
 
 if (updatechildnamematch) {
-    const domainName = updatechildnamematch[3]; // Extracted domain name from the regex match
+    const domainName = updatechildnamematch[1] ? updatechildnamematch[1].trim() : ""; // Extract domain or empty string
 
-    // Show the "name-server-container" and hide the "login-chat-section"
+    // Show relevant section and hide login chat
     document.getElementById("add-child-name-server-section").style.display = "flex";
     document.getElementById("chat-log").style.height = "60%";
     document.getElementById("login-chat-section").style.display = "none";
     document.getElementById('domain-query-text').value = "";
-    // Set the extracted domain name in the input field
+
+    // Set domain input field (leave empty if no domain provided)
     document.getElementById("child-domain-name").value = domainName;
 
-    console.log(`Domain Name: ${domainName}`); // Optionally log the extracted domain name
+    updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
+
+
+    console.log(`✅ Extracted Domain Name: ${domainName || "None (User needs to enter manually)"}`);
+    return;
+} else {
+    console.log("❌ No match found.");
 }
 
-else {
-    console.log("No match found.");
-}
 
 const TLdsregex = /\b(?:give|show|list|fetch|get)\s+me\s+(?:a\s+)?(?:list)\s+of\s+(?:high[-\s]*value|premium)\s+domain\s+(?:tlds|extensions|suggestions|names)\s*(?:for)?\s*([\w.-]+)\??\b/i;
 const updatetldmatch = userInput.match(TLdsregex);

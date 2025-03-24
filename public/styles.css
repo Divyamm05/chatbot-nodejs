@@ -1093,8 +1093,7 @@ body {
 /* Full-width elements */
 #domain-transfer-section button,
 #domain-transfer-section select {
-  width: 207%;
-  height: 32px;
+  width: 208%;
   font-size: 12px;
 }
 
@@ -1965,7 +1964,7 @@ login-chat-wrapper button:disabled {
 
   #chat-container {
     display: flex;
-    width: 75vh;
+    width: 65vh;
     height: 75vh;
     flex-direction: row; /* Ensure chatbox is next to sidebar */
     border-radius: 15px;
@@ -1985,6 +1984,7 @@ login-chat-wrapper button:disabled {
     list-style: none;
     padding: 0;
     margin: 0;
+    max-height: calc(98vh - 220px);
   }
   
   .faq-list li {
@@ -2011,7 +2011,7 @@ login-chat-wrapper button:disabled {
 /* Mobile Devices (Below 768px) */
 @media (max-width: 768px) {
   #chat-container {
-    width: 65vh;
+    width: 70vh;
     height: 75vh;
     display: flex;
     flex-direction: row; /* Ensure chatbox is next to sidebar */
@@ -2084,7 +2084,7 @@ login-chat-wrapper button:disabled {
 
 @media (max-width: 600px) {
   #chat-container {
-    width: 50vh;
+    width: 60vh;
     height: 75vh;
     display: flex;
     flex-direction: row; /* Ensure chatbox is next to sidebar */
@@ -2183,6 +2183,18 @@ login-chat-wrapper button:disabled {
   box-sizing: border-box;
   margin: 3px;
 }
+
+#domain-transfer-section button, #domain-transfer-section select {
+  width: 213%;
+  font-size: 11px;
+}
+
+.faq-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: calc(98vh - 210px);
+}
 }
 
 }
@@ -2204,6 +2216,13 @@ login-chat-wrapper button:disabled {
     color: white;
     font-size: 12px;
   }
+
+  .faq-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: calc(98vh - 280px);
+}
 
   #chatbox {
     width: 100%;
@@ -2263,8 +2282,8 @@ login-chat-wrapper button:disabled {
 
 @media (max-width: 380px) {
   #chat-container {
-    width: 48vh;
-    height: 65vh;
+    width: 40vh;
+    height: 70vh;
     border-radius: 5;
   }
   .faq-list li {
@@ -2277,6 +2296,13 @@ login-chat-wrapper button:disabled {
     color: white;
     font-size: 12px;
   }
+
+  .faq-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: calc(98vh - 240px);
+}
 
   #chatbox {
     width: 100%;

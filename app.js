@@ -2102,8 +2102,6 @@ const predefinedAnswers = {
 //
   "How do I export 'List Name'?": "You can export domain-related lists from your account dashboard under the reports or export section.",
 //
-  "How can I move a domain?": "You can move a domain by initiating a transfer request and following the domain transfer process by clicking on the transfer button below.",
-//
   "How can I add a child nameserver?": "To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers.",
 //
   "How do I pull a domain?": "To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.",
