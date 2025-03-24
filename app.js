@@ -19,7 +19,7 @@ const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 // Session setup
 app.use(session({
-  secret: 'your_secret_key',  
+  secret: process.env.SESSION_SECRET,  
   resave: false,              
   saveUninitialized: false,    
   cookie: { secure: false },  
