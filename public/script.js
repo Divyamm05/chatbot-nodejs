@@ -650,13 +650,21 @@ function updateAuthUI() {
 //------------ Prefills chat input with a domain query, highlights the domain name placeholder, and show a tooltip section ------------//
 
 function fillChatInput(question) {
-
     const userInput = document.getElementById("user-question");
     const userInput2 = document.getElementById("domain-query-text");
-    userInput.value = question;
-    userInput2.value = question;
-    userInput.focus();
-  }  
+
+    // Check if the input is already set to avoid duplicate setting
+    if (userInput.value === question && userInput2.value === question) {
+        console.warn("❌ Duplicate question detected, ignoring...");
+        return;
+    }
+
+    setTimeout(() => {
+        userInput.value = question;
+        userInput2.value = question;
+        userInput.focus();
+    }, 50); // Small delay to prevent unintended duplicate triggers
+}
 
 let tooltipDomain = null;
 let tooltipDate = null;
@@ -668,6 +676,12 @@ function fillChatInputWithPlaceholder(template) {
     const lockToggle = document.getElementById('domain-lock-dropdown-container');
     const suspendToggle = document.getElementById('domain-suspend-toggle-container');
     const privacyToggle = document.getElementById('domain-privacy-dropdown');
+
+    // Avoid triggering multiple times
+    if (chatInput.value === template) {
+        console.warn("❌ Duplicate template detected, ignoring...");
+        return;
+    }
 
     chatInput.value = template;
     chatInput.focus();
@@ -1918,16 +1932,19 @@ async function updateNameServers() {
         enableChat();
         if (result.success) {
             showNameServerPopup("Name Servers updated successfully!", true);
+            updateChatLog("✅ Name Servers updated successfully!");
             document.getElementById("name-server-container").style.display = "none";
             document.getElementById("login-chat-section").style.display = "flex";
         } else {
             showNameServerPopup("Failed to update Name Servers: " + (result.message || "Unknown error."), false);
+            updateChatLog("❌ Failed to update Name Servers");
             document.getElementById("name-server-container").style.display = "none";
             document.getElementById("login-chat-section").style.display = "flex";
         }
     } catch (error) {
         console.error("[FRONTEND] ❌ Error:", error);
         showNameServerPopup("Error connecting to server.", false);
+        updateChatLog("❌ Error connecting to server.");
     }
 }
 
@@ -1993,6 +2010,7 @@ function showChildNSPopup(message, isSuccess) {
 
         // Ensure the login chat section is displayed again
         document.getElementById("login-chat-section").style.display = "flex"; 
+        document.getElementById("login-chat-section").value = ""
 
         // If the request was successful, hide the "add-child-name-server-section"
         if (isSuccess) {
