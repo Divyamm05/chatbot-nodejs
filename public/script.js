@@ -484,6 +484,7 @@ function updateChatLog(message, sender) {
       && !message.includes("Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.")
   ) {
       addButton("Transfer a Domain", "transfer-button", "domain-transfer-section");
+      document.getElementById("transfer-whois-protection-input").style.width="calc(50% - 7px)";
   }
 
   // Check domain availability
