@@ -6102,3 +6102,219 @@
   ],
   "message": ""
 }
+[2025-03-25T08:47:38.824Z] Server is running on http://localhost:3000
+[2025-03-25T08:47:47.324Z] Received query: How do I register a domain?
+[2025-03-25T08:47:53.181Z] Checking domain availability for: www.sweets32123123.com
+[2025-03-25T08:47:53.182Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.sweets32123123.com
+[2025-03-25T08:47:54.149Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T08:47:54.150Z] Domain Availability: false
+[2025-03-25T08:47:54.150Z] Registration Fee: null
+[2025-03-25T08:47:54.151Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}
+[2025-03-25T08:49:57.750Z] Server is running on http://localhost:3000
+[2025-03-25T08:50:07.926Z] Received query: How do I register a domain?
+[2025-03-25T08:50:11.066Z] Checking domain availability for: www.sweets32123123.com
+[2025-03-25T08:50:11.066Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.sweets32123123.com
+[2025-03-25T08:50:12.002Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T08:50:12.003Z] Domain Availability: false
+[2025-03-25T08:50:12.003Z] Registration Fee: null
+[2025-03-25T08:50:12.003Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}
+[2025-03-25T08:50:43.514Z] ====================================
+[2025-03-25T08:50:43.514Z] 📥 Received request for domain suggestions: sweets32123123.com
+[2025-03-25T08:50:43.514Z] 🔍 Fetching domain suggestions from API...
+[2025-03-25T08:50:43.515Z] 🌍 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=6HviT7QU1YAAYqp&keyword=sweets32123123.com&maxResult=25
+[2025-03-25T08:50:44.390Z] ✅ API Response Received:
+[2025-03-25T08:50:44.391Z] {
+  "registryDomainSuggestionList": [
+    {
+      "domainName": "Sweets32123123.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Cakes32123123.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Sweets32123123Boutique.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Treats32123123.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Sweets32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Cakes32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets32123123Boutique.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "MissSweets32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Treats32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Desserts32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Cupcakes32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets32123123Clothing.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "S32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Bakes32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "NaturalSweets32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets32123123E.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "SweetsBar32123123.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets32123123.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Cakes32123123.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Sweets32123123Boutique.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Treats32123123.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Sweets32123123.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Cakes32123123.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Sweets32123123Boutique.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Treats32123123.co",
+      "price": 12.29
+    }
+  ]
+}
+[2025-03-25T08:50:44.391Z] 📌 Found 25 domain suggestions for: sweets32123123.com
+[2025-03-25T08:50:44.392Z]    1. Sweets32123123.link - $8.69
+[2025-03-25T08:50:44.392Z]    2. Cakes32123123.link - $8.69
+[2025-03-25T08:50:44.392Z]    3. Sweets32123123Boutique.link - $8.69
+[2025-03-25T08:50:44.392Z]    4. Treats32123123.link - $8.69
+[2025-03-25T08:50:44.392Z]    5. Sweets32123123.com - $11.99
+[2025-03-25T08:50:44.392Z]    6. Cakes32123123.com - $11.99
+[2025-03-25T08:50:44.392Z]    7. Sweets32123123Boutique.com - $11.99
+[2025-03-25T08:50:44.393Z]    8. MissSweets32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    9. Treats32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    10. Desserts32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    11. Cupcakes32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    12. Sweets32123123Clothing.com - $11.99
+[2025-03-25T08:50:44.393Z]    13. S32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    14. Bakes32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    15. NaturalSweets32123123.com - $11.99
+[2025-03-25T08:50:44.393Z]    16. Sweets32123123E.com - $11.99
+[2025-03-25T08:50:44.393Z]    17. SweetsBar32123123.com - $11.99
+[2025-03-25T08:50:44.394Z]    18. Sweets32123123.biz - $6.29
+[2025-03-25T08:50:44.394Z]    19. Cakes32123123.biz - $6.29
+[2025-03-25T08:50:44.394Z]    20. Sweets32123123Boutique.biz - $6.29
+[2025-03-25T08:50:44.394Z]    21. Treats32123123.biz - $6.29
+[2025-03-25T08:50:44.394Z]    22. Sweets32123123.co - $12.29
+[2025-03-25T08:50:44.395Z]    23. Cakes32123123.co - $12.29
+[2025-03-25T08:50:44.395Z]    24. Sweets32123123Boutique.co - $12.29
+[2025-03-25T08:50:44.395Z]    25. Treats32123123.co - $12.29
+[2025-03-25T08:50:44.396Z] ====================================
+[2025-03-25T08:52:15.771Z] Server is running on http://localhost:3000
+[2025-03-25T08:52:22.297Z] Received query: How do I register a domain?
+[2025-03-25T08:52:24.597Z] Checking domain availability for: www.sweets32123123.com
+[2025-03-25T08:52:24.597Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.sweets32123123.com
+[2025-03-25T08:52:35.555Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T08:52:35.555Z] Domain Availability: false
+[2025-03-25T08:52:35.556Z] Registration Fee: null
+[2025-03-25T08:52:35.556Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}
+[2025-03-25T08:54:27.798Z] Server is running on http://localhost:3000
+[2025-03-25T08:54:34.721Z] Received query: How do I register a domain?
+[2025-03-25T08:54:37.258Z] Checking domain availability for: www.sweets32123123.com
+[2025-03-25T08:54:37.258Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.sweets32123123.com
+[2025-03-25T08:54:38.131Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T08:54:38.132Z] Domain Availability: false
+[2025-03-25T08:54:38.132Z] Registration Fee: null
+[2025-03-25T08:54:38.132Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}

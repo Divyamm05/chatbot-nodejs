@@ -1,0 +1,6 @@
+GET / 304 12ms
+GET /styles.css 304 1ms
+GET /script.js 304 1ms
+POST /api/mock-authenticate 200 17ms
+POST /api/domain-queries 200 10ms
+GET /api/check-domain?domain=www.sweets32123123.com 304 857ms

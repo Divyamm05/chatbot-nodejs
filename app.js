@@ -13,51 +13,55 @@ const port = process.env.PORT || 3000;
 const fs = require('fs');
 const util = require('util');
 
-// Create log directory if it doesn't exist
-if (!fs.existsSync('/home2/chatbot-logs')) {
-    fs.mkdirSync('/home2/chatbot-logs');
+const logDir = '/home2/chatbot-logs';
+
+// Ensure log directory exists
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
 }
 
 // Create write streams for different log types
-const accessLog = fs.createWriteStream('logs/access.log', { flags: 'a' });
-const errorLog = fs.createWriteStream('logs/error.log', { flags: 'a' });
-const generalLog = fs.createWriteStream('logs/general.log', { flags: 'a' });
+const accessLog = fs.createWriteStream(`${logDir}/access.log`, { flags: 'a' });
+const errorLog = fs.createWriteStream(`${logDir}/error.log`, { flags: 'a' });
+const generalLog = fs.createWriteStream(`${logDir}/logs.txt`, { flags: 'a' });
 
 // Override console.log to write to both file and console
 const originalLog = console.log;
-console.log = function(...args) {
-    const message = util.format.apply(null, args);
+console.log = function (...args) {
+    const message = util.format(...args);
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}\n`;
-    
+
     generalLog.write(logMessage);
     originalLog.apply(console, args);
 };
 
 // Override console.error to write to error log
-console.error = function(...args) {
-    const message = util.format.apply(null, args);
+console.error = function (...args) {
+    const message = util.format(...args);
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}\n`;
-    
+
     errorLog.write(logMessage);
     originalLog.apply(console, args);
 };
 
-// Add middleware to log requests
+// Middleware to log requests
 app.use((req, res, next) => {
     const start = Date.now();
-    
+
     res.on('finish', () => {
         const duration = Date.now() - start;
-        const logMessage = `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms\n`;
+        const timestamp = new Date().toISOString();
+        const logMessage = `[${timestamp}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms\n`;
+
         accessLog.write(logMessage);
     });
-    
+
     next();
 });
 
-// Add error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
     const timestamp = new Date().toISOString();
     const errorMessage = `[${timestamp}] Error: ${err.stack}\n`;
