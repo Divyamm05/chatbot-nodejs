@@ -1,0 +1,833 @@
+[2025-03-25T04:26:37.413Z] Server is running on http://localhost:3000
+[2025-03-25T04:26:46.790Z] Received query: whmcs
+[2025-03-25T04:28:59.424Z] Received query: Where can I sign up?
+[2025-03-25T04:29:52.383Z] Server is running on http://localhost:3000
+[2025-03-25T04:30:02.421Z] Received query: Where can I sign up?
+[2025-03-25T04:30:09.790Z] Received query: How do I register a domain?
+[2025-03-25T04:30:13.655Z] Checking domain availability for: www.sweets434343.com
+[2025-03-25T04:30:13.655Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.sweets434343.com
+[2025-03-25T04:30:14.622Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T04:30:14.622Z] Domain Availability: false
+[2025-03-25T04:30:14.622Z] Registration Fee: null
+[2025-03-25T04:30:14.622Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}
+[2025-03-25T04:30:15.797Z] ====================================
+[2025-03-25T04:30:15.797Z] 📥 Received request for domain suggestions: sweets434343.com
+[2025-03-25T04:30:15.797Z] 🔍 Fetching domain suggestions from API...
+[2025-03-25T04:30:15.798Z] 🌍 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=6HviT7QU1YAAYqp&keyword=sweets434343.com&maxResult=25
+[2025-03-25T04:30:16.476Z] ✅ API Response Received:
+[2025-03-25T04:30:16.476Z] {
+  "registryDomainSuggestionList": [
+    {
+      "domainName": "Sweets434343.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Cakes434343.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Sweets434343Boutique.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Treats434343.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Sweets434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Cakes434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "MissSweets434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets434343Boutique.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "SweetsBar434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Treats434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Desserts434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets434343Clothing.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "NaturalSweets434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "SweetsCo434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Cupcakes434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Bakes434343.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets434343Resort.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Sweets434343.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Cakes434343.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Sweets434343Boutique.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Treats434343.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Sweets434343.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Cakes434343.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Sweets434343Boutique.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Treats434343.co",
+      "price": 12.29
+    }
+  ]
+}
+[2025-03-25T04:30:16.477Z] 📌 Found 25 domain suggestions for: sweets434343.com
+[2025-03-25T04:30:16.477Z]    1. Sweets434343.link - $8.69
+[2025-03-25T04:30:16.477Z]    2. Cakes434343.link - $8.69
+[2025-03-25T04:30:16.477Z]    3. Sweets434343Boutique.link - $8.69
+[2025-03-25T04:30:16.477Z]    4. Treats434343.link - $8.69
+[2025-03-25T04:30:16.477Z]    5. Sweets434343.com - $11.99
+[2025-03-25T04:30:16.477Z]    6. Cakes434343.com - $11.99
+[2025-03-25T04:30:16.477Z]    7. MissSweets434343.com - $11.99
+[2025-03-25T04:30:16.477Z]    8. Sweets434343Boutique.com - $11.99
+[2025-03-25T04:30:16.477Z]    9. SweetsBar434343.com - $11.99
+[2025-03-25T04:30:16.477Z]    10. Treats434343.com - $11.99
+[2025-03-25T04:30:16.478Z]    11. Desserts434343.com - $11.99
+[2025-03-25T04:30:16.478Z]    12. Sweets434343Clothing.com - $11.99
+[2025-03-25T04:30:16.478Z]    13. NaturalSweets434343.com - $11.99
+[2025-03-25T04:30:16.478Z]    14. SweetsCo434343.com - $11.99
+[2025-03-25T04:30:16.478Z]    15. Cupcakes434343.com - $11.99
+[2025-03-25T04:30:16.478Z]    16. Bakes434343.com - $11.99
+[2025-03-25T04:30:16.478Z]    17. Sweets434343Resort.com - $11.99
+[2025-03-25T04:30:16.478Z]    18. Sweets434343.biz - $6.29
+[2025-03-25T04:30:16.478Z]    19. Cakes434343.biz - $6.29
+[2025-03-25T04:30:16.478Z]    20. Sweets434343Boutique.biz - $6.29
+[2025-03-25T04:30:16.478Z]    21. Treats434343.biz - $6.29
+[2025-03-25T04:30:16.479Z]    22. Sweets434343.co - $12.29
+[2025-03-25T04:30:16.479Z]    23. Cakes434343.co - $12.29
+[2025-03-25T04:30:16.479Z]    24. Sweets434343Boutique.co - $12.29
+[2025-03-25T04:30:16.479Z]    25. Treats434343.co - $12.29
+[2025-03-25T04:30:16.480Z] ====================================
+[2025-03-25T04:30:22.916Z] Received query: whmcs
+[2025-03-25T04:30:26.081Z] Received query: whmcs
+[2025-03-25T04:30:29.486Z] Received query: whmcs
+[2025-03-25T04:30:33.819Z] Received query: How can I download the WHMCS module?
+[2025-03-25T04:30:37.583Z] Received query: whmcs
+[2025-03-25T04:30:41.142Z] Received query: whmcs
+[2025-03-25T04:33:16.025Z] [DOMAIN-INFO] 🔍 Fetching information for domain: sweets321.com
+[2025-03-25T04:33:16.025Z] [DOMAIN-INFO] 🌐 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain?APIKey=6HviT7QU1YAAYqp&websiteName=sweets321.com
+[2025-03-25T04:33:16.898Z] [DOMAIN-INFO] 🌐 API Response: {
+  responseMsg: {
+    message: 'Domain sweets321.com is available',
+    id: 0,
+    statusCode: 200
+  },
+  responseData: {
+    domainNameId: 2325038,
+    websiteName: 'sweets321.com',
+    orderDate: 1740460776000,
+    creationDate: 1740460777000,
+    lastUpdatedDate: 1741693086000,
+    expirationDate: 2055993577000,
+    nameserver1: 'nsss.org',
+    nameserver2: 'ns2.org',
+    nameserver3: 'ns3.org',
+    nameserver4: '',
+    nameserver5: '',
+    nameserver6: '',
+    nameserver7: '',
+    nameserver8: '',
+    nameserver9: '',
+    nameserver10: '',
+    nameserver11: '',
+    nameserver12: '',
+    nameserver13: '',
+    status: 'Active',
+    authCode: 'auth@37de51fdA5re',
+    isDomainLocked: false,
+    isThiefProtected: true,
+    isPrivacyProtection: true,
+    isParked: false,
+    customerId: 223855,
+    registrantContactId: '340482',
+    adminContactId: '340482',
+    technicalContactId: '340482',
+    billingContactId: '340482',
+    isRegistrantVerification: false,
+    registrantVerificationDate: 0,
+    websiteId: 2312083,
+    dnszoneStatus: 0,
+    dnszoneId: 0
+  }
+}
+[2025-03-25T04:33:16.900Z] [DOMAIN-INFO] ✅ Domain information retrieved successfully for: sweets321.com
+[2025-03-25T04:39:18.740Z] Received query: How do I register a domain?
+[2025-03-25T04:39:28.156Z] Received query: whmcs
+[2025-03-25T04:40:17.097Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T04:41:32.460Z] Received query: How do I register a domain?
+[2025-03-25T04:41:36.134Z] Received query: How do I transfer IN/OUT domains?
+[2025-03-25T04:41:41.866Z] Received query: whmcs
+[2025-03-25T04:43:58.824Z] Received query: How do I register a domain?
+[2025-03-25T04:46:46.632Z] Received query: How do I register a domain?
+[2025-03-25T04:46:53.819Z] Received query: whmcs
+[2025-03-25T04:50:15.722Z] Received query: How do I register a domain?
+[2025-03-25T04:50:21.436Z] Received query: whmcs
+[2025-03-25T04:54:52.430Z] Received query: How do I register a domain?
+[2025-03-25T04:54:59.708Z] Received query: whmcs
+[2025-03-25T04:58:38.682Z] Received query: How do I register a domain?
+[2025-03-25T04:58:43.813Z] Received query: whmcs
+[2025-03-25T05:02:30.732Z] Received query: How do I register a domain?
+[2025-03-25T05:02:37.755Z] Received query: whmcs
+[2025-03-25T05:03:32.370Z] Received query: How do I register a domain?
+[2025-03-25T05:03:35.896Z] Received query: whmcs
+[2025-03-25T05:10:07.711Z] Received query: How do I register a domain?
+[2025-03-25T05:10:14.276Z] Received query: login
+[2025-03-25T05:16:03.127Z] Received query: How do I register a domain?
+[2025-03-25T05:16:18.963Z] Received query: How do I register a domain?
+[2025-03-25T05:17:01.676Z] Received query: How do I register a domain?
+[2025-03-25T05:17:05.231Z] Received query: whmcs
+[2025-03-25T05:17:10.219Z] Received query: How do I register a domain?
+[2025-03-25T05:17:17.278Z] Received query: How do I register a domain?
+[2025-03-25T05:17:20.494Z] Received query: whmcs
+[2025-03-25T05:17:54.918Z] Received query: How do I register a domain?
+[2025-03-25T05:17:59.471Z] Received query: whmcs
+[2025-03-25T05:18:03.173Z] Received query: How do I register a domain?
+[2025-03-25T05:21:07.669Z] Received query: How can I renew a domain?
+[2025-03-25T05:21:11.494Z] Received query: How do I transfer IN/OUT domains?
+[2025-03-25T05:21:14.580Z] Received query: How can I renew a domain?
+[2025-03-25T05:23:19.418Z] Received query: How do I register a domain?
+[2025-03-25T05:23:46.954Z] Received query: whmcs
+[2025-03-25T05:23:50.847Z] Received query: How do I register a domain?
+[2025-03-25T05:23:52.718Z] Received query: whmcs
+[2025-03-25T05:24:03.925Z] Received query: How do I register a domain?
+[2025-03-25T05:24:05.990Z] Received query: whmcs
+[2025-03-25T05:24:11.759Z] Received query: whmcs
+[2025-03-25T05:24:15.486Z] Received query: How do I register a domain?
+[2025-03-25T05:24:23.435Z] Received query: How do I register a domain?
+[2025-03-25T05:24:30.618Z] Received query: How do I register a domain?
+[2025-03-25T05:24:37.755Z] Received query: How do I register a domain?
+[2025-03-25T05:25:12.090Z] Received query: How do I register a domain?
+[2025-03-25T05:25:15.264Z] Received query: whmcs
+[2025-03-25T05:25:19.018Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T05:25:19.018Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T05:25:20.021Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T05:25:20.022Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T05:25:20.022Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T05:25:22.694Z] Received query: How do I register a domain?
+[2025-03-25T05:25:32.165Z] Received query: How do I register a domain?
+[2025-03-25T05:27:13.589Z] Checking domain availability for: www.abc.com
+[2025-03-25T05:27:13.589Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.abc.com
+[2025-03-25T05:27:14.515Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T05:27:14.515Z] Domain Availability: false
+[2025-03-25T05:27:14.515Z] Registration Fee: null
+[2025-03-25T05:27:14.515Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}
+[2025-03-25T05:27:15.684Z] ====================================
+[2025-03-25T05:27:15.685Z] 📥 Received request for domain suggestions: abc.com
+[2025-03-25T05:27:15.685Z] 🔍 Fetching domain suggestions from API...
+[2025-03-25T05:27:15.686Z] 🌍 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=6HviT7QU1YAAYqp&keyword=abc.com&maxResult=25
+[2025-03-25T05:27:16.675Z] ✅ API Response Received:
+[2025-03-25T05:27:16.675Z] {
+  "registryDomainSuggestionList": [
+    {
+      "domainName": "Mtc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Agc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "AbcGames.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "51Abc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Tdc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Aybeaceae.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Aybeasae.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Aybeacey.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "5AbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "SuperAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "BigAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "TopAbcApp.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "VideoAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "FreeAbcApp.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "LiveAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "AbcAppServices.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "AbcAppSolutions.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "AbcGames.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "51Abc.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "AbcApp.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Jcc.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Abc.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Mtc.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Agc.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Tdc.co",
+      "price": 12.29
+    }
+  ]
+}
+[2025-03-25T05:27:16.677Z] 📌 Found 25 domain suggestions for: abc.com
+[2025-03-25T05:27:16.678Z]    1. Mtc.link - $8.69
+[2025-03-25T05:27:16.678Z]    2. Agc.link - $8.69
+[2025-03-25T05:27:16.678Z]    3. AbcGames.link - $8.69
+[2025-03-25T05:27:16.678Z]    4. 51Abc.link - $8.69
+[2025-03-25T05:27:16.678Z]    5. Tdc.link - $8.69
+[2025-03-25T05:27:16.679Z]    6. Aybeaceae.com - $11.99
+[2025-03-25T05:27:16.679Z]    7. Aybeasae.com - $11.99
+[2025-03-25T05:27:16.679Z]    8. Aybeacey.com - $11.99
+[2025-03-25T05:27:16.679Z]    9. 5AbcGames.com - $11.99
+[2025-03-25T05:27:16.679Z]    10. SuperAbcGames.com - $11.99
+[2025-03-25T05:27:16.679Z]    11. BigAbcGames.com - $11.99
+[2025-03-25T05:27:16.679Z]    12. TopAbcApp.com - $11.99
+[2025-03-25T05:27:16.679Z]    13. VideoAbcGames.com - $11.99
+[2025-03-25T05:27:16.679Z]    14. FreeAbcApp.com - $11.99
+[2025-03-25T05:27:16.679Z]    15. LiveAbcGames.com - $11.99
+[2025-03-25T05:27:16.679Z]    16. AbcAppServices.com - $11.99
+[2025-03-25T05:27:16.679Z]    17. AbcAppSolutions.com - $11.99
+[2025-03-25T05:27:16.679Z]    18. AbcGames.biz - $6.29
+[2025-03-25T05:27:16.679Z]    19. 51Abc.biz - $6.29
+[2025-03-25T05:27:16.679Z]    20. AbcApp.biz - $6.29
+[2025-03-25T05:27:16.680Z]    21. Jcc.biz - $6.29
+[2025-03-25T05:27:16.680Z]    22. Abc.co - $12.29
+[2025-03-25T05:27:16.680Z]    23. Mtc.co - $12.29
+[2025-03-25T05:27:16.680Z]    24. Agc.co - $12.29
+[2025-03-25T05:27:16.680Z]    25. Tdc.co - $12.29
+[2025-03-25T05:27:16.681Z] ====================================
+[2025-03-25T05:28:20.229Z] Received query: How do I register a domain?
+[2025-03-25T05:28:40.517Z] Checking domain availability for: www.abc.com
+[2025-03-25T05:28:40.517Z] Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=6HviT7QU1YAAYqp&websiteName=www.abc.com
+[2025-03-25T05:28:41.358Z] API Response: {
+  "responseMsg": {
+    "message": "Domain Not Available for Registration",
+    "id": 0,
+    "reason": null,
+    "statusCode": 400
+  },
+  "responseData": null
+}
+[2025-03-25T05:28:41.358Z] Domain Availability: false
+[2025-03-25T05:28:41.358Z] Registration Fee: null
+[2025-03-25T05:28:41.358Z] 🟢 [CHECK DOMAIN] Backend Response: {
+  "available": false,
+  "message": "Domain Not Available for Registration",
+  "registrationFee": null
+}
+[2025-03-25T05:28:43.498Z] ====================================
+[2025-03-25T05:28:43.498Z] 📥 Received request for domain suggestions: abc.com
+[2025-03-25T05:28:43.498Z] 🔍 Fetching domain suggestions from API...
+[2025-03-25T05:28:43.498Z] 🌍 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=6HviT7QU1YAAYqp&keyword=abc.com&maxResult=25
+[2025-03-25T05:28:44.371Z] ✅ API Response Received:
+[2025-03-25T05:28:44.372Z] {
+  "registryDomainSuggestionList": [
+    {
+      "domainName": "Mtc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Agc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "AbcGames.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "51Abc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Tdc.link",
+      "price": 8.69
+    },
+    {
+      "domainName": "Aybeaceae.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Aybeasae.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "Aybeacey.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "5AbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "SuperAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "BigAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "TopAbcApp.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "VideoAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "FreeAbcApp.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "LiveAbcGames.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "AbcAppServices.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "AbcAppSolutions.com",
+      "price": 11.99
+    },
+    {
+      "domainName": "AbcGames.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "51Abc.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "AbcApp.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Jcc.biz",
+      "price": 6.29
+    },
+    {
+      "domainName": "Abc.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Mtc.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "AbcGames.co",
+      "price": 12.29
+    },
+    {
+      "domainName": "Agc.co",
+      "price": 12.29
+    }
+  ]
+}
+[2025-03-25T05:28:44.373Z] 📌 Found 25 domain suggestions for: abc.com
+[2025-03-25T05:28:44.373Z]    1. Mtc.link - $8.69
+[2025-03-25T05:28:44.373Z]    2. Agc.link - $8.69
+[2025-03-25T05:28:44.373Z]    3. AbcGames.link - $8.69
+[2025-03-25T05:28:44.373Z]    4. 51Abc.link - $8.69
+[2025-03-25T05:28:44.373Z]    5. Tdc.link - $8.69
+[2025-03-25T05:28:44.373Z]    6. Aybeaceae.com - $11.99
+[2025-03-25T05:28:44.373Z]    7. Aybeasae.com - $11.99
+[2025-03-25T05:28:44.373Z]    8. Aybeacey.com - $11.99
+[2025-03-25T05:28:44.373Z]    9. 5AbcGames.com - $11.99
+[2025-03-25T05:28:44.373Z]    10. SuperAbcGames.com - $11.99
+[2025-03-25T05:28:44.373Z]    11. BigAbcGames.com - $11.99
+[2025-03-25T05:28:44.373Z]    12. TopAbcApp.com - $11.99
+[2025-03-25T05:28:44.373Z]    13. VideoAbcGames.com - $11.99
+[2025-03-25T05:28:44.373Z]    14. FreeAbcApp.com - $11.99
+[2025-03-25T05:28:44.373Z]    15. LiveAbcGames.com - $11.99
+[2025-03-25T05:28:44.373Z]    16. AbcAppServices.com - $11.99
+[2025-03-25T05:28:44.373Z]    17. AbcAppSolutions.com - $11.99
+[2025-03-25T05:28:44.373Z]    18. AbcGames.biz - $6.29
+[2025-03-25T05:28:44.373Z]    19. 51Abc.biz - $6.29
+[2025-03-25T05:28:44.374Z]    20. AbcApp.biz - $6.29
+[2025-03-25T05:28:44.374Z]    21. Jcc.biz - $6.29
+[2025-03-25T05:28:44.374Z]    22. Abc.co - $12.29
+[2025-03-25T05:28:44.374Z]    23. Mtc.co - $12.29
+[2025-03-25T05:28:44.374Z]    24. AbcGames.co - $12.29
+[2025-03-25T05:28:44.374Z]    25. Agc.co - $12.29
+[2025-03-25T05:28:44.374Z] ====================================
+[2025-03-25T05:30:33.723Z] Received query: How can I renew a domain?
+[2025-03-25T05:30:50.378Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T05:30:50.378Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T05:30:51.170Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T05:30:51.170Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T05:30:51.170Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T05:30:53.679Z] Received query: How can I renew a domain?
+[2025-03-25T05:33:46.817Z] Received query: How do I transfer IN/OUT domains?
+[2025-03-25T05:34:00.271Z] Received query: how can i transfer a domain
+[2025-03-25T05:34:08.817Z] Received query: transfer a domain
+[2025-03-25T05:34:58.245Z] Received query: how can i transfer my domain with you
+[2025-03-25T05:35:46.075Z] Received query: transfer
+[2025-03-25T05:35:57.068Z] Received query: how can i transfer my domain with you
+[2025-03-25T05:39:39.886Z] Received query: how to transfer
+[2025-03-25T05:40:16.609Z] Received query: transfer
+[2025-03-25T05:40:21.235Z] Received query: how to transfer
+[2025-03-25T05:40:30.219Z] Received query: how to transfer abc.com
+[2025-03-25T05:41:31.521Z] Received query: register
+[2025-03-25T05:41:36.616Z] Received query: how to register
+[2025-03-25T05:41:56.366Z] Received query: move abc.com
+[2025-03-25T05:42:07.503Z] Received query: transfer abc.com
+[2025-03-25T05:42:37.327Z] Received query: info for abc.com
+[2025-03-25T05:42:46.287Z] Received query: domain infor for sweets321.com
+[2025-03-25T06:05:48.727Z] [DOMAIN-INFO] 🔍 Fetching information for domain: sweets321.com
+[2025-03-25T06:05:48.727Z] [DOMAIN-INFO] 🌐 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain?APIKey=6HviT7QU1YAAYqp&websiteName=sweets321.com
+[2025-03-25T06:05:49.782Z] [DOMAIN-INFO] 🌐 API Response: {
+  responseMsg: {
+    message: 'Domain sweets321.com is available',
+    id: 0,
+    statusCode: 200
+  },
+  responseData: {
+    domainNameId: 2325038,
+    websiteName: 'sweets321.com',
+    orderDate: 1740460776000,
+    creationDate: 1740460777000,
+    lastUpdatedDate: 1741693086000,
+    expirationDate: 2055993577000,
+    nameserver1: 'nsss.org',
+    nameserver2: 'ns2.org',
+    nameserver3: 'ns3.org',
+    nameserver4: '',
+    nameserver5: '',
+    nameserver6: '',
+    nameserver7: '',
+    nameserver8: '',
+    nameserver9: '',
+    nameserver10: '',
+    nameserver11: '',
+    nameserver12: '',
+    nameserver13: '',
+    status: 'Active',
+    authCode: 'auth@37de51fdA5re',
+    isDomainLocked: false,
+    isThiefProtected: true,
+    isPrivacyProtection: true,
+    isParked: false,
+    customerId: 223855,
+    registrantContactId: '340482',
+    adminContactId: '340482',
+    technicalContactId: '340482',
+    billingContactId: '340482',
+    isRegistrantVerification: false,
+    registrantVerificationDate: 0,
+    websiteId: 2312083,
+    dnszoneStatus: 0,
+    dnszoneId: 0
+  }
+}
+[2025-03-25T06:05:49.783Z] [DOMAIN-INFO] ✅ Domain information retrieved successfully for: sweets321.com
+[2025-03-25T06:06:01.187Z] Received query: info for sweets321.com
+[2025-03-25T06:06:18.189Z] [DOMAIN-INFO] 🔍 Fetching information for domain: sweets321.com
+[2025-03-25T06:06:18.189Z] [DOMAIN-INFO] 🌐 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain?APIKey=6HviT7QU1YAAYqp&websiteName=sweets321.com
+[2025-03-25T06:06:18.798Z] [DOMAIN-INFO] 🌐 API Response: {
+  responseMsg: {
+    message: 'Domain sweets321.com is available',
+    id: 0,
+    statusCode: 200
+  },
+  responseData: {
+    domainNameId: 2325038,
+    websiteName: 'sweets321.com',
+    orderDate: 1740460776000,
+    creationDate: 1740460777000,
+    lastUpdatedDate: 1741693086000,
+    expirationDate: 2055993577000,
+    nameserver1: 'nsss.org',
+    nameserver2: 'ns2.org',
+    nameserver3: 'ns3.org',
+    nameserver4: '',
+    nameserver5: '',
+    nameserver6: '',
+    nameserver7: '',
+    nameserver8: '',
+    nameserver9: '',
+    nameserver10: '',
+    nameserver11: '',
+    nameserver12: '',
+    nameserver13: '',
+    status: 'Active',
+    authCode: 'auth@37de51fdA5re',
+    isDomainLocked: false,
+    isThiefProtected: true,
+    isPrivacyProtection: true,
+    isParked: false,
+    customerId: 223855,
+    registrantContactId: '340482',
+    adminContactId: '340482',
+    technicalContactId: '340482',
+    billingContactId: '340482',
+    isRegistrantVerification: false,
+    registrantVerificationDate: 0,
+    websiteId: 2312083,
+    dnszoneStatus: 0,
+    dnszoneId: 0
+  }
+}
+[2025-03-25T06:06:18.798Z] [DOMAIN-INFO] ✅ Domain information retrieved successfully for: sweets321.com
+[2025-03-25T06:06:28.326Z] [DOMAIN-INFO] 🔍 Fetching information for domain: sweets21.com
+[2025-03-25T06:06:28.327Z] [DOMAIN-INFO] 🌐 API Request URL: https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain?APIKey=6HviT7QU1YAAYqp&websiteName=sweets21.com
+[2025-03-25T06:06:28.982Z] [DOMAIN-INFO] 🌐 API Response: {
+  responseMsg: {
+    message: 'Domain sweets21.com is not registered with us',
+    id: 0,
+    statusCode: 404
+  },
+  responseData: null
+}
+[2025-03-25T06:09:11.894Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T06:09:11.895Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T06:09:12.695Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T06:09:12.695Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T06:09:12.695Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T06:09:17.577Z] Received query: my current fund
+[2025-03-25T06:09:26.606Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T06:09:26.606Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T06:09:27.455Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T06:09:27.455Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T06:09:27.456Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T06:09:31.737Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T06:09:31.737Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T06:09:32.335Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T06:09:32.335Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T06:09:32.336Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T06:09:42.093Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T06:09:42.094Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T06:09:42.701Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T06:09:42.702Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T06:09:42.702Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T06:13:23.997Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:18:30.349Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:19:16.281Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:19:35.536Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:19:54.702Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:20:29.305Z] 🔍 [BALANCE API] ResellerId fetched from MySQL: 15272
+[2025-03-25T06:20:29.305Z] 📡 [BALANCE API] Requesting URL: https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=6HviT7QU1YAAYqp&resellerId=15272
+[2025-03-25T06:20:30.108Z] ✅ [BALANCE API] Response Status: 200
+[2025-03-25T06:20:30.108Z] 📦 [BALANCE API] Full Response Data: {
+  "responseMsg": {
+    "message": "Available Fund",
+    "id": 0,
+    "reason": null,
+    "statusCode": 0
+  },
+  "responseData": 527.94
+}
+[2025-03-25T06:20:30.108Z] 💰 [BALANCE API] Current Balance: 527.94
+[2025-03-25T06:20:33.243Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:20:41.794Z] Received query: What actions can I do here on the chatbot?
+[2025-03-25T06:21:38.456Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:22:07.509Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:22:27.347Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:23:03.260Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:23:57.137Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:26:06.918Z] Received query: How do I register a domain?
+[2025-03-25T06:26:10.130Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:26:36.725Z] Received query: How do I register a domain?
+[2025-03-25T06:26:43.394Z] Received query: How do I transfer IN/OUT domains?
+[2025-03-25T06:26:47.457Z] Received query: How can I renew a domain?
+[2025-03-25T06:26:51.225Z] Received query: How do I register a domain?
+[2025-03-25T06:27:58.936Z] Received query: How do I register a domain?
+[2025-03-25T06:28:03.923Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:35:17.500Z] Received query: 1+!
+[2025-03-25T06:35:23.689Z] Received query: 1+1
+[2025-03-25T06:38:38.179Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:44:26.915Z] Received query: update privacy protection for sweets321.com
+[2025-03-25T06:45:21.144Z] Received query: update
+[2025-03-25T06:47:50.689Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:50:54.935Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:51:42.657Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:51:56.238Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:52:17.691Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:52:22.238Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:52:26.919Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:53:03.289Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:53:43.991Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:54:03.066Z] Received query: add child nameservers for abc.com
+[2025-03-25T06:54:13.135Z] Received query: add child name servers for abc.com
+[2025-03-25T06:54:22.775Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:56:53.523Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:57:06.522Z] Received query: add child nameserver
+[2025-03-25T06:58:45.621Z] Received query: How can I update the name servers for a domain?
+[2025-03-25T06:58:52.536Z] Received query: How can I add a child nameserver?
+[2025-03-25T06:59:12.463Z] Received query: TLDs fro abc.com
+[2025-03-25T06:59:33.012Z] Received query: TLDs for abc.com
+[2025-03-25T07:00:03.136Z] Received query: TLDs
+[2025-03-25T07:00:34.469Z] Received query: Suggest TLDs for sweets
+[2025-03-25T07:00:57.241Z] Received query: Suggest TLDs for sweets321.com
+[2025-03-25T07:01:03.472Z] Received query: Suggest TLDs for bike

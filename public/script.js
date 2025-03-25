@@ -362,7 +362,7 @@ function toggleSidebar() {
 //------------------------------------------ Update Chatlog for each functionality section --------------------------------------------//
 
 function updateChatLog(message, sender) {
-    
+
   console.log("updateChatLog called:", message);
   
   const chatLog = document.querySelector('.chat-log');
@@ -438,19 +438,30 @@ function updateChatLog(message, sender) {
       document.head.appendChild(style);
   }
 
-  function addButton(buttonText, className, sectionId) {
-      const button = document.createElement('button');
-      button.textContent = buttonText;
-      button.classList.add(className);
+  function addButton(buttonText, className, ...sectionIds) {
+    const button = document.createElement('button');
+    button.textContent = buttonText;
+    button.classList.add(className);
 
-      button.onclick = () => {
-          const section = document.getElementById(sectionId);
-          const loginChatSection = document.getElementById('login-chat-section');
-          if (section) {
-              section.style.display = "block";
-              loginChatSection.style.display = "none";
-          }
-      };
+    button.onclick = () => {
+        const loginChatSection = document.getElementById('login-chat-section');
+
+        // Show all specified sections
+        sectionIds.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) {
+                section.style.display = "flex";
+            }
+        });
+
+        // Hide the login chat section
+        if (loginChatSection) {
+            loginChatSection.style.display = "none";
+        }
+    };
+
+    document.body.appendChild(button); // Append button to the body (or any other container)
+
 
       const buttonContainer = document.createElement('div');
       buttonContainer.classList.add('button-container');
@@ -471,6 +482,7 @@ function updateChatLog(message, sender) {
     if (!document.getElementById("register-button")) { // Prevent duplicate buttons
     addButton("Register a Domain", "register-button", "domain-availability-section");
     document.getElementById("check-domain-button").style.borderRadius = "20px";
+    document.getElementById("domain-availability-section").style.gap = "0px";
     }
   }
   window.preventRegisterButton = false;
@@ -502,7 +514,7 @@ function updateChatLog(message, sender) {
       (message.includes("update the name servers") || message.includes("update name servers") || message.includes("Go to your domain management panel, find DNS settings, and update the name servers accordingly."))
       && !message.includes("🔄 Please enter the domain name and the name servers that need to be updated. You can add more name servers by clicking '➕ Add Name Server' button. Maximum 4 name servers can be added. Then click '🖊 Update Name Server' button to save the changes.")
     ) {
-      addButton("Update Name Servers", "update-button", "name-server-container");
+        addButton("Update Name Servers", "update-button", "name-server-container", "name-server-update-section");
       document.getElementById("nameserver-container").style.width = "100%";
       document.getElementById("name-server-update-section").style.display = "flex"; 
       document.getElementById("update-nameserver-button-group").style.width = "100%";
@@ -649,21 +661,43 @@ function updateAuthUI() {
 
 //------------ Prefills chat input with a domain query, highlights the domain name placeholder, and show a tooltip section ------------//
 
+// ✅ Function to fill chat input with user question
 function fillChatInput(question) {
+    console.trace("🔍 fillChatInput() CALLED! Stack trace:");
+
     const userInput = document.getElementById("user-question");
     const userInput2 = document.getElementById("domain-query-text");
 
-    // Check if the input is already set to avoid duplicate setting
-    if (userInput.value === question && userInput2.value === question) {
+    if (!userInput || !userInput2) {
+        console.error("❌ Chat input fields not found!");
+        return;
+    }
+
+    const normalizedQuestion = question.trim().toLowerCase();
+    const normalizedUserInput = userInput.value.trim().toLowerCase();
+    const normalizedUserInput2 = userInput2.value.trim().toLowerCase();
+
+    console.log("🔍 Checking for duplicates...");
+    console.log("🔹 Normalized Input 1:", normalizedUserInput);
+    console.log("🔹 Normalized Input 2:", normalizedUserInput2);
+    console.log("🔹 Normalized Question:", normalizedQuestion);
+
+    if (normalizedUserInput === normalizedQuestion && normalizedUserInput2 === normalizedQuestion) {
         console.warn("❌ Duplicate question detected, ignoring...");
         return;
     }
+
+    console.log("✅ Updating chat input...");
+    userInput.value = "";
+    userInput2.value = "";
+    console.log("🗑 Cleared input fields before setting new value.");
 
     setTimeout(() => {
         userInput.value = question;
         userInput2.value = question;
         userInput.focus();
-    }, 50); // Small delay to prevent unintended duplicate triggers
+        console.log("✍️ Input fields updated with:", question);
+    }, 10);
 }
 
 let tooltipDomain = null;
@@ -671,34 +705,51 @@ let tooltipDate = null;
 let tooltipCategory = null;
 
 function fillChatInputWithPlaceholder(template) {
+    console.log("🟢 Function call: fillChatInputWithPlaceholder()");
+    console.log("🔹 Received template:", template);
+
     const chatInput = document.getElementById('domain-query-text');
     const submitButton = document.getElementById('submitDomainQuery');
     const lockToggle = document.getElementById('domain-lock-dropdown-container');
     const suspendToggle = document.getElementById('domain-suspend-toggle-container');
     const privacyToggle = document.getElementById('domain-privacy-dropdown');
 
+    if (!chatInput) {
+        console.error("❌ Chat input field not found!");
+        return;
+    }
+
+    console.log("📌 Current Chat Input Value:", chatInput.value.trim());
+
     // Avoid triggering multiple times
-    if (chatInput.value === template) {
-        console.warn("❌ Duplicate template detected, ignoring...");
+    if (chatInput.value.trim() === template.trim()) {
+        console.warn("⚠️ Duplicate template detected, ignoring...");
         return;
     }
 
     chatInput.value = template;
     chatInput.focus();
+    console.log("✅ Chat input updated with:", template);
 
     // Highlight "mydomain.com" and show tooltip
     tooltipDomain = highlightPlaceholder(chatInput, template, "mydomain.com", "Enter your domain name here.", tooltipDomain);
     autoHideTooltip(tooltipDomain);
+    console.log("📢 Tooltip updated for 'mydomain.com'.");
 
     // Extract action name and fetch API details
     const actionName = extractActionName(template);
+    console.log("📌 Extracted Action Name:", actionName);
+
     if (actionName) {
+        console.log("🔄 Fetching API details for action:", actionName);
         getAPIDetails(template, actionName);
+    } else {
+        console.log("❌ No action name detected.");
     }
-    console.log("Extracted Action Name:", actionName);
 
     // Always show submit button
     submitButton.style.display = 'block';
+    console.log("🚀 Submit button made visible");
 
     // Lock Toggle
     if (!lockToggle) {
@@ -707,25 +758,42 @@ function fillChatInputWithPlaceholder(template) {
         console.log("✅ Lock toggle container found.");
         if (/how do I (lock|unlock)\/?(lock|unlock)? (.+)/i.test(template)) {
             lockToggle.style.display = 'block';
+            console.log("🔒 Lock toggle displayed.");
         } else {
             lockToggle.style.display = 'none';
+            console.log("🔒 Lock toggle hidden.");
         }
     }
 
     // Privacy Toggle
-    if (/privacy protection (.+)/i.test(template)) {
-        privacyToggle.style.display = 'block';
+    if (!privacyToggle) {
+        console.error("❌ Privacy toggle container not found! Check the HTML ID.");
     } else {
-        privacyToggle.style.display = 'none';
+        if (/privacy protection (.+)/i.test(template)) {
+            privacyToggle.style.display = 'block';
+            console.log("🛡 Privacy toggle displayed.");
+        } else {
+            privacyToggle.style.display = 'none';
+            console.log("🛡 Privacy toggle hidden.");
+        }
     }
 
     // Suspend Toggle
-    if (/suspend domain (.+)/i.test(template)) {
-        suspendToggle.style.display = 'block';
+    if (!suspendToggle) {
+        console.error("❌ Suspend toggle container not found! Check the HTML ID.");
     } else {
-        suspendToggle.style.display = 'none';
+        if (/suspend domain (.+)/i.test(template)) {
+            suspendToggle.style.display = 'block';
+            console.log("⏸ Suspend toggle displayed.");
+        } else {
+            suspendToggle.style.display = 'none';
+            console.log("⏸ Suspend toggle hidden.");
+        }
     }
+
+    console.log("✅ fillChatInputWithPlaceholder execution completed.");
 }
+
 
 function highlightPlaceholder(inputElement, template, placeholder, tooltipText, tooltipRef) {
     let startPos = template.indexOf(placeholder);
@@ -1366,8 +1434,8 @@ function addadditionaldomaindetails() {
         document.getElementById('close-additional-settings-buttons').style.display = 'flex';
         document.getElementById('close-additional-settings-buttons').style.height = '5vh';
         document.getElementById('additional-settings-section').style.marginTop = '-6px';
-        document.getElementById('closeadditionaldomaindetails').style.fontSize = '10px';
-        document.getElementById('registerDomain').style.fontSize = '10px';
+        document.getElementById('closeadditionaldomaindetails').style.fontSize = '12px';
+        document.getElementById('registerDomain').style.fontSize = '12px';
     } else {
         console.error("Element with ID 'additional-settings-section' not found.");
     }
@@ -1938,6 +2006,7 @@ async function updateNameServers() {
         } else {
             showNameServerPopup("Failed to update Name Servers: " + (result.message || "Unknown error."), false);
             updateChatLog("❌ Failed to update Name Servers");
+            resetNameServers();
             document.getElementById("name-server-container").style.display = "none";
             document.getElementById("login-chat-section").style.display = "flex";
         }
@@ -1945,7 +2014,22 @@ async function updateNameServers() {
         console.error("[FRONTEND] ❌ Error:", error);
         showNameServerPopup("Error connecting to server.", false);
         updateChatLog("❌ Error connecting to server.");
+        resetNameServers();
     }
+}
+
+function resetNameServers() {
+    const container = document.getElementById("nameserver-container");
+
+    // Keep only the first input, remove others
+    while (container.children.length > 1) {
+        container.removeChild(container.lastChild);
+    }
+
+    // Reset the name server count
+    nameServerCount = 1;
+
+    console.log("🔄 Name servers reset to default (only 1 field).");
 }
 
 //------------------------------------------------- Add Child Nameservers Section -----------------------------------------------------//
@@ -2082,7 +2166,20 @@ async function registerChildNameServer() {
     document.getElementById("add-child-name-server-section").style.display = "none";
     document.getElementById("login-chat-section").style.height = "flex"; // Ensure chat height is reset
 
-    enableChat(); // Re-enable the chat
+    enableChat();
+     // Re-enable the chat
+}
+
+function resetChildNameServers() {
+    childNameServerCount = 0; // Reset the count
+
+    const container = document.getElementById("childnameserver-container");
+    container.innerHTML = ""; // Remove all input fields
+
+    // Re-add the first input field
+    addChildNameServerInput();
+
+    document.getElementById("child-domain-name").value = ""; // Clear domain input
 }
 
 //----------------------------------------------------- Suspend Domain Section --------------------------------------------------------//
@@ -2460,20 +2557,27 @@ setTimeout(() => {
     }
     
 
-    const transferMatch = queryText.match(/\btransfer\s+([a-zA-Z0-9-]+\.[a-z]{2,})/i);
-    if (transferMatch) {
-        const domainName = transferMatch[1]; // Extracted domain name
-        console.log("Matched domain for transfer:", domainName);
-        updateChatLog("Enter authcode(EPP code) and enable or disable Whois protection to transfer your domain to us seamlessly.",'bot');
-        // Show the renewal section & hide login section
-        document.getElementById('login-chat-section').value = '';
+    const transferMatch = queryText.match(/\b(transfer|move)(?:\s+([a-zA-Z0-9-.]+\.[a-z]{2,}))?/i);
+
+if (transferMatch) {
+    console.log("Matched keyword:", transferMatch[1]); // "transfer" or "move"
+    
+    if (transferMatch[2]) {
+        console.log("Extracted domain:", transferMatch[2]); // Extracted domain if present
+        updateChatLog(`Enter authcode(EPP code) and enable or disable Whois protection to transfer your domain to us seamlessly.`, 'bot');
+
+        // Show the transfer section
         document.getElementById("domain-transfer-section").style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
 
-        // Prefill the domain input field
-        document.getElementById("transfer-domain-name").value = domainName;
+        // Prefill domain input field
+        document.getElementById("transfer-domain-name").value = transferMatch[2];
         return;
+    } else {
+        console.log("No domain found, but transfer/move keyword detected.");
     }
+}
+
 
     if (queryText.match(/\bregistered\s+on\s+(\d{2}-\d{2}-\d{4})\b/i)) {
         const dateMatch = queryText.match(/\d{2}-\d{2}-\d{4}/);
@@ -3041,48 +3145,40 @@ if (!inputElement) {
 if (!inputElement) {
     console.error("❌ Input field not found!");
 } else {
-    const userInput = inputElement.value.trim();
-    console.log(`📝 User Input: "${userInput}"`);
+    const usersInput = inputElement.value.trim();
+    console.log(`📝 User Input: "${usersInput}"`);
 
-    // ✅ Corrected Regex to allow "privacy protection" alone
-    const privacyRegex = /\b(?:enable|disable)?\s*privacy\s+protection(?:\s*for\s+([\w.-]+\.[a-z]{2,}))?/i;
-    const privacyMatch = userInput.match(privacyRegex);
-
-    console.log(`[DEBUG] 🔍 Running Privacy Regex: ${privacyRegex}`);
-    console.log(`[DEBUG] 📌 Regex Match Result:`, privacyMatch);
+    const privacyRegex = /\b(update|enable|disable|turn\s*on|turn\s*off)(?:\/(update|enable|disable|turn\s*on|turn\s*off))?\s*(?:the\s+)?(?:privacy[-\s]*protection)\s*(?:for\s+([\w.-]+\.[a-z]{2,}))?/i;
+    const privacyMatch = usersInput.match(privacyRegex);
 
     if (privacyMatch) {
-        console.log("✅ Privacy Protection command detected in input.");
+        console.log("✅ Privacy Protection command detected.");
 
-        const action = privacyMatch[1] ? privacyMatch[1].toLowerCase() : ""; // Extract action
-        const domain = privacyMatch[2] ? privacyMatch[2].trim() : ""; // Extract domain
+        const action = privacyMatch[1]?.toLowerCase() || "";
+        const domain = privacyMatch[3] ? privacyMatch[3].trim() : ""; 
 
         console.log(`📌 Action: ${action || "None provided"}`);
         console.log(`🌍 Domain: ${domain || "None provided"}`);
 
-        // Show Privacy Protection Section
         document.getElementById("privacy-protection-section").style.display = "block";
-        document.getElementById('login-chat-section').style.display = 'none';
+        document.getElementById("login-chat-section").style.display = "none";
 
-        // Handle dropdown selection only if an action is provided
         if (action) {
-            const isEnablePrivacy = action === "enable";
+            const isEnablePrivacy = action.includes("enable") || action === "turn on";
             console.log(`🔄 Converted Boolean Value: ${isEnablePrivacy}`);
 
-            // Prevent duplicate API calls
             if (!window.apiCallTriggered) {
                 window.apiCallTriggered = true;
                 sendPrivacySetting(domain, isEnablePrivacy);
             }
         } else {
-            console.log("⚠️ No enable/disable action provided. Prompt user for selection.");
+            console.log("⚠️ No enable/disable/update action provided. Prompt user for selection.");
         }
         return;
     } else {
         console.log("❌ No valid privacy protection command detected.");
     }
 }
-
 
 const lockRegex = /(?:.*\s)?\b(lock|unlock)\s*(?:my\s*domain\s*|this\s*domain\s*)?([\w.-]+)/i;
 
@@ -3300,6 +3396,7 @@ try {
         updateChatLog(`Error: ${data.message}`, 'bot');
     }
 
+
 } catch (error) {
     if (error.name === 'AbortError') {
         console.warn("Fetch request was aborted due to timeout.");
@@ -3324,7 +3421,6 @@ if (queryInput) {
 if (inputElement) {
     inputElement.value = ""; // Clears another input if applicable
 }
-
 }
 
 //----------------------------------------------- Back button after verification --------------------------------------------------//
@@ -3338,8 +3434,8 @@ function goBackToQuerySection() {
     console.log("login-chat-section is now visible");
   
     // Hide the other sections
-    const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , 'name-server-update-section', 'add-child-name-server-section' ,'theft-protection-section' , 'privacy-protection-section' , 'domain-lock-section' , 'domain-suspension-section'];
-  
+    const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , 'name-server-update-section', 'add-child-name-server-section' ,'theft-protection-section' , 'privacy-protection-section' , 'domain-lock-section' , 'domain-suspension-section', 'additional-settings-section', 'name-server-container'];
+    
     sectionsToHide.forEach(sectionId => {
       const element = document.getElementById(sectionId);
       if (element) {
@@ -3349,111 +3445,66 @@ function goBackToQuerySection() {
         console.log(`Element not found: ${sectionId}`);
       }
     });
+    resetNameServers();
+    resetChildNameServers()
   }
 
 //--------------------------------------------------- Event Listeners Section ------------------------------------------------------//
 
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-      const activeElement = document.activeElement;
+// ✅ Fix duplicate event listeners for 'back-to-previous-section'
+const backButton = document.getElementById("back-to-previous-section");
+if (backButton) {
+    backButton.removeEventListener("click", goBackToPreviousSection);
+    backButton.addEventListener("click", goBackToPreviousSection);
+}
 
-      if (activeElement && activeElement.tagName === 'INPUT') {
-        const button = activeElement.closest('.chat-input').querySelector('button');
-        if (button) {
-          button.click();
-        }
-      }
-    }
-});
-
+// ✅ Optimize Enter Key Event Handling
 document.addEventListener("keydown", function (event) {
-    const authButtonsContainer = document.getElementById("auth-buttons-container");
+    if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation(); // ⛔ Prevent multiple triggers
 
-    // Check if auth-buttons-container is visible
-    if (authButtonsContainer.style.display !== "none") {
-        const buttons = authButtonsContainer.querySelectorAll("button");
+        console.log("🛑 Stopped multiple Enter key events.");
 
-        // Find the currently focused button
-        let currentIndex = Array.from(buttons).findIndex(btn => document.activeElement === btn);
+        const activeElement = document.activeElement;
 
-        if (event.key === "ArrowDown") {
-            event.preventDefault(); // Prevent scrolling
-            let nextIndex = (currentIndex + 1) % buttons.length;
-            buttons[nextIndex].focus();
-        } else if (event.key === "ArrowUp") {
-            event.preventDefault(); // Prevent scrolling
-            let prevIndex = (currentIndex - 1 + buttons.length) % buttons.length;
-            buttons[prevIndex].focus();
-        } else if (event.key === "Enter" && currentIndex !== -1) {
-            event.preventDefault(); // Prevent default form behavior
-            buttons[currentIndex].click(); // Trigger button click
+        if (activeElement) {
+            if (activeElement.classList.contains("chat-input")) {
+                console.log("💬 Chat Input - Enter key pressed");
+                document.getElementById("submit-question").click();
+            } else if (activeElement.classList.contains("email-input")) {
+                console.log("📧 Email Input - Enter key pressed");
+                document.getElementById("submit-email").click();
+            } else if (activeElement.id === "domain-query-text") {
+                console.log("🌍 Domain Query Input - Enter key pressed");
+                submitDomainQuery();
+            }
         }
     }
 });
 
-document.addEventListener("keydown", function(event) {
+// ✅ Fix issue with Enter key on domain query input
+const domainQueryInput = document.getElementById("domain-query-text");
+if (domainQueryInput) {
+    domainQueryInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            console.log("🌍 Domain Query Input - Enter key pressed");
+            submitDomainQuery();
+        }
+    });
+}
+
+document.getElementById("user-question").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
+        event.preventDefault(); // Prevents accidental form submission or newline entry
+        console.log("💬 Enter key pressed in chat input");
+
+        // Trigger the button click
         document.getElementById("submit-question").click();
     }
 });
 
-document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
-
-document.getElementById('back-to-previous-section').addEventListener('click', goBackToPreviousSection);
-
-document.addEventListener("DOMContentLoaded", function () {
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault(); 
-            
-            console.log("Active Element ID: ", document.activeElement.id);
-
-            // 🆕 Submit Chat Question
-            if (document.activeElement.classList.contains('chat-input')) {
-                console.log("Chat Input - Enter key pressed");
-                document.getElementById("submit-question").click();
-                return;
-            }
-
-            // 🆕 Submit Email for OTP
-            if (document.activeElement.classList.contains('email-input')) {
-                console.log("Email Input - Enter key pressed");
-                document.getElementById("submit-email").click();
-                return;
-            }
-
-            if (document.activeElement.id === "get-domain-suggestions-btn") {
-                console.log("Get Domain Suggestions clicked...");
-                document.getElementById("get-domain-suggestions-btn").click();
-            } else if (document.activeElement.id === "more-options-btn") {
-                console.log("More Options clicked...");
-                document.getElementById("more-options-btn").click();
-            }
-        }
-
-        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            const buttons = Array.from(document.querySelectorAll("#domain-options button"));
-            let currentIndex = buttons.findIndex((el) => el === document.activeElement);
-
-            if (event.key === "ArrowDown") {
-                currentIndex = (currentIndex + 1) % buttons.length;
-            } else if (event.key === "ArrowUp") {
-                currentIndex = (currentIndex - 1 + buttons.length) % buttons.length; 
-            }
-
-            console.log("Focusing element: ", buttons[currentIndex].id); 
-            buttons[currentIndex].focus();  
-        }
-    });
-});
-
-// Function to handle Enter key press
-document.getElementById("domain-query-text").addEventListener("keypress", function (event) {
-    if (event.key === "Enter") {
-        event.preventDefault(); // Prevent default form submission behavior
-        submitDomainQuery(); // Call the function
-    }
-});
 
 //-------------------------------------------------- Extra  functions Section ------------------------------------------------------//
 

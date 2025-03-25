@@ -10,6 +10,60 @@ const moment = require('moment');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const fs = require('fs');
+const util = require('util');
+
+// Create log directory if it doesn't exist
+if (!fs.existsSync('./logs')) {
+    fs.mkdirSync('./logs');
+}
+
+// Create write streams for different log types
+const accessLog = fs.createWriteStream('logs/access.log', { flags: 'a' });
+const errorLog = fs.createWriteStream('logs/error.log', { flags: 'a' });
+const generalLog = fs.createWriteStream('logs/general.log', { flags: 'a' });
+
+// Override console.log to write to both file and console
+const originalLog = console.log;
+console.log = function(...args) {
+    const message = util.format.apply(null, args);
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ${message}\n`;
+    
+    generalLog.write(logMessage);
+    originalLog.apply(console, args);
+};
+
+// Override console.error to write to error log
+console.error = function(...args) {
+    const message = util.format.apply(null, args);
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ${message}\n`;
+    
+    errorLog.write(logMessage);
+    originalLog.apply(console, args);
+};
+
+// Add middleware to log requests
+app.use((req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const logMessage = `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms\n`;
+        accessLog.write(logMessage);
+    });
+    
+    next();
+});
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    const timestamp = new Date().toISOString();
+    const errorMessage = `[${timestamp}] Error: ${err.stack}\n`;
+    errorLog.write(errorMessage);
+    next(err);
+});
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -2096,7 +2150,7 @@ const predefinedAnswers = {
 //
   "What types of SSL are available?": "We offer various SSL certificates, including:\n- Commercial SSL (Domain verification)\n- Trusted SSL (Domain + Organization verification)\n- Positive SSL (Basic domain verification)\n- Sectigo SSL (Domain verification)\n- Instant SSL (Domain + Organization verification)",
 //
-  "Where can I sign up?": "You can sign up here: <br><a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a><br> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>",
+  "Where can I sign up?": "You can sign up here: <br><a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a>\n<a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>",
 //
   "How can I download the WHMCS module?": "Click here for more details on how to download the WHMCS module: <br><a href='https://marketplace.whmcs.com/product/5581-connectreseller' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 WHMCS module for Domains</a> <br><br><a href='https://marketplace.whmcs.com/product/6960-connectreseller-ssl' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 WHMCS module for SSL Certificate</a>",
 //
