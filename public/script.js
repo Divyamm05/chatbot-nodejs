@@ -57,8 +57,9 @@ function taketosigninsection() {
 
 function requestOTP() {
     const email = document.getElementById("user-email").value.trim();
-    
-    if (email === 'aichatbot@iwantdemo.com') {
+    const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; // ✅ List of test emails
+
+    if (testEmails.includes(email)) { // ✅ Proper condition
         // 🌟 Tell backend that the special user is signed in
         fetch('/api/mock-authenticate', {
             method: 'POST',
@@ -70,7 +71,7 @@ function requestOTP() {
             if (data.success) {
                 clearchatlog();
                 document.getElementById('domain-query-text').value = ''; // Reset the input field
-                updateChatLog("Thank you for signing in 😊. You're all set to explore our 🚀 advanced features, including domain registration, renewal, transfer, and so much more. ", 'bot');
+                updateChatLog("Thank you for signing in 😊. You're all set to explore our 🚀 advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
                 
                 // Hide login elements
                 document.getElementById('login-text').style.display = 'none';
@@ -134,7 +135,6 @@ function requestOTP() {
     });
 }
 
-
 // Resend OTP 
   async function resendOTP() {
     const email = document.getElementById('user-email').value.trim();
@@ -174,6 +174,7 @@ const otp = otpInput ? otpInput.value.trim() : '';
 const signup= document.getElementById('signup-text');
 const profileicon= document.getElementById('profile-icon');
 const login= document.getElementById('login-text');
+const sidebar=document.getElementById('sidebar');
 
 if (!email) {
     updateChatLog('Please enter your email to proceed.', 'bot');
@@ -203,7 +204,8 @@ try {
         login.style.display = 'none';
         signup.style.display = 'none';
         profileicon.style.display = 'none';
-        document.getElementById('sidebar').style.display = 'flex';
+        sidebar.style.display = 'block';
+        if (sidebar) sidebar.classList.remove("collapsed");
 
         // Use customerId (resellerId) from the response
         if (data.customerId) {
@@ -222,7 +224,6 @@ try {
         document.getElementById('login-chat-section').style.display = 'flex';
         document.getElementById('sidebar-content').style.display = 'none';
         document.getElementById('faq-post-login').style.display = 'flex'; 
-        document.getElementById('sidebar').style.display = 'none';
         
 
         updateChatLog("Thank you for signing in 😊. You're all set to explore our 🚀 advanced features, including domain registration, renewal, transfer, and so much more. ", 'bot');
@@ -2960,7 +2961,8 @@ if (domainregisterMatch) {
     return;
 }
 
-    const balanceMatch = queryText.match(/\b(?:what(?:'s| is)?|show|check|get|tell me|fetch)?\s*(?:my|the)?\s*(?:current|available)?\s*(?:balance|funds|amount|money|credit|account balance)\b/i);
+const balanceMatch = queryText.match(/\b(?:what(?:'s| is)?|show|check|get|tell me|fetch)?\s*(?:my|the)?\s*(?:current|available)?\s*(?:balance|funds|amount|money|credit|account balance)\b/i);
+
 if (balanceMatch) {
     try {
         updateChatLog(`🔍 Fetching your current balance...`, 'bot');
@@ -2973,19 +2975,22 @@ if (balanceMatch) {
 
         const result = await response.json();
         if (result.success) {
-            updateChatLog(`${result.answer}`, 'bot');
+            // Use the answer field from the backend response
+            const balanceMessage = result.answer || 'Balance not available';
+            updateChatLog(balanceMessage, 'bot');
         } else {
             updateChatLog(`Error: ${result.message}`, 'bot');
         }
+
         document.getElementById('domain-query-text').value = "";
 
     } catch (error) {
         console.error('Error fetching balance:', error);
         updateChatLog('Failed to retrieve balance information', 'bot');
     }
-
     return;
 }
+
 
 const theftProtectionSection = document.getElementById("theft-protection-section");
 const theftProtectionDropdown = document.getElementById("theft-protection-dropdown");
@@ -3496,6 +3501,17 @@ document.addEventListener("keydown", function (event) {
         }
     }
 });
+
+document.getElementById('otp-code').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      // Trigger the OTP verification function when Enter is pressed
+      verifyOTP();
+    }
+  });
+
+  document.getElementById('verify-otp').addEventListener('click', function() {
+    verifyOTP();
+  });
 
 // ✅ Fix issue with Enter key on domain query input
 const domainQueryInput = document.getElementById("domain-query-text");
