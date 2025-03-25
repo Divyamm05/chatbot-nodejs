@@ -14,8 +14,8 @@ const fs = require('fs');
 const util = require('util');
 
 // Create log directory if it doesn't exist
-if (!fs.existsSync('./logs')) {
-    fs.mkdirSync('./logs');
+if (!fs.existsSync('/home2/chatbot-logs')) {
+    fs.mkdirSync('/home2/chatbot-logs');
 }
 
 // Create write streams for different log types
