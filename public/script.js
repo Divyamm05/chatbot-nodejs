@@ -76,11 +76,12 @@ function requestOTP() {
                 // Hide login elements
                 document.getElementById('login-text').style.display = 'none';
                 document.getElementById('signup-text').style.display = 'none';
-                document.getElementById('profile-icon').style.display = 'none';
+                document.getElementById('profile-icon').style.display = 'flex';
                 document.getElementById('email-section').style.display = 'none';
                 document.getElementById('otp-section').style.display = 'none';
                 document.getElementById('login-chat-section').style.display = 'flex';
                 document.getElementById('sidebar').style.display = 'flex';
+                document.getElementById('logout-text').style.display = 'flex';
                 document.getElementById('sidebar-content').style.display = 'none';
                 document.getElementById('faq-post-login').style.display = 'flex';
 
@@ -3737,4 +3738,21 @@ function removeLastBotMessage() {
     if (chatLog?.lastChild?.classList.contains('bot-message')) {
         chatLog.removeChild(chatLog.lastChild);
     }
+}
+
+function logout(){
+    document.getElementById('login-text').style.display = 'flex';
+    document.getElementById('signup-text').style.display = 'none';
+    document.getElementById('profile-icon').style.display = 'flex';
+    document.getElementById('email-section').style.display = 'none';
+    document.getElementById('otp-section').style.display = 'none';
+    document.getElementById('login-chat-section').style.display = 'none';
+    document.getElementById('sidebar').style.display = 'flex';
+    document.getElementById('logout-text').style.display = 'none';
+    document.getElementById('sidebar-content').style.display = 'flex';
+    document.getElementById('faq-post-login').style.display = 'none';
+    document.getElementById('user-input-section').style.display = "flex";
+    clearchatlog();
+    document.getElementById('user-question').value = ''; // Reset the input field
+    updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
 }
