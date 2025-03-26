@@ -680,6 +680,17 @@ function updateChatLog(message, sender) {
       suggestButtonsContainer.style.display = 'none';
   }
 
+  if (
+    sender === 'user' && isUserSignedIn &&
+    (message == "How do I register a domain?")
+) {
+    updateChatLog("Before registering the domain, check its availability by clicking the 'Check Availability' button.",'bot');
+    document.getElementById("domain-availability-section").style.display="flex";
+    document.getElementById("login-chat-section").style.display="none";
+    document.getElementById("check-domain-button").style.borderRadius = "20px";
+    document.getElementById("domain-availability-section").style.gap = "0px"
+}
+
   // Call scrollToBottom only once
   scrollToBottom();
 }
