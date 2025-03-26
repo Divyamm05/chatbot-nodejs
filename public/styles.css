@@ -286,6 +286,7 @@ body {
 }
 
 .chat-log {
+  position: relative;
   flex-grow: 7;
   flex-shrink: 0;
   overflow-y: auto;
@@ -2145,7 +2146,7 @@ login-chat-wrapper button:disabled {
 #toggle-sidebar .menu-icon {
   position: relative;
   left: 1%;
-  font-size: 15px;
+  font-size: 15px;}
 
   .bot-message {
     background-color: #066;
@@ -2165,7 +2166,7 @@ login-chat-wrapper button:disabled {
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    font-size: 12px;
+    font-size: 9px;
   }
 
 
@@ -2197,7 +2198,6 @@ login-chat-wrapper button:disabled {
 }
 }
 
-}
 
 /* Extra Small Devices (Below 480px) */
 @media (max-width: 480px) {
@@ -2277,6 +2277,44 @@ login-chat-wrapper button:disabled {
     width: 100%;
     font-size: 12px;
   }
+
+  .button-group {
+    display: flex
+  ;
+    justify-content: space-between;
+    gap: 3px;
+    width: 117%;
+  }
+  
+  #domain-registration-section button {
+    background-color: #066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+    max-width: 260px;
+  }
+  
+  #closeadditionaldomaindetails, #registerDomain {
+    font-size: 9px !important;
+}
+
+.chat-input button:nth-child(3) {
+  width: 100%;
+  background-color: #066;
+  color: #ffffff;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
 }
 
@@ -2369,6 +2407,28 @@ login-chat-wrapper button:disabled {
     bottom: 0%;
     gap: 6px;
     flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex
+;
+  justify-content: space-between;
+  gap: 3px;
+  width: 117%;
+}
+
+#domain-registration-section button {
+  background-color: #066;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 260px;
 }
 
 }

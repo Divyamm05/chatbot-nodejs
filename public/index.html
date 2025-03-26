@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+prabhu
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -43,11 +44,11 @@
       <div id="faq-post-login" style="display: none;">
         <ul class="faq-list">
           <!-- Domain Management -->
-          <li onclick="fillChatInput('How do I register a domain?'); hidealltoggles();">How do I register a domain?</li>
-          <li onclick="fillChatInput('How can I renew a domain?'); hidealltoggles();">How can I renew a domain?</li>
-          <li onclick="fillChatInput('How do I transfer IN/OUT domains?'); hidealltoggles();">How do I transfer IN/OUT domains?</li>
-          <li onclick="fillChatInput('How can I update the name servers for a domain?'); hidealltoggles();">How can I update the name servers for a domain?</li>
-          <li onclick="fillChatInput('How can I add a child nameserver?'); hidealltoggles();">How can I add a child nameserver?</li>
+          <li onclick="fillChatAndSubmit('How do I register a domain?'); hidealltoggles();">How do I register a domain?</li>
+          <li onclick="fillChatAndSubmit('How can I renew a domain?'); hidealltoggles();">How can I renew a domain?</li>
+          <li onclick="fillChatAndSubmit('How do I transfer IN/OUT domains?'); hidealltoggles();">How do I transfer IN/OUT domains?</li>
+          <li onclick="fillChatAndSubmit('How can I update the name servers for a domain?'); hidealltoggles();">How can I update the name servers for a domain?</li>
+          <li onclick="fillChatAndSubmit('How can I add a child nameserver?'); hidealltoggles();">How can I add a child nameserver?</li>
           
           <!-- Domain Security & Protection -->
           <li onclick="fillChatInputWithPlaceholder('Enable/disable privacy protection for mydomain.com'); showPrivacyProtectionToggle();hideexceptprivacytoggle();">Enable/disable privacy protection for <em>mydomain.com</em></li>
@@ -66,22 +67,22 @@
           <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy'); hidealltoggles();">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
           
           <!-- Financial & Account Queries -->
-          <li onclick="fillChatInput('What is my current balance in my account?'); hidealltoggles();">What is my current balance in my account?</li>
-          <li onclick="fillChatInput('How much are my available funds?'); hidealltoggles();">How much are my available funds?</li>
+          <li onclick="fillChatAndSubmit('What is my current balance in my account?'); hidealltoggles();">What is my current balance in my account?</li>
+          <li onclick="fillChatAndSubmit('How much are my available funds?'); hidealltoggles();">How much are my available funds?</li>
           
           <!-- TLD & Domain Suggestions -->
           <li onclick="fillChatInputWithPlaceholderCategory('Suggest TLDs for Category'); hidealltoggles();">Suggest TLDs for <em>Category</em></li>
-          <li onclick="fillChatInput('Give me a list of high-value domain TLDs.'); hidealltoggles();">Give me a list of high-value domain TLDs.</li>
+          <li onclick="fillChatAndSubmit('Give me a list of high-value domain TLDs.'); hidealltoggles();">Give me a list of high-value domain TLDs.</li>
           
           <!-- General Support & Documentation -->
-          <li onclick="fillChatInput('What actions can I do here on the chatbot?'); hidealltoggles();">What actions can I do here on the chatbot?</li>
-          <li onclick="fillChatInput('Where can I find the API documentation?'); hidealltoggles();">Where can I find the API documentation?</li>
-          <li onclick="fillChatInput('How can I download the WHMCS module?'); hidealltoggles();">How can I download the WHMCS module?</li>
-          <li onclick="fillChatInput('What types of SSL are available?'); hidealltoggles();">What types of SSL are available?</li>
+          <li onclick="fillChatAndSubmit('What actions can I do here on the chatbot?'); hidealltoggles();">What actions can I do here on the chatbot?</li>
+          <li onclick="fillChatAndSubmit('Where can I find the API documentation?'); hidealltoggles();">Where can I find the API documentation?</li>
+          <li onclick="fillChatAndSubmit('How can I download the WHMCS module?'); hidealltoggles();">How can I download the WHMCS module?</li>
+          <li onclick="fillChatAndSubmit('What types of SSL are available?'); hidealltoggles();">What types of SSL are available?</li>
           
           <!-- Account & Support -->
-          <li onclick="fillChatInput('Where can I sign up?'); hidealltoggles();">Where can I sign up?</li>
-          <li onclick="fillChatInput('How can I contact support?'); hidealltoggles();">How can I contact support?</li>
+          <li onclick="fillChatAndSubmit('Where can I sign up?'); hidealltoggles();">Where can I sign up?</li>
+          <li onclick="fillChatAndSubmit('How can I contact support?'); hidealltoggles();">How can I contact support?</li>
       </ul>
     </div>    
     </div>

@@ -746,42 +746,62 @@ function updateAuthUI() {
 
 //------------ Prefills chat input with a domain query, highlights the domain name placeholder, and show a tooltip section ------------//
 
-// ✅ Function to fill chat input with user question
+// ✅ Function for Pre-Login (Clicks "Ask" Button)
 function fillChatInput(question) {
-    console.trace("🔍 fillChatInput() CALLED! Stack trace:");
+    console.trace("🔍 fillChatAndAsk() CALLED!");
 
     const userInput = document.getElementById("user-question");
-    const userInput2 = document.getElementById("domain-query-text");
+    const askButton = document.getElementById("submit-question"); // Pre-login "Ask" button
 
-    if (!userInput || !userInput2) {
-        console.error("❌ Chat input fields not found!");
+    if (!userInput || !askButton) {
+        console.error("❌ Chat input field or 'Ask' button not found!");
         return;
     }
 
+    updateChatInput(userInput, question);
+
+    setTimeout(() => {
+        console.log("🚀 Clicking 'Ask' button...");
+        askButton.click();
+    }, 10);
+}
+
+// ✅ Function for Post-Login (Clicks "Submit" Button)
+function fillChatAndSubmit(question) {
+    console.trace("🔍 fillChatAndSubmit() CALLED!");
+
+    const userInput = document.getElementById("domain-query-text");
+    const submitButton = document.getElementById("submitDomainQuery"); // Post-login "Submit" button
+
+    if (!userInput || !submitButton) {
+        console.error("❌ Chat input field or 'Submit' button not found!");
+        return;
+    }
+
+    updateChatInput(userInput, question);
+
+    setTimeout(() => {
+        console.log("🚀 Clicking 'Submit' button...");
+        submitButton.click();
+    }, 10);
+}
+
+// ✅ Helper Function to Update Chat Input
+function updateChatInput(inputField, question) {
     const normalizedQuestion = question.trim().toLowerCase();
-    const normalizedUserInput = userInput.value.trim().toLowerCase();
-    const normalizedUserInput2 = userInput2.value.trim().toLowerCase();
+    const normalizedInput = inputField.value.trim().toLowerCase();
 
-    console.log("🔍 Checking for duplicates...");
-    console.log("🔹 Normalized Input 1:", normalizedUserInput);
-    console.log("🔹 Normalized Input 2:", normalizedUserInput2);
-    console.log("🔹 Normalized Question:", normalizedQuestion);
-
-    if (normalizedUserInput === normalizedQuestion && normalizedUserInput2 === normalizedQuestion) {
+    if (normalizedInput === normalizedQuestion) {
         console.warn("❌ Duplicate question detected, ignoring...");
         return;
     }
 
     console.log("✅ Updating chat input...");
-    userInput.value = "";
-    userInput2.value = "";
-    console.log("🗑 Cleared input fields before setting new value.");
-
+    inputField.value = ""; // Clear input first
     setTimeout(() => {
-        userInput.value = question;
-        userInput2.value = question;
-        userInput.focus();
-        console.log("✍️ Input fields updated with:", question);
+        inputField.value = question;
+        inputField.focus();
+        console.log("✍️ Chat input updated with:", question);
     }, 10);
 }
 
@@ -1096,11 +1116,6 @@ function getMoreSuggestions() {
 //-------------------------------------------------- Domain Availability Section ----------------------------------------------------//
 const checkDomainAvailability = async (domainName) => {
     try {
-        // Ensure the domain starts with "www." if not already present
-        if (!domainName.startsWith("www.")) {
-            domainName = `www.${domainName}`;
-        }
-
         console.log(`Checking domain availability for: ${domainName}`);
 
         const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
@@ -1158,16 +1173,6 @@ async function handleCheckDomain() {
     suggestionIndex = 0; // Reset index
 
     let domainInput = document.getElementById("check-domain-input").value.trim();
-    
-    if (!domainInput) {
-        alert("Please enter a domain name.");
-        return;
-    }
-
-    // Ensure the domain starts with "www."
-    if (!domainInput.startsWith("www.")) {
-        domainInput = `www.${domainInput}`;
-    }
 
     updateChatLog("🔍 Checking domain availability...", "bot");
 
@@ -1514,7 +1519,7 @@ function addadditionaldomaindetails() {
     const additionalsection = document.getElementById("additional-settings-section");
     if (additionalsection) {
         additionalsection.style.display = "flex"; // ✅ Corrected string format
-        document.getElementById('chat-log').style.height = '40%';
+        document.getElementById('chat-log').style.height = '30%';
         document.getElementById('domain-button-group').style.display = 'none';
         document.getElementById('close-additional-settings-buttons').style.display = 'flex';
         document.getElementById('close-additional-settings-buttons').style.height = '5vh';
@@ -1676,7 +1681,7 @@ function disableChat() {
   const chatContainer = document.getElementById("chat-container");
   if (chatContainer) {
       chatContainer.style.pointerEvents = "none";
-      chatContainer.style.opacity = "0.75";
+      chatContainer.style.opacity = "0.85";
   }
 }
 
@@ -1693,7 +1698,6 @@ function enableChat() {
 const style = document.createElement('style');
 style.textContent = `
 .chat-confirmation-box {
-    position: relative;
     left: 28%;
     background-color: #2d2d2d;
     color: white;
@@ -2317,6 +2321,9 @@ function manageDomainSuspension() {
                     updateChatLog(`⚠️ ${responseDataMsg || "Unable to process request."}`, "bot");
                 }
             }
+            document.getElementById('domain-suspension-section').style.display = "none";
+            document.getElementById('login-chat-section').style.display = "flex";
+            document.getElementById('domain-query-text').value = "";
         })
         .catch(error => {
             console.error("❌ Fetch Error:", error);
@@ -2458,7 +2465,7 @@ async function submitDomainQuery() {
     console.log("submitDomainQuery called"); 
     const submitButton = document.getElementById('submitDomainQuery'); // Replace with the actual button ID
     submitButton.disabled = true; // Disable button
-    setTimeout(() => { submitButton.disabled = false; }, 2000);
+    setTimeout(() => { submitButton.disabled = false; }, 1000);
     const queryInput = document.getElementById('domain-query-text');
     const queryText = queryInput.value.trim();
 
@@ -2577,8 +2584,7 @@ if (match) {
     console.log("🔍 Extracted domain:", domainName);
     console.log("⏳ Extracted duration:", duration);
     console.log("📌 Domain input element:", document.getElementById("check-domain-input"));
-
-    updateChatLog("Before registering the domain, check its availability by clicking the 'Check Availability' button.", 'bot');
+    
 // Prefill domain input field with a delay
 setTimeout(() => {
     const domainInput = document.getElementById("check-domain-input");
@@ -2593,14 +2599,10 @@ setTimeout(() => {
     domainInput.dispatchEvent(new Event("input", { bubbles: true }));
     console.log("✅ Prefilled domain input:", domainInput.value);
 }, 100);
-    document.getElementById("domain-availability-section").style.display = "block";
-    document.getElementById("login-chat-section").style.display = "none";
-
+    handleCheckDomain();
+    document.getElementById('login-chat-section').value = '';
     document.getElementById("domain-renewal-wrapper").style.columnGap = "8px";
     
-
-    
-
     // Auto-select duration in dropdown
     const validDurations = [1, 2, 3, 5, 10];
     if (duration && validDurations.includes(duration)) {
@@ -2924,7 +2926,7 @@ if (tldMatch) {
     
                 // Beautify and format the domain data for display
                 const domainData = data.domainData;
-                const formattedData = `<div><strong>📄 Domain Information for ${domainName}</strong></div><div><strong>Status:</strong> ${domainData.status} ${domainData.isDomainLocked ? '🔒' : '🔓'}</div><div><strong>Creation Date:</strong> ${new Date(domainData.creationDate).toLocaleDateString()} 🗓️</div><div><strong>Expiration Date:</strong> ${new Date(domainData.expirationDate).toLocaleDateString()} ⏳</div><div><strong>Nameservers:</strong></div><ul style="margin: 0; padding: 0; list-style-type: none;">${domainData.nameserver1 ? `<li>🌐 ${domainData.nameserver1}</li>` : ''}${domainData.nameserver2 ? `<li>🌐 ${domainData.nameserver2}</li>` : ''}${domainData.nameserver3 ? `<li>🌐 ${domainData.nameserver3}</li>` : ''}${domainData.nameserver4 ? `<li>🌐 ${domainData.nameserver4}</li>` : ''}</ul><div><strong>Authentication Code:</strong> ${domainData.authCode} 🔑</div><div><strong>Domain Locked:</strong> ${domainData.isDomainLocked ? 'Yes 🔒' : 'No 🔓'}</div><div><strong>Privacy Protection:</strong> ${domainData.isPrivacyProtection ? 'Enabled 🛡️' : 'Disabled ❌'}</div><div><strong>Thief Protection:</strong> ${domainData.isThiefProtected ? 'Enabled 🛡️' : 'Disabled ❌'}</div>`;
+                const formattedData = `<div><strong>📄 Domain Information for ${domainName}</strong></div><div><strong>Status:</strong> ${domainData.status} ${domainData.isDomainLocked ? '🔒' : '🔓'}</div><div><strong>Creation Date:</strong> ${new Date(domainData.creationDate).toLocaleDateString()} 🗓️</div><div><strong>Expiration Date:</strong> ${new Date(domainData.expirationDate).toLocaleDateString()} ⏳</div><div><strong>Nameservers:</strong></div><ul style="margin: 0; padding: 0; list-style-type: none;">${domainData.nameserver1 ? `<li>🌐 ${domainData.nameserver1}</li>` : ''}${domainData.nameserver2 ? `<li>🌐 ${domainData.nameserver2}</li>` : ''}${domainData.nameserver3 ? `<li>🌐 ${domainData.nameserver3}</li>` : ''}${domainData.nameserver4 ? `<li>🌐 ${domainData.nameserver4}</li>` : ''}</ul></div><div><strong>Domain Locked:</strong> ${domainData.isDomainLocked ? 'Yes 🔒' : 'No 🔓'}</div><div><strong>Privacy Protection:</strong> ${domainData.isPrivacyProtection ? 'Enabled 🛡️' : 'Disabled ❌'}</div><div><strong>Thief Protection:</strong> ${domainData.isThiefProtected ? 'Enabled 🛡️' : 'Disabled ❌'}</div>`;
     
                 // Display the formatted domain details in the chat
                 updateChatLog(formattedData, 'bot');
