@@ -3058,30 +3058,44 @@ if (!inputElement) {
     const usersInput = inputElement.value.trim();
     console.log(`📝 User Input: "${usersInput}"`);
 
-    // Regex to match "enable/disable privacy protection for domain.com"
-    const privacyRegex = /(?:^|\s)(enable|disable)\s+privacy\s+protection\s*(?:for\s+)?([\w.-]+\.[a-z]{2,})/i;
+    // FIXED REGEX
+    const privacyRegex = /(?:^|\s)(enable|disable)(?:\/disable|\/enable)?\s+privacy\s+protection(?:\s+\w+)*\s*(?:for\s+)?((?:[a-zA-Z0-9-]+)+\.[a-zA-Z]{2,63})/i;
+
     const privacyMatch = usersInput.match(privacyRegex);
+
+    console.log("Full Match Array:", privacyMatch);  // Debugging step
 
     if (privacyMatch) {
         console.log("✅ Privacy Protection command detected.");
 
-        const selectedAction = privacyMatch[1];  // "enable" or "disable"
-        const domain = privacyMatch[2];  // Extracted domain name
+        const selectedAction = privacyMatch[1];  
+        const domain = privacyMatch[2] ? privacyMatch[2].trim() : "";  
 
-        console.log(`📌 Selected Action: ${selectedAction}, Domain: ${domain}`);
+        console.log(`📌 Selected Action: ${selectedAction}, Captured Domain: ${domain}`);
 
-        updateChatLog("🔄 Please enter the domain name and select 'Enable' or 'Disable' privacy protection from the dropdown, then click 'Update Privacy Protection'.", "bot");
+        if (!domain || domain.length < 4) {
+            console.error("❌ Invalid domain detected:", domain);
+            return;
+        }
 
-        // Set dropdown value based on extracted action
+        console.log("🧐 Domain Input Field:", privacyProtectionDomainInput);
+
+        if (privacyProtectionDomainInput) {
+            // Force input update
+            setTimeout(() => {
+                privacyProtectionDomainInput.value = domain;
+                privacyProtectionDomainInput.setAttribute("value", domain);
+                console.log("✅ Value Set After Timeout:", privacyProtectionDomainInput.value);
+            }, 100);
+        } else {
+            console.error("❌ privacyProtectionDomainInput is null!");
+        }
+
         privacyProtectionDropdown.value = selectedAction.toLowerCase() === "enable" ? "enabled" : "disabled";
-
-        // Populate domain input field
-        privacyProtectionDomainInput.value = domain;
-
-        // Show Privacy Protection Section
         privacyProtectionSection.style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
-        return;
+    } else {
+        console.log("❌ No match found.");
     }
 }
 
@@ -3167,29 +3181,43 @@ if (!inputElement) {
     const usersInput = inputElement.value.trim();
     console.log(`📝 User Input: "${usersInput}"`);
 
-    const privacyRegex = /\b(update|enable|disable|turn\s*on|turn\s*off)(?:\/(update|enable|disable|turn\s*on|turn\s*off))?\s*(?:the\s+)?(?:privacy[-\s]*protection)\s*(?:for\s+([\w.-]+\.[a-z]{2,}))?/i;
+    const privacyRegex = /\b(update|enable|disable|turn\s*on|turn\s*off)(?:\/(update|enable|disable|turn\s*on|turn\s*off))?\s*(?:the\s+)?(?:privacy[-\s]*protection)\s*(?:for\s+)?((?:[\w-]+\.)+[a-z]{2,})/i;
     const privacyMatch = usersInput.match(privacyRegex);
 
     if (privacyMatch) {
         console.log("✅ Privacy Protection command detected.");
-
+        updateChatLog("🔄 Please enter the domain name and select 'Enable' or 'Disable' privacy protection from the dropdown, then click 'Update Privacy Protection'.", 'bot');
         const action = privacyMatch[1]?.toLowerCase() || "";
         const domain = privacyMatch[3] ? privacyMatch[3].trim() : ""; 
 
         console.log(`📌 Action: ${action || "None provided"}`);
         console.log(`🌍 Domain: ${domain || "None provided"}`);
 
+        if (!domain || domain.length < 4) {
+            console.error("❌ Invalid domain detected:", domain);
+            return;
+        }
+
         document.getElementById("privacy-protection-section").style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
+
+        // ✅ Debug Before Assignment
+        console.log("🔍 Before Assignment, Input Value:", privacyProtectionDomainInput.value);
+
+        privacyProtectionDomainInput.value = domain;
+
+        // ✅ Debug After Assignment
+        console.log("✅ After Assignment, Input Value:", privacyProtectionDomainInput.value);
+
+        // ✅ Ensure Value Persists
+        setTimeout(() => {
+            privacyProtectionDomainInput.value = domain;
+            console.log("✅ Forced Input Update:", privacyProtectionDomainInput.value);
+        }, 100);
 
         if (action) {
             const isEnablePrivacy = action.includes("enable") || action === "turn on";
             console.log(`🔄 Converted Boolean Value: ${isEnablePrivacy}`);
-
-            if (!window.apiCallTriggered) {
-                window.apiCallTriggered = true;
-                sendPrivacySetting(domain, isEnablePrivacy);
-            }
         } else {
             console.log("⚠️ No enable/disable/update action provided. Prompt user for selection.");
         }
@@ -3198,6 +3226,7 @@ if (!inputElement) {
         console.log("❌ No valid privacy protection command detected.");
     }
 }
+
 
 const lockRegex = /(?:.*\s)?\b(lock|unlock)\s*(?:my\s*domain\s*|this\s*domain\s*)?([\w.-]+)/i;
 
@@ -3472,51 +3501,51 @@ function goBackToQuerySection() {
 
 // ✅ Fix duplicate event listeners for 'back-to-previous-section'
 const backButton = document.getElementById("back-to-previous-section");
-if (backButton && !backButton.dataset.listenerAttached) {
-    backButton.dataset.listenerAttached = "true";
+if (backButton) {
+    backButton.removeEventListener("click", goBackToPreviousSection);
     backButton.addEventListener("click", goBackToPreviousSection);
 }
 
-// ✅ Centralized Enter Key Event Handling
+// ✅ Optimize Enter Key Event Handling
 document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         event.preventDefault();
         event.stopPropagation(); // ⛔ Prevent multiple triggers
 
         console.log("🛑 Stopped multiple Enter key events.");
+
         const activeElement = document.activeElement;
 
-        if (!activeElement) return;
-
-        switch (true) {
-            case activeElement.classList.contains("chat-input"):
+        if (activeElement) {
+            if (activeElement.classList.contains("chat-input")) {
                 console.log("💬 Chat Input - Enter key pressed");
-                document.getElementById("submit-question")?.click();
-                break;
-            case activeElement.classList.contains("email-input"):
+                document.getElementById("submit-question").click();
+            } else if (activeElement.classList.contains("email-input")) {
                 console.log("📧 Email Input - Enter key pressed");
-                document.getElementById("submit-email")?.click();
-                break;
-            case activeElement.id === "domain-query-text":
+                document.getElementById("submit-email").click();
+            } else if (activeElement.id === "domain-query-text") {
                 console.log("🌍 Domain Query Input - Enter key pressed");
                 submitDomainQuery();
-                break;
-            case activeElement.id === "otp-code":
-                console.log("🔑 OTP Input - Enter key pressed");
-                verifyOTP();
-                break;
+            }
         }
     }
 });
 
-// ✅ OTP Verification Click Event
-document.getElementById("verify-otp")?.addEventListener("click", verifyOTP);
+document.getElementById('otp-code').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      // Trigger the OTP verification function when Enter is pressed
+      verifyOTP();
+    }
+  });
+
+  document.getElementById('verify-otp').addEventListener('click', function() {
+    verifyOTP();
+  });
 
 // ✅ Fix issue with Enter key on domain query input
 const domainQueryInput = document.getElementById("domain-query-text");
-if (domainQueryInput && !domainQueryInput.dataset.listenerAttached) {
-    domainQueryInput.dataset.listenerAttached = "true";
-    domainQueryInput.addEventListener("keydown", function (event) {
+if (domainQueryInput) {
+    domainQueryInput.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
             event.preventDefault();
             console.log("🌍 Domain Query Input - Enter key pressed");
@@ -3525,17 +3554,15 @@ if (domainQueryInput && !domainQueryInput.dataset.listenerAttached) {
     });
 }
 
-if (chatInput && !chatInput.dataset.listenerAttached) {
-    chatInput.dataset.listenerAttached = "true";
-    chatInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            console.log("💬 Enter key pressed in chat input");
-            document.getElementById("submit-question")?.click();
-        }
-    });
-}
+document.getElementById("user-question").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Prevents accidental form submission or newline entry
+        console.log("💬 Enter key pressed in chat input");
 
+        // Trigger the button click
+        document.getElementById("submit-question").click();
+    }
+});
 
 //-------------------------------------------------- Extra  functions Section ------------------------------------------------------//
 
