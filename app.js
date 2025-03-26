@@ -1,3 +1,4 @@
+//------------------------------------------------------- Dependencies ----------------------------------------------------------------//
 require('dotenv').config();
 const express = require('express');
 const nodemailer = require('nodemailer');
@@ -13,6 +14,7 @@ const port = process.env.PORT || 3000;
 const fs = require('fs');
 const util = require('util');
 
+//-------------------------------------------------- Logs in extrernal file ------------------------------------------------------------//
 const logDir = '/home2/chatbot-logs';
 
 // Ensure log directory exists
@@ -68,10 +70,11 @@ app.use((err, req, res, next) => {
     errorLog.write(errorMessage);
     next(err);
 });
-
+//---------------------------------------------------------- Express ------------------------------------------------------------------//
 app.use(express.json());
 app.use(express.static('public'));
 
+//---------------------------------------------------------- Session -----------------------------------------------------------------//
 // Session timeout duration
 const SESSION_TIMEOUT = 30 * 60 * 1000; 
 
@@ -82,26 +85,6 @@ app.use(session({
   saveUninitialized: false,    
   cookie: { secure: false },  
 }));
-
-const COHERE_API_KEY = process.env.COHERE_API_KEY;
-const COHERE_API_URL = 'https://api.cohere.ai/v1/generate';
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-
-// Nodemailer setup
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 
 // Middleware to log session details
 function logSession(req, res, next) {
@@ -120,6 +103,34 @@ function checkSession(req, res, next) {
   }
   next();
 }
+
+//------------------------------------------------------- API key and model ------------------------------------------------------------//
+
+const COHERE_API_KEY = process.env.COHERE_API_KEY;
+const COHERE_API_URL = 'https://api.cohere.ai/v1/generate';
+
+//-------------------------------------------------------- DB connection ---------------------------------------------------------------//
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
+
+//--------------------------------------------------- OTP through mail setup -----------------------------------------------------------//
+
+// Nodemailer setup
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+//---------------------------------------------------------- Pre-Login -----------------------------------------------------------------//
 
 const startQuestions = {
   "What features does this platform offer?": "This platform offers domain management, security controls, and domain status management, with customer support available for assistance.",
@@ -248,7 +259,6 @@ const regexPatterns = [
   }
 ];
 
-
 // Helper function to normalize user input
 function normalizeText(text) {
   return text.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
@@ -297,6 +307,8 @@ app.post('/ask-question', (req, res) => {
   // Default response if no match
   return res.json({ answer: "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
+
+//------------------------------------------------------ Login and verification --------------------------------------------------------//
 
 // Tester login without checking in db
 app.post('/api/tester-login', logSession, (req, res) => {
@@ -489,6 +501,7 @@ app.post('/api/mock-authenticate', async (req, res) => {  // 🔄 Make it async
   return res.status(401).json({ success: false, message: 'Unauthorized' });
 });
 
+//------------------------------------------------------- Fetching API Key -------------------------------------------------------------//
 
 let FETCHED_API_KEY = process.env.CONNECT_RESELLER_API_KEY; // Default API key
 
@@ -539,6 +552,8 @@ const updateAPIKey = async (email) => {
         throw error;
     }
 };
+
+//---------------------------------------------------------- Register Domain -----------------------------------------------------------//
 
 const domainRegistrationService = async (params) => {
   try {
@@ -852,6 +867,8 @@ app.get("/api/register-domain", async (req, res) => {
   }
 });
 
+//---------------------------------------------------------- Transfer Domain -----------------------------------------------------------//
+
 const API_KEY_TRANSFER = FETCHED_API_KEY; 
 const API_URL_TRANSFER = 'https://api.connectreseller.com/ConnectReseller/ESHOP/TransferOrder';
 
@@ -999,6 +1016,8 @@ app.post('/api/transfer-domain', async (req, res) => {
       return res.status(500).json({ success: false, message: "Error processing transfer fee or balance." });
   }
 });
+
+//---------------------------------------------------------- Renew Domain -----------------------------------------------------------//
 
 const ORDER_TYPE_RENEWAL = 2;
 
@@ -1152,6 +1171,7 @@ app.get('/api/renew-domain', async (req, res) => {
   }
 });
 
+//-------------------------------------------------------- Domain Availability ---------------------------------------------------------//
 
 // Function to check availability of multiple domains
 const checkDomainsAvailability = async (suggestions) => {
@@ -1177,6 +1197,28 @@ const checkDomainsAvailability = async (suggestions) => {
 const cleanDomainName = (domain) => {
   return domain.replace(/^\d+\.\s*/, '').trim(); // Remove numbers and extra characters
 };
+
+app.post('/api/check-domain-availability', async (req, res) => {
+  const { domain } = req.body;
+
+  if (!domain) {
+      return res.status(400).json({ success: false, message: 'Domain name is required.' });
+  }
+
+  try {
+      await dns.resolve(domain);
+      return res.json({ success: false, message: `The domain ${domain} is already taken.` });
+  } catch (error) {
+      if (error.code === 'ENOTFOUND') {
+          return res.json({ success: true, message: `The domain ${domain} is available!` });
+      }
+      console.error('DNS lookup error:', error);
+      return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
+  }
+});
+
+
+//-------------------------------------------------------- Domain Suggestions ----------------------------------------------------------//
 
 app.post('/api/domain-suggestions', async (req, res) => {
   const { domain } = req.body; // Extract the base domain or topic from the request body
@@ -1257,6 +1299,8 @@ app.post('/api/domain-suggestions', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error generating domain suggestions.' });
   }
 });
+
+//---------------------------------------------------------- Domain Info --------------------------------------------------------------//
 
 app.get('/api/domain-info', async (req, res) => {
   const domainName = req.query.domain;
@@ -1341,7 +1385,24 @@ async function getDomainDetails(domainName) {
   }
 }
 
-// Function to manage theft protection
+async function getDomainDetails(domainName) {
+  const connection = await pool.getConnection();
+  try {
+      const [rows] = await connection.execute(
+          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
+          [domainName]
+      );
+      return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+      console.error('❌ Error fetching domain details:', error);
+      return null;
+  } finally {
+      connection.release();
+  }
+}
+
+//--------------------------------------------------------- Theft Protection ----------------------------------------------------------//
+
 // Function to manage theft protection
 async function manageTheftProtection(domainName, enable) {
   console.log(`🔐 [${new Date().toISOString()}] Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
@@ -1415,22 +1476,7 @@ app.get('/api/manage-theft-protection', async (req, res) => {
   }
 });
 
-
-async function getDomainDetails(domainName) {
-  const connection = await pool.getConnection();
-  try {
-      const [rows] = await connection.execute(
-          "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
-          [domainName]
-      );
-      return rows.length > 0 ? rows[0] : null;
-  } catch (error) {
-      console.error('❌ Error fetching domain details:', error);
-      return null;
-  } finally {
-      connection.release();
-  }
-}
+//------------------------------------------------------------ Domain Lock ------------------------------------------------------------//
 
 async function manageDomainLockStatus(domainName, lock) {
   console.log(`🔒 Managing domain lock for ${domainName}: ${lock ? 'Locked' : 'Unlocked'}`);
@@ -1469,7 +1515,6 @@ async function manageDomainLockStatus(domainName, lock) {
   }
 }
 
-// ✅ API Route
 app.get('/api/lock-domain', async (req, res) => {
   console.log(`📥 Received API request:`, req.query);
 
@@ -1486,6 +1531,8 @@ app.get('/api/lock-domain', async (req, res) => {
   console.log(`📤 Final response to frontend:`, JSON.stringify(result, null, 2)); // Log final response sent to frontend
   return res.json(result);
 });
+
+//----------------------------------------------------------- Account Balance ----------------------------------------------------------//
 
 app.get('/api/balance', async (req, res) => {
   if (!req.session || !req.session.email) {
@@ -1621,7 +1668,6 @@ async function manageDomainSuspension(domainName, suspend) {
   }
 }
 
-// ✅ API Route
 app.get('/api/suspend-domain', async (req, res) => {
   const { domainName, suspend } = req.query;
   console.log('[BACKEND] 📥 Received Request:', { domainName, suspend });
@@ -1705,7 +1751,6 @@ async function managePrivacyProtection(domainName, enableProtection) {
   }
 }
 
-// ✅ Fixed API Route with More Logs
 app.get('/api/manage-privacy-protection', async (req, res) => {
   const { domainName, enable } = req.query;
 
@@ -1819,7 +1864,6 @@ app.get('/update-name-servers', async (req, res) => {
 
 //------------------------------------------------------ Add Child Name Servers --------------------------------------------------------//
 
-// 📌 Function to Add Child Name Server (Correct Order)
 async function addChildNameServer(domainName, ipAddress, hostname) {
   let connection;
   try {
@@ -1872,7 +1916,6 @@ async function addChildNameServer(domainName, ipAddress, hostname) {
   }
 }
 
-// 📌 API Endpoint (Now Uses GET, Correct Parameter Order)
 app.get('/add-child-ns', async (req, res) => {
   const { domainName, ipAddress, hostname } = req.query;
 
@@ -1883,6 +1926,8 @@ app.get('/add-child-ns', async (req, res) => {
   const result = await addChildNameServer(domainName, ipAddress, hostname);
   res.json(result);
 });
+
+//--------------------------------------------- TLD Sugestions for a particular Category -----------------------------------------------//
 
 const getCategorySuggestions = async (category) => {
   try {
@@ -1916,7 +1961,6 @@ const getCategorySuggestions = async (category) => {
   }
 };
 
-// ✅ Use getCategorySuggestions inside /api/category-suggestion to remove duplicate code
 app.post('/api/category-suggestion', async (req, res) => {
   const { category } = req.body;
   if (!category) return res.status(400).json({ success: false, message: 'Category is required.' });
@@ -1933,77 +1977,7 @@ app.post('/api/category-suggestion', async (req, res) => {
   }
 });
 
-const allowedActions = [
-  "Check Availability of Specified Domain",
-  "Bulk Domain Check for Multiple domains",
-  "Check Domain Suggestions List",
-  "Check TLD Suggestions List",
-  "Check Domain Price for Multiple Years",
-  "Register",
-  "Transfer",
-  "Cancel Transfer",
-  "Validate a Transfer",
-  "Renew",
-  "Getting Details of the Domain using ID",
-  "Getting Details of the Domain using Domain Name",
-  "Search",
-  "Modify Nameserver of Domain",
-  "Modify Authcode of Domain",
-  "Manage Lock on Domain",
-  "Manage Privacy on Domain",
-  "Manage Domain Suspend",
-  "Manage Theft Protection on Domain",
-  "View Domain Secret Key",
-  "Manage DNS Management",
-  "Add DNS Record",
-  "Modify DNS Record",
-  "Delete DNS Record",
-  "View DNS Record",
-  "Modifying Domain Contact",
-  "To move domain from one client to another",
-  "Add SRV Record",
-  "Modify DNS Record for Domain",
-  "Add Contact",
-  "Modify Contact",
-  "View Contact",
-  "To get Registrant list of specific client",
-  "To Send RAA Verification mail",
-  "Add Client",
-  "Modify Client",
-  "View Client",
-  "Change the Client Password",
-  "To Delete The Client",
-  "To Get A Client List",
-  "To Add Child Name Server",
-  "Modify Name Server IP",
-  "To Modify Host Child Name Server",
-  "To Delete Child Name Server",
-  "To Get Child Name Servers of a Domain",
-  "To Set Domain Forwarding Details",
-  "To Get Domain Forwarding Details",
-  "To Update Domain Forwarding Details",
-  "To Delete Domain Forwarding Details",
-  "Check Reseller Available Funds"
-];
-
-// Find the closest matching action
-function findClosestAction(userQuery) {
-  const normalizedQuery = userQuery.toLowerCase().trim();
-  let bestMatch = null;
-  let bestScore = 0;
-
-  allowedActions.forEach(action => {
-      let words = action.toLowerCase().split(" ");
-      let matchCount = words.filter(word => normalizedQuery.includes(word)).length;
-
-      if (matchCount > bestScore) {
-          bestScore = matchCount;
-          bestMatch = action;
-      }
-  });
-
-  return bestMatch;
-}
+//----------------------------------------------------------- Get Auth Code ------------------------------------------------------------//
 
 app.get('/api/domain-auth-code', async (req, res) => {
   const { domain } = req.query;
@@ -2072,6 +2046,8 @@ app.get('/api/domain-auth-code', async (req, res) => {
   }
 });
 
+//---------------------------------------------------- Get Domain Expiry Date ----------------------------------------------------------//
+
 app.get('/api/expiring-domains', async (req, res) => {
   try {
       const apiKey = FETCHED_API_KEY;
@@ -2137,6 +2113,8 @@ app.get('/api/expiring-domains', async (req, res) => {
   }
 });
 
+//-------------------------------------------------- Get Domain Registration Date ------------------------------------------------------//
+
 app.get('/api/registrationdate-domains', async (req, res) => {
   try {
       const apiKey = FETCHED_API_KEY;
@@ -2176,6 +2154,8 @@ app.get('/api/registrationdate-domains', async (req, res) => {
   }
 });
 
+//-------------------------------------------------- TLD suggestions for a domain name -------------------------------------------------//
+
 app.get("/api/tld-suggestions", async (req, res) => {
   try {
       const { websiteName } = req.query;
@@ -2212,6 +2192,8 @@ app.get("/api/tld-suggestions", async (req, res) => {
   }
 });
 
+//----------------------------------------------------- Submit query section -----------------------------------------------------------//
+
 // Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
@@ -2222,6 +2204,7 @@ const allowedTopics = [
   'how to enable/disable theft protection', 'what are the name servers for',
   'when was this domain registered'
 ];
+
 // Refined predefined answers with improved grammar, chatbot tone, and categorized responses
 const predefinedAnswers = {
   // Register Domain
@@ -2270,7 +2253,6 @@ const predefinedAnswers = {
   "What types of reports can I get?": "You can generate transaction reports, domain registration reports, expiration reports, and more from your account dashboard."
 };
 
-
 // Convert predefined questions into an array
 const predefinedQuestions = Object.keys(predefinedAnswers);
 
@@ -2299,8 +2281,6 @@ const extractDomain = (text) => {
   const match = text.match(domainRegex);
   return match ? match[1] : null;
 };
-
-// Example of how to use fuse1 (predefinedAnswers) and fuse2 (allowedTopics)
 
 // Search function for predefined answers
 const searchPredefinedAnswer = (query) => {
@@ -2587,27 +2567,7 @@ const domainKeywords = [
 
 const dns = require('dns').promises;
 
-app.post('/api/check-domain-availability', async (req, res) => {
-  const { domain } = req.body;
-
-  if (!domain) {
-      return res.status(400).json({ success: false, message: 'Domain name is required.' });
-  }
-
-  try {
-      await dns.resolve(domain);
-      return res.json({ success: false, message: `The domain ${domain} is already taken.` });
-  } catch (error) {
-      if (error.code === 'ENOTFOUND') {
-          return res.json({ success: true, message: `The domain ${domain} is available!` });
-      }
-      console.error('DNS lookup error:', error);
-      return res.status(500).json({ success: false, message: 'Error checking domain availability.' });
-  }
-});
-
-
-// Start the server
+//------------------------------------------------------------ Start the Server --------------------------------------------------------//
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

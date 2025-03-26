@@ -3472,51 +3472,51 @@ function goBackToQuerySection() {
 
 // ✅ Fix duplicate event listeners for 'back-to-previous-section'
 const backButton = document.getElementById("back-to-previous-section");
-if (backButton) {
-    backButton.removeEventListener("click", goBackToPreviousSection);
+if (backButton && !backButton.dataset.listenerAttached) {
+    backButton.dataset.listenerAttached = "true";
     backButton.addEventListener("click", goBackToPreviousSection);
 }
 
-// ✅ Optimize Enter Key Event Handling
+// ✅ Centralized Enter Key Event Handling
 document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         event.preventDefault();
         event.stopPropagation(); // ⛔ Prevent multiple triggers
 
         console.log("🛑 Stopped multiple Enter key events.");
-
         const activeElement = document.activeElement;
 
-        if (activeElement) {
-            if (activeElement.classList.contains("chat-input")) {
+        if (!activeElement) return;
+
+        switch (true) {
+            case activeElement.classList.contains("chat-input"):
                 console.log("💬 Chat Input - Enter key pressed");
-                document.getElementById("submit-question").click();
-            } else if (activeElement.classList.contains("email-input")) {
+                document.getElementById("submit-question")?.click();
+                break;
+            case activeElement.classList.contains("email-input"):
                 console.log("📧 Email Input - Enter key pressed");
-                document.getElementById("submit-email").click();
-            } else if (activeElement.id === "domain-query-text") {
+                document.getElementById("submit-email")?.click();
+                break;
+            case activeElement.id === "domain-query-text":
                 console.log("🌍 Domain Query Input - Enter key pressed");
                 submitDomainQuery();
-            }
+                break;
+            case activeElement.id === "otp-code":
+                console.log("🔑 OTP Input - Enter key pressed");
+                verifyOTP();
+                break;
         }
     }
 });
 
-document.getElementById('otp-code').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-      // Trigger the OTP verification function when Enter is pressed
-      verifyOTP();
-    }
-  });
-
-  document.getElementById('verify-otp').addEventListener('click', function() {
-    verifyOTP();
-  });
+// ✅ OTP Verification Click Event
+document.getElementById("verify-otp")?.addEventListener("click", verifyOTP);
 
 // ✅ Fix issue with Enter key on domain query input
 const domainQueryInput = document.getElementById("domain-query-text");
-if (domainQueryInput) {
-    domainQueryInput.addEventListener("keypress", function (event) {
+if (domainQueryInput && !domainQueryInput.dataset.listenerAttached) {
+    domainQueryInput.dataset.listenerAttached = "true";
+    domainQueryInput.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
             event.preventDefault();
             console.log("🌍 Domain Query Input - Enter key pressed");
@@ -3525,15 +3525,16 @@ if (domainQueryInput) {
     });
 }
 
-document.getElementById("user-question").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault(); // Prevents accidental form submission or newline entry
-        console.log("💬 Enter key pressed in chat input");
-
-        // Trigger the button click
-        document.getElementById("submit-question").click();
-    }
-});
+if (chatInput && !chatInput.dataset.listenerAttached) {
+    chatInput.dataset.listenerAttached = "true";
+    chatInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            console.log("💬 Enter key pressed in chat input");
+            document.getElementById("submit-question")?.click();
+        }
+    });
+}
 
 
 //-------------------------------------------------- Extra  functions Section ------------------------------------------------------//
