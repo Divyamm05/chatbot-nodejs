@@ -31,13 +31,14 @@ function taketosigninsection() {
     const chatLog = document.getElementById('chat-log'); 
     const login = document.getElementById('login-text')
     const signup = document.getElementById('signup-text')
+    
 
     // Toggle the visibility of the email section
     if (emailSection.style.display === 'none' || emailSection.style.display === '') {
         // Show the email section
         emailSection.style.display = 'flex';
         userinputSection.style.display = 'none';
-        //document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('user-email').value = '';
         login.style.display = 'none';
         signup.style.display = 'flex';
         toggleSidebar();
