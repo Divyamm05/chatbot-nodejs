@@ -122,6 +122,11 @@ function requestOTP() {
             if (data.otpRequired) {
                 // Show OTP input section if OTP is required
                 document.getElementById("otp-section").style.display = "flex";
+                ocument.getElementById("verify-otp").style.display = "flex";
+                ocument.getElementById("resend-otp").style.display = "flex";
+                ocument.getElementById("back-otp-section").style.display = "flex";
+
+                document.getElementById("otp-code").value = "";
                 updateChatLog('OTP has been sent to your email address. Please check your inbox.', 'bot');
             } else {
                 // Directly handle authenticated state (No message shown)
@@ -133,7 +138,6 @@ function requestOTP() {
     })
     .catch(error => {
         console.error('Error:', error);
-        updateChatLog('An error occurred while requesting OTP. Please try again.', 'bot');
     });
 }
 
@@ -205,7 +209,8 @@ try {
         localStorage.setItem('isSignedIn', 'true');
         login.style.display = 'none';
         signup.style.display = 'none';
-        profileicon.style.display = 'none';
+        profileicon.style.display = 'flex';
+        document.getElementById('logout-text').style.display = 'flex';
         sidebar.style.display = 'block';
         if (sidebar) sidebar.classList.remove("collapsed");
 
@@ -307,6 +312,17 @@ function logout(){
     document.getElementById('sidebar-content').style.display = 'flex';
     document.getElementById('faq-post-login').style.display = 'none';
     document.getElementById('user-input-section').style.display = "flex";
+    const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , 'name-server-update-section', 'add-child-name-server-section' ,'theft-protection-section' , 'privacy-protection-section' , 'domain-lock-section' , 'domain-suspension-section', 'additional-settings-section', 'name-server-container'];
+    
+    sectionsToHide.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.style.display = 'none';
+        console.log(`Hid section: ${sectionId}`);
+      } else {
+        console.log(`Element not found: ${sectionId}`);
+      }
+    });
     clearchatlog();
     document.getElementById('user-question').value = ''; // Reset the input field
     updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
@@ -355,18 +371,67 @@ function toggleChatbox() {
   }
 }
 
+function openChatbox() {
+    const chatbox = document.getElementById('chatbox');
+    const chatContainer = document.getElementById('chat-container');
+
+    if (!chatbox || !chatContainer) return;
+
+    chatbox.classList.add('visible');
+    chatbox.classList.remove('minimized');
+
+    chatContainer.classList.add('visible');
+    chatContainer.classList.remove('minimized');
+
+    // Prevent duplicate event listeners
+    document.removeEventListener('click', outsideChatboxClickListener);
+    document.addEventListener('click', outsideChatboxClickListener);
+}
+
+
 // Function to close the chatbox
 function closeChatbox() {
-  const chatbox = document.getElementById('chatbox');
-  const chatContainer = document.getElementById('chat-container');
+    const chatbox = document.getElementById('chatbox');
+    const chatContainer = document.getElementById('chat-container');
 
-  chatbox.classList.add('minimized');
-  chatbox.classList.remove('visible');
+    if (!chatbox || !chatContainer) return;
 
-  chatContainer.classList.add('minimized');
-  chatContainer.classList.remove('visible');
+    chatbox.classList.add('minimized');
+    chatbox.classList.remove('visible');
 
+    chatContainer.classList.add('minimized');
+    chatContainer.classList.remove('visible');
+
+    console.log("❌ Chatbox closed");
+
+    setTimeout(() => {
+        chatContainer.style.display = "none"; // ✅ Hide it after animation
+    }, 400);
+
+    // Remove event listener to prevent multiple bindings
+    document.removeEventListener('click', outsideChatboxClickListener);
 }
+
+// Function to close chatbox when clicking outside of it
+function outsideChatboxClickListener(event) {
+    const chatbox = document.getElementById('chat-container');
+    const assistantLogo = document.getElementById('assistant-logo');
+
+    if (!chatbox || !assistantLogo) {
+        console.error("⚠️ Chatbox or Assistant Logo not found!");
+        return;
+    }
+
+    // Check if the clicked element is inside the chatbox or the assistant logo
+    if (!chatbox.contains(event.target) && !assistantLogo.contains(event.target)) {
+        console.log("🛑 Clicked outside chatbox, closing...");
+        closeChatbox();
+    } else {
+        console.log("✅ Click detected inside chatbox or on assistant logo");
+    }
+}
+
+
 window.addEventListener('load', () => {
       const emailVerified = localStorage.getItem('emailVerified');
       if (emailVerified === 'true') {
@@ -563,7 +628,7 @@ function updateChatLog(message, sender) {
   // Add child name servers
   if (
     sender === 'bot' && isUserSignedIn &&
-    (message.includes("add a child name server") || message.includes("register child name server") || message.includes("To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers.")) &&
+    (message.includes("add a child name server") || message.includes("register child name server") || message.includes("To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.")) &&
     !message.includes("Thank you for signing in!")
 ) {
     addButton("Add Child Nameservers", "child-ns-button", "add-child-name-server-section");
@@ -861,7 +926,7 @@ function autoHideTooltip(tooltipRef) {
             tooltipRef.remove();
             tooltipRef = null;
         }
-    }, 5000);
+    }, 4000);
 }
 
 function fillChatInputWithPlaceholderDate(template) {
@@ -2176,9 +2241,11 @@ async function registerChildNameServer() {
                 result.success ? "Child Name Server added successfully!" : "Failed to add Child Name Server.",
                 result.success
             );
+            document.getElementById('domain-query-text').value = "";
         } catch (error) {
             console.error("[FRONTEND] ❌ Error:", error);
             showChildNSPopup("Error connecting to server.", false);
+            document.getElementById('domain-query-text').value = "";
         }
     }
     
@@ -2391,7 +2458,7 @@ async function submitDomainQuery() {
     console.log("submitDomainQuery called"); 
     const submitButton = document.getElementById('submitDomainQuery'); // Replace with the actual button ID
     submitButton.disabled = true; // Disable button
-    setTimeout(() => { submitButton.disabled = false; }, 3000);
+    setTimeout(() => { submitButton.disabled = false; }, 2000);
     const queryInput = document.getElementById('domain-query-text');
     const queryText = queryInput.value.trim();
 
@@ -3129,13 +3196,13 @@ if (!inputElement) {
     console.log(`📝 User Input: "${usersInput}"`);
 
     // Updated Regex: Supports various lock/unlock commands
-    const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)(?:\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,}))?/i;
+    const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,})?/i;
     const lockUnlockMatch = usersInput.match(lockUnlockRegex);
 
     if (lockUnlockMatch) {
         console.log("✅ Lock/Unlock command detected.");
 
-        const selectedAction = lockUnlockMatch[1];  // Extracted action: "lock", "unlock", etc.
+        const selectedAction = lockUnlockMatch[1].toLowerCase();  // Extracted action: "lock", "unlock", etc.
         const domain = lockUnlockMatch[2] ? lockUnlockMatch[2].trim() : "";  // Set to "" if undefined
 
         console.log(`📌 Selected Action: ${selectedAction}`);
@@ -3666,8 +3733,6 @@ function outsideClickListener(event) {
         closeInfo();
     }
 }
-
-
 
 if (loadingContainer) {
     loadingContainer.style.display = 'none';  

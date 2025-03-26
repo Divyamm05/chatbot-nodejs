@@ -2246,7 +2246,7 @@ const predefinedAnswers = {
 //
   "How do I export 'List Name'?": "You can export domain-related lists from your account dashboard under the reports or export section.",
 //
-  "How can I add a child nameserver?": "To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers.",
+  "How can I add a child nameserver?": "To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.",
 //
   "How do I pull a domain?": "To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.",
 //
@@ -2567,7 +2567,7 @@ const domainKeywords = [
 
 const dns = require('dns').promises;
 
-//------------------------------------------------------------ Start the Server --------------------------------------------------------//
+//------------------------------------------------------------ Start the Server -------------------------------------------------------//
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
