@@ -22,7 +22,7 @@ const nameserver = document.getElementById('name-server-container');
 nameserver.style.display ='none';
 document.getElementById("submitDomainQuery").style.borderRadius="20px"
 document.getElementById("submit-question").style.borderRadius="20px"
-//------------------------------------------- Request OTP, Resend and Verification Section --------------------------------------------//
+//---------------------------------------- Request OTP, Resend ,Verification Section and logout-----------------------------------------//
 
 // Show email verification section
 function taketosigninsection() {
@@ -292,6 +292,23 @@ function handleAuthenticatedUser() {
     isSignedIn = true;
     localStorage.setItem('isSignedIn', 'true');
     updateAuthUI();
+}
+
+function logout(){
+    document.getElementById('login-text').style.display = 'flex';
+    document.getElementById('signup-text').style.display = 'none';
+    document.getElementById('profile-icon').style.display = 'flex';
+    document.getElementById('email-section').style.display = 'none';
+    document.getElementById('otp-section').style.display = 'none';
+    document.getElementById('login-chat-section').style.display = 'none';
+    document.getElementById('sidebar').style.display = 'flex';
+    document.getElementById('logout-text').style.display = 'none';
+    document.getElementById('sidebar-content').style.display = 'flex';
+    document.getElementById('faq-post-login').style.display = 'none';
+    document.getElementById('user-input-section').style.display = "flex";
+    clearchatlog();
+    document.getElementById('user-question').value = ''; // Reset the input field
+    updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
 }
 
 //---------------------------------------------- Show and hide Chatbot, Sidebar Section -----------------------------------------------//
@@ -3740,19 +3757,3 @@ function removeLastBotMessage() {
     }
 }
 
-function logout(){
-    document.getElementById('login-text').style.display = 'flex';
-    document.getElementById('signup-text').style.display = 'none';
-    document.getElementById('profile-icon').style.display = 'flex';
-    document.getElementById('email-section').style.display = 'none';
-    document.getElementById('otp-section').style.display = 'none';
-    document.getElementById('login-chat-section').style.display = 'none';
-    document.getElementById('sidebar').style.display = 'flex';
-    document.getElementById('logout-text').style.display = 'none';
-    document.getElementById('sidebar-content').style.display = 'flex';
-    document.getElementById('faq-post-login').style.display = 'none';
-    document.getElementById('user-input-section').style.display = "flex";
-    clearchatlog();
-    document.getElementById('user-question').value = ''; // Reset the input field
-    updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
-}
