@@ -785,51 +785,63 @@ app.get("/api/register-domain", async (req, res) => {
       return res.json({ success: false, message: "Domain is not available." });
     }
 
-    const registrationFee = domainAvailability.registrationFee;
-    if (!registrationFee) {
-      return res.json({ success: false, message: "Failed to retrieve domain price." });
+    let registrationFee = parseFloat(domainAvailability.registrationFee);
+    if (isNaN(registrationFee) || registrationFee <= 0) {
+      return res.json({ success: false, message: "Failed to retrieve a valid domain price." });
     }
 
-    console.log(`💰 [DOMAIN PRICE] Registration Fee: $${registrationFee}`);
+    // Ensure Duration is a valid number
+    Duration = parseInt(Duration, 10);
+    if (isNaN(Duration) || Duration <= 0) {
+      return res.json({ success: false, message: "Invalid domain registration duration." });
+    }
+
+    // Multiply the fee by the selected duration
+    const totalPrice = registrationFee * Duration;
+
+    console.log(`💰 [DOMAIN PRICE] Total Registration Fee for ${Duration} years: $${totalPrice.toFixed(2)}`);
 
     console.log(`📡 [BALANCE API] Fetching funds for ResellerId: ${resellerId}`);
 
-    const balanceResponse = await axios.get(
-      `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`
-    );
+    let balance = 0;
+    try {
+      const balanceResponse = await axios.get(
+        `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`
+      );
 
-    console.log(`✅ [BALANCE API] Response:`, balanceResponse.data);
-    
-    // Handle null or undefined balance safely
-    let balance = parseFloat(balanceResponse.data.responseData);
-    if (isNaN(balance)) {
-      balance = 0; // If the balance is not a valid number, set it to 0
+      console.log(`✅ [BALANCE API] Response:`, balanceResponse.data);
+
+      balance = parseFloat(balanceResponse.data.responseData);
+      if (isNaN(balance)) {
+        balance = 0; // If the balance is not a valid number, set it to 0
+      }
+    } catch (error) {
+      console.error("❌ [BALANCE API ERROR] Failed to fetch balance:", error.message);
+      return res.status(500).json({ success: false, message: "Failed to fetch reseller balance." });
     }
+
     console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
 
-    if (balance < registrationFee) {
+    if (balance < totalPrice) {
       return res.json({
         success: false,
-        message: `Insufficient funds. Required: $${registrationFee.toFixed(2)}, Available: $${balance.toFixed(2)}`
+        message: `Insufficient funds. Required: $${totalPrice.toFixed(2)}, Available: $${balance.toFixed(2)}`
       });
     }
 
     console.log(`🚀 [DOMAIN REGISTRATION] Initiating for ${WebsiteName}...`);
 
-    // Convert Duration to an integer
-    Duration = parseInt(Duration, 10);
-
     // Construct API parameters dynamically
     let apiParams = {
       APIKey: FETCHED_API_KEY,
       ProductType: 1,
-      Websitename: WebsiteName, // ✅ FIXED: Corrected case-sensitive issue
+      Websitename: WebsiteName,
       Duration,
       Id: clientId,
       ns1,
       ns2,
-      IsWhoisProtection: IsWhoisProtection === "true" || IsWhoisProtection === "1", // ✅ FIXED: Boolean conversion
-      isEnablePremium: isEnablePremium === "1" ? 1 : 0, // ✅ FIXED: Integer conversion
+      IsWhoisProtection: IsWhoisProtection === "true" || IsWhoisProtection === "1",
+      isEnablePremium: isEnablePremium === "1" ? 1 : 0,
     };
 
     if (ns3) apiParams.ns3 = ns3;
@@ -1043,10 +1055,10 @@ app.get('/api/get-renewal-fee', async (req, res) => {
       const response = await axios.get(apiUrl);
       const tldData = response.data.find(entry => entry.tld === tld);
 
-      if (tldData) {
-          const renewalFee = parseFloat(tldData.renewalPrice);
-          console.log(`✅ [RENEWAL FEE] TLD: ${tld}, Fee: $${renewalFee}`);
-          return res.json({ success: true, renewalFee });
+      if (tldData && tldData.renewalPrice) {
+          const renewalFeePerYear = parseFloat(tldData.renewalPrice);
+          console.log(`✅ [RENEWAL FEE] TLD: ${tld}, Fee per Year: $${renewalFeePerYear}`);
+          return res.json({ success: true, renewalFeePerYear });
       }
 
       res.json({ success: false, message: "Could not fetch renewal fee for this TLD." });
@@ -1062,20 +1074,17 @@ app.get('/api/renew-domain', async (req, res) => {
   console.log(`🔍 [RENEW DOMAIN] Received request for domain: ${Websitename}, Duration: ${Duration}`);
 
   if (!req.session || !req.session.email) {
-      console.log("❌ [AUTH] User not authenticated.");
       return res.status(401).json({ success: false, message: "User not authenticated." });
   }
 
   if (!Websitename || !Duration) {
-      console.log("❌ [VALIDATION] Missing required parameters.");
       return res.status(400).json({ success: false, message: "Missing required parameters." });
   }
 
   let connection;
-  let clientId, resellerId, renewalFee;
+  let clientId, resellerId, renewalFeePerYear, totalRenewalFee;
 
   try {
-      console.log(`🔍 [DB QUERY] Fetching client details for: ${req.session.email}`);
       connection = await pool.getConnection();
       const [clientRows] = await connection.execute(
           "SELECT clientId, ResellerId FROM Client WHERE UserName = ? LIMIT 1",
@@ -1084,7 +1093,6 @@ app.get('/api/renew-domain', async (req, res) => {
       connection.release();
 
       if (clientRows.length === 0) {
-          console.log("❌ [DB] ClientId and ResellerId not found.");
           return res.status(404).json({ success: false, message: "ClientId and ResellerId not found." });
       }
 
@@ -1093,12 +1101,10 @@ app.get('/api/renew-domain', async (req, res) => {
       console.log(`✅ [DB] Found clientId: ${clientId}, ResellerId: ${resellerId}`);
 
   } catch (error) {
-      console.error("❌ [DB ERROR] Database error while fetching client details:", error);
       return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
   // Fetch renewal fee for the domain
-  console.log(`📡 [RENEWAL FEE API] Fetching renewal fee for domain: ${Websitename}`);
   try {
       const renewalFeeResponse = await axios.get(
           `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${FETCHED_API_KEY}`
@@ -1106,36 +1112,33 @@ app.get('/api/renew-domain', async (req, res) => {
 
       const tldData = renewalFeeResponse.data.find(entry => entry.tld === `.${Websitename.split('.').pop()}`);
       if (tldData) {
-          renewalFee = parseFloat(tldData.renewalPrice);
-          console.log(`✅ [RENEWAL FEE] Fee for ${Websitename}: $${renewalFee}`);
+          renewalFeePerYear = parseFloat(tldData.renewalPrice);
+          totalRenewalFee = renewalFeePerYear * parseInt(Duration);
+          console.log(`✅ [RENEWAL FEE] Total Fee for ${Duration} year(s): $${totalRenewalFee}`);
       } else {
           return res.json({ success: false, message: "Could not fetch renewal fee for this domain." });
       }
-
   } catch (error) {
-      console.error("❌ [RENEWAL FEE ERROR] Error fetching renewal fee:", error);
       return res.status(500).json({ success: false, message: "Error fetching renewal fee." });
   }
 
-  // Fetch available balance
-  console.log(`📡 [BALANCE API] Fetching funds for ResellerId: ${resellerId}`);
+  // Check reseller balance
   try {
       const balanceResponse = await axios.get(
           `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`
       );
 
-      console.log(`✅ [BALANCE API] Response:`, balanceResponse.data);
       const balance = parseFloat(balanceResponse.data.responseData);
       console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
 
-      if (balance < renewalFee) {
+      if (balance < totalRenewalFee) {
           return res.json({
               success: false,
-              message: `Insufficient funds. Required: $${renewalFee.toFixed(2)}, Available: $${balance.toFixed(2)}`
+              message: `Insufficient funds. Required: $${totalRenewalFee.toFixed(2)}, Available: $${balance.toFixed(2)}`
           });
       }
 
-      // Proceed with renewal if balance is sufficient
+      // Proceed with renewal
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder`;
       const params = {
           APIKey: FETCHED_API_KEY,
@@ -1146,28 +1149,19 @@ app.get('/api/renew-domain', async (req, res) => {
           IsWhoisProtection: "false"
       };
 
-      console.log(`🔍 [API REQUEST] Renewing domain: ${Websitename}`);
-      console.log(`🌐 [API URL]: ${apiUrl}`);
-      console.log(`📩 [API PARAMS]:`, params);
-
       const renewalResponse = await axios.get(apiUrl, { params });
 
-      console.log("✅ [API RESPONSE] Raw response:", renewalResponse.data);
-
       if (renewalResponse.data.responseMsg.statusCode === 200) {
-          console.log(`✅ [SUCCESS] Domain ${Websitename} renewed successfully!`);
-          res.json({
+          return res.json({
               success: true,
               message: "Domain renewed successfully!",
               expiryDate: renewalResponse.data.responseData.exdate
           });
       } else {
-          console.log(`❌ [API ERROR] ${renewalResponse.data.responseMsg.message}`);
-          res.json({ success: false, message: renewalResponse.data.responseMsg.message });
+          return res.json({ success: false, message: renewalResponse.data.responseMsg.message });
       }
   } catch (error) {
-      console.error("❌ [API FAILURE] Failed to check balance or renew domain:", error);
-      res.status(500).json({ success: false, message: "Failed to check funds or renew domain." });
+      return res.status(500).json({ success: false, message: "Failed to check funds or renew domain." });
   }
 });
 

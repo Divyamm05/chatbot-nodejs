@@ -377,6 +377,47 @@ body {
   background-color: #007B9E; /* Blue when hovering */
 }
 
+.button-container-register,
+.button-container-renew { /* Apply same styling to both */
+  display: flex;
+  margin-top: -15px;
+  height: 5vh;
+  margin-bottom: -40px;
+  margin-left: -60px;
+}
+
+.button-container-register button,
+.button-container-renew button { /* Common button styles */
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* Register buttons */
+.button-container-register #yesButton {
+  background-color: #008cba;
+  color: white;
+}
+
+.button-container-register #noButton {
+  background-color: #ccc;
+  color: black;
+  margin-left: -7vh;
+}
+
+/* Renewal buttons */
+.button-container-renew #yesRenew {
+  background-color: #066; /* Green for renew */
+  color: white;
+}
+
+.button-container-renew #noRenew {
+  background-color: #ccc;
+  color: black;
+  margin-left: -7vh;
+}
+
 #suggest-buttons-container {
   display: flex; /* Initially hidden (it will show when the condition is met) */
   text-align: center;
