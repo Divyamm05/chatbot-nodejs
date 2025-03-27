@@ -916,6 +916,16 @@ function fillChatAndSubmitandshowquerybar(question) {
         console.error("❌ Chat input field or 'Submit' button not found!");
         return;
     }
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
 
     // Make login-chat-section visible first
     if (loginChatSection) {
@@ -2621,7 +2631,7 @@ function manageDomainLock() {
             } else {
                 // If responseData.message exists, use it; otherwise, fallback to data.message
                 const errorMessage = data.fullResponse?.responseData?.message || data.message || "Unable to process request.";
-                updateChatLog(`⚠️ ${errorMessage}`, "bot");
+                updateChatLog(`${errorMessage}`, "bot");
             }
         })
         .catch(error => {
@@ -3268,6 +3278,7 @@ const balanceMatch = queryText.match(/\b(?:what(?:'s| is)?|show|check|get|tell m
 
 if (balanceMatch) {
     try {
+        document.getElementById('domain-query-text').value = "";
         updateChatLog(`🔍 Fetching your current balance...`, 'bot');
         
         const response = await fetch(`/api/balance`, { method: 'GET' });
@@ -3283,9 +3294,7 @@ if (balanceMatch) {
             updateChatLog(balanceMessage, 'bot');
         } else {
             updateChatLog(`Error: ${result.message}`, 'bot');
-        }
-
-        document.getElementById('domain-query-text').value = "";
+        }   
 
     } catch (error) {
         console.error('Error fetching balance:', error);
@@ -3305,29 +3314,31 @@ if (!inputElement) {
     const usersInput = inputElement.value.trim();
     console.log(`📝 User Input: "${usersInput}"`);
 
-// Updated Regex: Detects "theft protection" in any form, with or without action/domain
+    // Updated Regex: Detects "theft protection" in any form, with or without action/domain
     const theftRegex = /\b(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*\/?(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*(?:theft\s*protection|thief\s*protection)/i;
-
     const theftMatch = usersInput.match(theftRegex);
 
     if (theftMatch) {
         console.log("✅ Theft Protection command detected in input.");
-
+        updateChatLog(
+            "🛡️ Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'.",
+            "bot"
+        );
         let actionMatch = usersInput.match(/\b(enable|disable|on|off|switch\s+on|switch\s+off)/i);
         let action = actionMatch ? actionMatch[1].toLowerCase() : ""; // Extract action
 
         let domainMatch = usersInput.match(/\b([\w.-]+\.[a-z]{2,})\b/); // Detect domain name if present
         let domain = domainMatch ? domainMatch[1].trim() : ""; // Extracted domain (or empty)
 
-        console.log(`📌 Extracted Domain: ${domain || "None"}`);
-        console.log(`📌 Selected Action: ${action || "None"}`);
+        // 🛑 Ignore "mydomain.com" or other placeholder values
+        const ignoredDomains = ["mydomain.com", "example.com", "test.com"];
+        if (!domain || domain.length < 4 || ignoredDomains.includes(domain.toLowerCase())) {
+            console.error("❌ Invalid or placeholder domain detected:", domain);
+            return;
+        }
 
-        updateChatLog(
-            domain
-                ? "🛡️ Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'."
-                : "🛡️ Please provide a domain name to enable/disable theft protection.",
-            "bot"
-        );
+        console.log(`📌 Extracted Domain: ${domain}`);
+        console.log(`📌 Selected Action: ${action || "None"}`);
 
         let selectedAction = "";
         if (["on", "enable", "switch on"].includes(action)) {
@@ -3347,98 +3358,53 @@ if (!inputElement) {
         // 🚨 Prevent further execution (Stops fallback logic)
         return;
     } else {
-            console.log("❌ No valid Theft Protection command detected.");
-        }
+        console.log("❌ No valid Theft Protection command detected.");
     }
+}
 
-const privacyProtectionSection = document.getElementById("privacy-protection-section");
-const privacyProtectionDropdown = document.getElementById("privacy-protection-dropdown");
-const privacyProtectionDomainInput = document.getElementById("privacy-protection-domain-name");
-
-if (!inputElement) {
-    console.error("❌ Input field not found!");
-} else {
-    const usersInput = inputElement.value.trim();
-    console.log(`📝 User Input: "${usersInput}"`);
-
-    // FIXED REGEX
-    const privacyRegex = /(?:^|\s)(enable|disable)\s+privacy\s+protection(?:\s+\w+)*\s*(?:for\s+)?((?:[a-zA-Z0-9-]+)+\.[a-zA-Z]{2,63})/i;
-
-    const privacyMatch = usersInput.match(privacyRegex);
-
-    console.log("Full Match Array:", privacyMatch);  // Debugging step
-
-    if (privacyMatch) {
-        console.log("✅ Privacy Protection command detected.");
-
-        const selectedAction = privacyMatch[1];  
-        const domain = privacyMatch[2] ? privacyMatch[2].trim() : "";  
-
-        console.log(`📌 Selected Action: ${selectedAction}, Captured Domain: ${domain}`);
-
-        if (!domain || domain.length < 4) {
-            console.error("❌ Invalid domain detected:", domain);
+    const lockUnlockSection = document.getElementById("domain-lock-section");
+    const lockUnlockDropdown = document.getElementById("domain-lock-dropdown");
+    const lockUnlockDomainInput = document.getElementById("domain-lock-name");
+    
+    if (!inputElement) {
+        console.error("❌ Input field not found!");
+    } else {
+        const usersInput = inputElement.value.trim();
+        console.log(`📝 User Input: "${usersInput}"`);
+    
+        // Updated Regex: Supports various lock/unlock commands
+        const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,})?/i;
+        const lockUnlockMatch = usersInput.match(lockUnlockRegex);
+    
+        if (lockUnlockMatch) {
+            console.log("✅ Lock/Unlock command detected.");
+            updateChatLog("📝 Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.", 'bot');
+            const selectedAction = lockUnlockMatch[1].toLowerCase();  // Extracted action: "lock", "unlock", etc.
+            let domain = lockUnlockMatch[2] ? lockUnlockMatch[2].trim() : "";  // Set to "" if undefined
+    
+            // 🛑 Ignore "mydomain.com" or other placeholder values
+            const ignoredDomains = ["mydomain.com", "example.com", "test.com"];
+            if (!domain || domain.length < 4 || ignoredDomains.includes(domain.toLowerCase())) {
+                console.error("❌ Invalid or placeholder domain detected:", domain);
+                return;
+            }
+    
+            console.log(`📌 Selected Action: ${selectedAction}`);
+            console.log(`📌 Extracted Domain: "${domain}"`);
+    
+            // Set dropdown value based on extracted action
+            lockUnlockDropdown.value = selectedAction === "lock" ? "locked" : "unlocked";
+    
+            // Populate domain input field
+            lockUnlockDomainInput.value = domain;
+    
+            // Show Lock/Unlock Section
+            lockUnlockSection.style.display = "block";
+            document.getElementById("login-chat-section").style.display = "none";
             return;
         }
-
-        console.log("🧐 Domain Input Field:", privacyProtectionDomainInput);
-
-        if (privacyProtectionDomainInput) {
-            // Force input update
-            setTimeout(() => {
-                privacyProtectionDomainInput.value = domain;
-                privacyProtectionDomainInput.setAttribute("value", domain);
-                console.log("✅ Value Set After Timeout:", privacyProtectionDomainInput.value);
-            }, 100);
-        } else {
-            console.error("❌ privacyProtectionDomainInput is null!");
-        }
-
-        privacyProtectionDropdown.value = selectedAction.toLowerCase() === "enable" ? "enabled" : "disabled";
-        privacyProtectionSection.style.display = "block";
-        document.getElementById("login-chat-section").style.display = "none";
-    } else {
-        console.log("❌ No match found.");
     }
-}
-
-const lockUnlockSection = document.getElementById("domain-lock-section");
-const lockUnlockDropdown = document.getElementById("domain-lock-dropdown");
-const lockUnlockDomainInput = document.getElementById("domain-lock-name");
-
-if (!inputElement) {
-    console.error("❌ Input field not found!");
-} else {
-    const usersInput = inputElement.value.trim();
-    console.log(`📝 User Input: "${usersInput}"`);
-
-    // Updated Regex: Supports various lock/unlock commands
-    const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,})?/i;
-    const lockUnlockMatch = usersInput.match(lockUnlockRegex);
-
-    if (lockUnlockMatch) {
-        console.log("✅ Lock/Unlock command detected.");
-
-        const selectedAction = lockUnlockMatch[1].toLowerCase();  // Extracted action: "lock", "unlock", etc.
-        const domain = lockUnlockMatch[2] ? lockUnlockMatch[2].trim() : "";  // Set to "" if undefined
-
-        console.log(`📌 Selected Action: ${selectedAction}`);
-        console.log(`📌 Extracted Domain: "${domain || 'None'}"`); // Logs "None" when no domain is found
-
-        updateChatLog("📝 Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.", "bot");
-
-        // Set dropdown value based on extracted action
-        lockUnlockDropdown.value = selectedAction.toLowerCase() === "lock" ? "locked" : "unlocked";
-
-        // Populate domain input field (empty if no domain is found)
-        lockUnlockDomainInput.value = domain;
-
-        // Show Lock/Unlock Section
-        lockUnlockSection.style.display = "block";
-        document.getElementById("login-chat-section").style.display = "none";
-        return;
-    }
-}
+    
 
 const suspendUnsuspendSection = document.getElementById("domain-suspension-section");
 const suspendUnsuspendDropdown = document.getElementById("domain-suspension-dropdown");
@@ -3458,17 +3424,23 @@ if (!inputElement) {
         console.log("✅ Suspend/Unsuspend command detected.");
 
         const selectedAction = suspendUnsuspendMatch[1] || suspendUnsuspendMatch[2];  // Extracted "suspend" or "unsuspend"
-        const domain = suspendUnsuspendMatch[3] ? suspendUnsuspendMatch[3].trim() : "";  // Empty string if domain not found
+        let domain = suspendUnsuspendMatch[3] ? suspendUnsuspendMatch[3].trim() : "";  // Empty string if domain not found
+        updateChatLog("🔄 Please enter the domain name and select 'Suspend' or 'Unsuspend' from the dropdown, then click 'Update Suspension Status'.", "bot");
+
+        // 🛑 Ignore "mydomain.com" or other placeholder values
+        const ignoredDomains = ["mydomain.com", "example.com", "test.com"];
+        if (!domain || domain.length < 4 || ignoredDomains.includes(domain.toLowerCase())) {
+            console.error("❌ Invalid or placeholder domain detected:", domain);
+            return;
+        }
 
         console.log(`📌 Selected Action: ${selectedAction}`);
-        console.log(`📌 Extracted Domain: "${domain || 'None'}"`); // Logs "None" when no domain is found
-
-        updateChatLog("🔄 Please enter the domain name and select 'Suspend' or 'Unsuspend' from the dropdown, then click 'Update Suspension Status'.", "bot");
+        console.log(`📌 Extracted Domain: "${domain}"`);
 
         // Set dropdown value
         suspendUnsuspendDropdown.value = selectedAction.toLowerCase() === "suspend" ? "suspended" : "unsuspended";
 
-        // Populate domain input field (empty if no domain found)
+        // Populate domain input field
         suspendUnsuspendDomainInput.value = domain;
 
         // Show Suspend/Unsuspend Section
@@ -3477,6 +3449,7 @@ if (!inputElement) {
         return;
     }
 }
+
 
 if (!inputElement) {
     console.error("❌ Input field not found!");
@@ -3490,14 +3463,17 @@ if (!inputElement) {
     if (privacyMatch) {
         console.log("✅ Privacy Protection command detected.");
         updateChatLog("🔄 Please enter the domain name and select 'Enable' or 'Disable' privacy protection from the dropdown, then click 'Update Privacy Protection'.", 'bot');
-        const action = privacyMatch[1]?.toLowerCase() || "";
-        const domain = privacyMatch[3] ? privacyMatch[3].trim() : ""; 
+
+        let action = privacyMatch[1]?.toLowerCase() || "";
+        let domain = privacyMatch[3] ? privacyMatch[3].trim() : ""; 
 
         console.log(`📌 Action: ${action || "None provided"}`);
         console.log(`🌍 Domain: ${domain || "None provided"}`);
 
-        if (!domain || domain.length < 4) {
-            console.error("❌ Invalid domain detected:", domain);
+        // 🛑 Ignore "mydomain.com" or placeholder values
+        const ignoredDomains = ["mydomain.com", "example.com", "test.com"];
+        if (!domain || domain.length < 4 || ignoredDomains.includes(domain.toLowerCase())) {
+            console.error("❌ Invalid or placeholder domain detected:", domain);
             return;
         }
 
@@ -3530,48 +3506,6 @@ if (!inputElement) {
     }
 }
 
-
-const lockRegex = /(?:.*\s)?\b(lock|unlock)\s*(?:my\s*domain\s*|this\s*domain\s*)?([\w.-]+)/i;
-
-if (inputElement) {
-    const userInput = inputElement.value.trim(); // Get user input
-    const lockmatch = userInput.match(lockRegex); // Match regex against input
-
-    if (lockmatch) {  // ✅ Correctly check if the regex found a match
-        const submitButton = document.getElementById('submitDomainQuery');
-        const locktoggleContainer = document.getElementById('domain-lock-toggle-container');
-
-        if (locktoggleContainer && submitButton) {
-            locktoggleContainer.style.display = 'flex';
-            submitButton.style.width = '55%';
-
-            // 🛠 Extract the domain dynamically from user input
-            const domain = lockmatch[2] || "mydomain.com"; // Default if no domain found
-            inputElement.value = `Lock/Unlock ${domain}`;
-
-            // ⏳ Check if 30 seconds have passed since the last tooltip
-            const now = Date.now();
-            if (now - lastTooltipTime > 30000) {  // 30 seconds = 30000 ms
-                lastTooltipTime = now; // Update last tooltip time
-
-                if (typeof highlightPlaceholder === "function") {
-                    //const tooltipRef = highlightPlaceholder(inputElement, inputElement.value, domain, "Enter your Domain Name");
-
-                    // ⏳ Hide tooltip after 5 seconds
-                    setTimeout(() => {
-                        if (tooltipRef) {
-                            tooltipRef.remove();
-                        }
-                    }, 3500);
-                }
-            } else {
-                console.log("⏳ [TOOLTIP] Skipped - Shown within the last 30 seconds.");
-            }
-        } else {
-            console.error("❌ [ERROR] Missing elements: submit button or toggle container.");
-        }
-    }
-}
 
 const updatenameRegex = /(change|update)\s(?:name\s)?servers?\s(for\s([^\s]+))/i;
 const userInput = document.getElementById("domain-query-text").value; // Get value of the input element
