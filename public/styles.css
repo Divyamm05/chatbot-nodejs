@@ -406,17 +406,20 @@ body {
   margin-left: -7vh;
 }
 
-/* Renewal buttons */
-.button-container-renew #yesRenew {
-  background-color: #066; /* Green for renew */
+/* Renewal & Transfer buttons */
+.button-container-renew #yesRenew,
+.button-container-renew #yesTransfer { /* Both renewal & transfer use same green */
+  background-color: #008CBA; /* Green */
   color: white;
 }
 
-.button-container-renew #noRenew {
+.button-container-renew #noRenew,
+.button-container-renew #noTransfer { /* Both renewal & transfer use same gray */
   background-color: #ccc;
   color: black;
   margin-left: -7vh;
 }
+
 
 #suggest-buttons-container {
   display: flex; /* Initially hidden (it will show when the condition is met) */

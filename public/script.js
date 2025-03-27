@@ -2017,45 +2017,45 @@ async function transferDomain() {
             transferFeeMessage = `Transfer Fee: $${feeData.transferFee.toFixed(2)}`;
         }
 
-        // Confirmation popup
-        const confirmationBox = document.createElement('div');
-        confirmationBox.className = 'chat-confirmation-box';
-
-        const content = document.createElement('div');
-        content.className = 'confirmation-content';
-        content.innerHTML = `
-            <p>Do you want to transfer the domain <strong>${domainName}</strong>?</p>
-            <p>💰<strong>${transferFeeMessage}</strong></p>
+        // 📝 Show confirmation inside chat log
+        const confirmationHtml = `Do you want to transfer the domain <strong>${domainName}</strong>?\n💰 <strong>${transferFeeMessage}</strong>
+            <div class="button-container-renew"> <!-- Reusing .button-container-renew -->
+                <button id="yesTransfer">Yes</button>
+                <button id="noTransfer">No</button>
+            </div>
         `;
 
-        const yesButton = document.createElement('button');
-        yesButton.innerText = 'Yes';
-        yesButton.addEventListener('click', () => confirmDomainTransfer(domainName, authCode, isWhoisProtection));
+        updateChatLog(confirmationHtml, "bot");
 
-        const noButton = document.createElement('button');
-        noButton.innerText = 'No';
-        noButton.addEventListener('click', closeConfirmationBox);
+        // 🎨 Attach event listeners after rendering
+        setTimeout(() => {
+            const yesButton = document.getElementById("yesTransfer");
+            const noButton = document.getElementById("noTransfer");
 
-        content.appendChild(yesButton);
-        content.appendChild(noButton);
-        confirmationBox.appendChild(content);
-        document.body.appendChild(confirmationBox);
+            if (yesButton) {
+                yesButton.onclick = () => confirmDomainTransfer(domainName, authCode, isWhoisProtection);
+            }
 
-        disableChat(); // Disable chat while the confirmation box is open
+            if (noButton) {
+                noButton.onclick = () => {
+                    updateChatLog("❌ Domain transfer canceled.", "bot");
+                    document.getElementById('domain-transfer-section').style.display = 'none';
+                    document.getElementById('login-chat-section').style.display = 'flex';
+                    document.getElementById('domain-query-text').value = '';
+                };
+            }
+        }, 50);
 
     } catch (error) {
         console.error("❌ Error fetching transfer fee:", error);
-        alert("Could not fetch transfer fee. Please try again.");
+        updateChatLog("❌ Could not fetch transfer fee. Please try again.", "bot");
     }
 }
 
-
+// Function to confirm and process domain transfer
 async function confirmDomainTransfer(domainName, authCode, isWhoisProtection) {
-    closeConfirmationBox(); 
-    disableChat(); 
-
-    showChatPopup("Initiating domain transfer, please wait...", false, true);
-
+    updateChatLog(`🔄 Initiating domain transfer for <strong>${domainName}</strong>, please wait...`, "bot");
+    disableChat();
     try {
         const response = await fetch('/api/transfer-domain', {
             method: 'POST',
@@ -2065,19 +2065,20 @@ async function confirmDomainTransfer(domainName, authCode, isWhoisProtection) {
 
         const result = await response.json();
 
-        showChatPopup(result.success ? result.message : `Error: ${result.message}`, result.success);
+        updateChatLog(result.success ? `✅ ${result.message}` : `❌ Error: ${result.message}`, "bot");
 
+        // Reset input fields and switch back to chat mode
         document.getElementById('domain-transfer-section').style.display = 'none';
         document.getElementById('login-chat-section').style.display = 'flex';
         document.getElementById('domain-query-text').value = '';
-
+        enableChat();
     } catch (error) {
         console.error('❗ Unexpected error during domain transfer:', error);
-        showChatPopup('An error occurred during domain transfer. Please try again later.', false);
-    } finally {
-        enableChat(); 
+        updateChatLog("❌ An error occurred during domain transfer. Please try again later.", "bot");
+        enableChat();
     }
 }
+
 
 //----------------------------------------------------- Renew Domain Section --------------------------------------------------------//
 async function renewDomain() {
@@ -2132,7 +2133,12 @@ async function renewDomain() {
             }
 
             if (noButton) {
-                noButton.onclick = () => updateChatLog("❌ Domain renewal canceled.", "bot");
+                noButton.onclick = () => {
+                    updateChatLog("❌ Domain renewal canceled.", "bot");
+                    document.getElementById('domain-renewal-section').style.display = 'none';
+                    document.getElementById('login-chat-section').style.display = 'flex';
+                    document.getElementById('domain-query-text').value = '';
+                };
             }
         }, 50);
     } catch (error) {
@@ -2164,6 +2170,7 @@ function confirmRenewal(domainName, duration) {
 
         document.getElementById('domain-renewal-section').style.display = 'none';
         document.getElementById('login-chat-section').style.display = 'flex';
+        document.getElementById('login-chat-section').value = '';
     })
     .catch(error => {
         console.error("❗ Unexpected error:", error);
@@ -2889,7 +2896,6 @@ async function submitDomainQuery() {
             document.getElementById("transfer-domain-name").value = transferMatch[2];
         } else {
             console.log("No domain found, but transfer/move keyword detected.");
-            updateChatLog("Would you like to transfer a domain IN or OUT? Please specify the domain name.", "bot");
         }
         return;
     }

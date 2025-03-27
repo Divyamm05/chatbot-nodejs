@@ -191,7 +191,7 @@ const startQuestions = {
   "Does your platform provide an API for domain management?": "Absolutely! Our platform offers a comprehensive API for seamless domain management. You can explore the full API documentation here: <br><br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
   "What integrations are supported?": "Our API supports a wide range of integrations. For detailed information on all available integrations, please refer to our API documentation: <br><br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
   "How can I get more details about the API?": "You can find all the details, including endpoints, integration guidelines, and examples, in our API documentation: <br><a href='https://www.connectreseller.com/resources/downloads/CR_API_Document_V7.pdf' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;'>📄 View API Documentation</a>",
-  "contact support": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" target="blank" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 15px; background: #007fff; color: white; font-size: 16px; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
+  "contact support": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" target="blank" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 15px; background: #007fff; color: white; font-size: 16px; text-decoration: none; border-radius: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
   "How can I contact support?": 'To contact support click on the button: <br><a href="https://www.connectreseller.com/contact-us/" target="blank" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 15px; background: #007fff; color: white; font-size: 16px; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform="scale(1.05)"; this.style.boxShadow="0 6px 10px rgba(0, 0, 0, 0.15)";" onmouseout="this.style.transform="scale(1)"; this.style.boxShadow="0 4px 6px rgba(0, 0, 0, 0.1)";">📞 Contact Support</a>',
   "How can I login?" : "To get additional services click on the login/signup button below and manage your domains seamlessly.",
   "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" target="blank" style="color: white; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
@@ -259,6 +259,8 @@ const regexPatterns = [
   }
 ];
 
+const basicGreetingRegex = /^(hi|hello|hey|howdy|greetings|what(?:'s| is) up|wassup|sup|yo|good\s(?:morning|afternoon|evening|day)|how\s+are\s+you|how\s+(?:is it going|have you been|do you do)|what(?:'s| is)\s+(?:new|happening)|how's\s+(?:everything|life)|long time no see|nice to meet you|pleased to meet you|good to see you)[!.,?\s]*$/i;
+
 // Helper function to normalize user input
 function normalizeText(text) {
   return text.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
@@ -275,6 +277,29 @@ app.post('/ask-question', (req, res) => {
   
   if (!userQuestion) {
     return res.status(400).json({ answer: "Invalid question. Please try again." });
+  } 
+  
+  const greetingMatch = userQuestion.match(basicGreetingRegex);
+  if (greetingMatch) {
+    console.log("👋 Greeting detected!");
+
+    let response = "Hello! 😊 How can I assist you today?"; // Default greeting response
+
+    if (/how are you/i.test(userQuestion)) {
+      response = "I'm doing great! 😊 How can I help you today?";
+    } else if (/how's it going/i.test(userQuestion)) {
+      response = "Everything is going smoothly! 🚀 How can I assist you?";
+    } else if (/what's up|what is up|wassup|sup/i.test(userQuestion)) {
+      response = "I'm here and ready to help! 🤖 Let me know what you need.";
+    } else if (/what's new|what is new/i.test(userQuestion)) {
+      response = "Not much, just here to assist you! 🛠️ What can I do for you?";
+    } else if (/long time no see/i.test(userQuestion)) {
+      response = "Yes, it's been a while! ⏳ Let me know how I can help.";
+    } else if (/nice to meet you|pleased to meet you/i.test(userQuestion)) {
+      response = "Nice to meet you too! 🤝 What can I assist you with?";
+    }
+
+    return res.json({ answer: response });
   }
 
   const normalizedUserQuestion = normalizeText(userQuestion);
