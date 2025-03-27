@@ -196,7 +196,7 @@ const startQuestions = {
   "How can I login?" : "To get additional services click on the login/signup button below and manage your domains seamlessly.",
   "Can I get a demo of the platform?": 'Yes, we offer demos upon request. <a href="https://www.connectreseller.com/contact-us/" target="blank" style="color: white; text-decoration: none;">CLICK HERE</a> to reach out to our support team.',
   "Is there a guide for new users?": "Yes! Signing up with us gives you access to a helpful onboarding guide, along with the latest offers on our extensive selection of TLDs.",
-  "What payment methods are supported?": "We support multiple payment gateways, offering flexibility for your transactions. Additionally, we also accept offline payment methods, including cheques, for your convenience.",
+  "What payment methods are supported?": "We support multiple payment gateways like Stripe, Telr, Razorpay, ICICI & many more, offering flexibility for your transactions. Additionally, we also accept offline payment methods, including cheques, for your convenience.",
   "How do I pay for services after signing up?": "After signing up, you can pay for services directly through the platform's payment portal.",
 };
 
