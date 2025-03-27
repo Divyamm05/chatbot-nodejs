@@ -30,10 +30,8 @@
           <li onclick="fillChatInput('Can I transfer my existing domains to this platform?')">Can I transfer my existing domains to this platform?</li>
           <li onclick="fillChatInput('Does your platform provide an API for domain management?')">Does your platform provide an API for domain management?</li>
           <li onclick="fillChatInput('How can I get more details about the API?')">How can I get more details about the API?</li>
-          <li onclick="fillChatInput('What integrations are supported?')">What integrations are supported?</li>
           <li onclick="fillChatInput('What is the process for signing up?')">What is the process for signing up?</li>
           <li onclick="fillChatInput('How do I create an account?')">How do I create an account?</li>
-          <li onclick="fillChatInput('What information is needed to sign up?')">What information is needed to sign up?</li>
           <li onclick="fillChatInput('Is there a fee for signing up?')">Is there a fee for signing up?</li>
           <li onclick="fillChatInput('Do I need an account to access all features?')">Do I need an account to access all features?</li>
           <li onclick="fillChatInput('What payment methods are supported?')">What payment methods are supported?</li>
@@ -50,10 +48,10 @@
           <li onclick="fillChatAndSubmit('How can I add a child nameserver?'); hidealltoggles();">How can I add a child nameserver?</li>
           
           <!-- Domain Security & Protection -->
-          <li onclick="fillChatInputWithPlaceholder('Enable/disable privacy protection for mydomain.com'); showPrivacyProtectionToggle();hideexceptprivacytoggle();">Enable/disable privacy protection for <em>mydomain.com</em></li>
-          <li onclick="fillChatInputWithPlaceholder('Enable/disable theft protection for mydomain.com');showTheftProtectionToggle(); hideexceptthefttoggle()">Enable/disable theft protection for <em>mydomain.com</em></li>
-          <li onclick="fillChatInputWithPlaceholder('Lock/unlock mydomain.com'); showDomainLockToggle();hideexceptlocktoggle();">Lock/unlock <em>mydomain.com</em></li>
-          <li onclick="fillChatInputWithPlaceholder('Suspend/Unsuspend mydomain.com'); showDomainSuspendToggle();hideexceptsuspendtoggle();">Suspend/Unsuspend <em>mydomain.com</em></li>
+          <li onclick="fillChatAndSubmit('Enable/disable privacy protection for mydomain.com'); showPrivacyProtectionToggle();hideexceptprivacytoggle();">Enable/disable privacy protection for <em>mydomain.com</em></li>
+          <li onclick="fillChatAndSubmit('Enable/disable theft protection for mydomain.com');showTheftProtectionToggle(); hideexceptthefttoggle()">Enable/disable theft protection for <em>mydomain.com</em></li>
+          <li onclick="fillChatAndSubmit('Lock/unlock mydomain.com'); showDomainLockToggle();hideexceptlocktoggle();">Lock/unlock <em>mydomain.com</em></li>
+          <li onclick="fillChatAndSubmit('Suspend/Unsuspend mydomain.com'); showDomainSuspendToggle();hideexceptsuspendtoggle();">Suspend/Unsuspend <em>mydomain.com</em></li>
           
           <!-- Domain Information & Status -->
           <li onclick="fillChatInputWithPlaceholder('Give me domain information for mydomain.com'); hidealltoggles();">Give me domain information for <em>mydomain.com</em></li>
@@ -66,22 +64,22 @@
           <li onclick="fillChatInputWithPlaceholderDate('Which domain was registered on dd-mm-yyyy'); hidealltoggles();">Which domain was registered on <em>dd-mm-yyyy</em>?</li>
           
           <!-- Financial & Account Queries -->
-          <li onclick="fillChatAndSubmit('What is my current balance in my account?'); hidealltoggles();">What is my current balance in my account?</li>
-          <li onclick="fillChatAndSubmit('How much are my available funds?'); hidealltoggles();">How much are my available funds?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('What is my current balance in my account?'); hidealltoggles();">What is my current balance in my account?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('How much are my available funds?'); hidealltoggles();">How much are my available funds?</li>
           
           <!-- TLD & Domain Suggestions -->
           <li onclick="fillChatInputWithPlaceholderCategory('Suggest TLDs for Category'); hidealltoggles();">Suggest TLDs for <em>Category</em></li>
-          <li onclick="fillChatAndSubmit('Give me a list of high-value domain TLDs.'); hidealltoggles();">Give me a list of high-value domain TLDs.</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('Give me a list of high-value domain TLDs.'); hidealltoggles();">Give me a list of high-value domain TLDs.</li>
           
           <!-- General Support & Documentation -->
-          <li onclick="fillChatAndSubmit('What actions can I do here on the chatbot?'); hidealltoggles();">What actions can I do here on the chatbot?</li>
-          <li onclick="fillChatAndSubmit('Where can I find the API documentation?'); hidealltoggles();">Where can I find the API documentation?</li>
-          <li onclick="fillChatAndSubmit('How can I download the WHMCS module?'); hidealltoggles();">How can I download the WHMCS module?</li>
-          <li onclick="fillChatAndSubmit('What types of SSL are available?'); hidealltoggles();">What types of SSL are available?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('What actions can I do here on the chatbot?'); hidealltoggles();">What actions can I do here on the chatbot?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('Where can I find the API documentation?'); hidealltoggles();">Where can I find the API documentation?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('How can I download the WHMCS module?'); hidealltoggles();">How can I download the WHMCS module?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('What types of SSL are available?'); hidealltoggles();">What types of SSL are available?</li>
           
           <!-- Account & Support -->
-          <li onclick="fillChatAndSubmit('Where can I sign up?'); hidealltoggles();">Where can I sign up?</li>
-          <li onclick="fillChatAndSubmit('How can I contact support?'); hidealltoggles();">How can I contact support?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('Where can I sign up?'); hidealltoggles();">Where can I sign up?</li>
+          <li onclick="fillChatAndSubmitandshowquerybar('How can I contact support?'); hidealltoggles();">How can I contact support?</li>
       </ul>
     </div>    
     </div>

@@ -555,105 +555,6 @@ function updateChatLog(message, sender) {
       newMessage.appendChild(buttonContainer);
   }
 
-  // Register a domain
-  if (
-      sender === 'bot' && isUserSignedIn &&
-      (message.includes("register a domain") ||
-       message.includes("To register a domain, navigate to the 'Register Domain' section") ||
-       message.includes("You can register domains directly through this chatbot")) && message !== "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration."
-       &&  !message.includes("Before registering the domain, check its availability by clicking the 'Check Availability' button.") &&
-       !document.querySelector('.chat-log').innerText.includes("Before registering the domain") // ✅ Directly checks chat history
-  ) {
-    if (!document.getElementById("register-button")) { // Prevent duplicate buttons
-    addButton("Register a Domain", "register-button", "domain-availability-section");
-    document.getElementById("check-domain-button").style.borderRadius = "20px";
-    document.getElementById("domain-availability-section").style.gap = "0px";
-    }
-  }
-  window.preventRegisterButton = false;
-
-  // Transfer a domain
-  if (
-      sender === 'bot' && isUserSignedIn &&
-      (message.toLowerCase().includes("transfer a domain") || message.includes("domain transfer") || message.includes("To transfer a domain to us")) || message.includes("How can I move a domain?") || message.includes("To pull a domain, initiate a domain transfer by obtaining the authorization code (EPP code) from the current registrar, unlocking the domain, and requesting the transfer to us by clciking on the transfer button below.") &&
-      !message.includes("Yes, you can transfer your domains") &&
-      !message.includes("Thank you for signing in!") && message !== "How can I move a domain?"
-      && !message.includes("Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.")
-  ) {
-      addButton("Transfer a Domain", "transfer-button", "domain-transfer-section");
-      document.getElementById("transfer-whois-protection-input").style.width="calc(50% - 7px)";
-  }
-
-  // Check domain availability
-  if (
-      sender === 'bot' && isUserSignedIn &&
-      (message.toLowerCase().includes("Check domain availability") || message.toLowerCase().includes("domain availability") || message.toLowerCase().includes("I can help you with checking domain availability!")) &&
-      !message.includes("This platform helps with domain registration, transferring domain name") && message!='🔍 Checking domain availability...' && message!="⚠️ Error checking domain availability. Please try again later."
-  ) {
-      addButton("Check Domain Availability", "available-button", "domain-availability-section");
-  }
-
-  // Update name servers
-  if (
-      sender === 'bot' && isUserSignedIn &&
-      (message.includes("update the name servers") || message.includes("update name servers") || message.includes("Go to your domain management panel, find DNS settings, and update the name servers accordingly."))
-      && !message.includes("🔄 Please enter the domain name and the name servers that need to be updated. You can add more name servers by clicking '➕ Add Name Server' button. Maximum 4 name servers can be added. Then click '🖊 Update Name Server' button to save the changes.")
-    ) {
-        addButton("Update Name Servers", "update-button", "name-server-container", "name-server-update-section");
-      document.getElementById("nameserver-container").style.width = "100%";
-      document.getElementById("name-server-update-section").style.display = "flex"; 
-      document.getElementById("update-nameserver-button-group").style.width = "100%";
-      document.getElementById("addNameServer").style.borderRadius = "5px";
-      document.getElementById("addNameServer").style.fontSize = "10px";
-      document.getElementById("addNameServer").style.height = "90%";
-      document.getElementById("updateNameServer").style.fontSize = "10px";
-      document.getElementById("updateNameServer").style.height = "90%";
-      document.getElementById("updateNameServer").style.borderRadius = "5px";
-      document.getElementById("chat-log").style.height = "60%";
-      document.getElementById("updatenamebackbutton").style.fontSize = "12px";
-      document.getElementById("updatenamebackbutton").style.height = "90%";
-      document.getElementById("domain-name-input").style.height = "85%";
-      document.getElementById("nameserver-container").style.marginTop = "-10px";
-  }
-
-  // Renew a domain
-  if (
-      sender === 'bot' && isUserSignedIn &&
-      (message.toLowerCase().includes("renew a domain") || message.includes("To seamlessly renew your domain name"))
-  ) {
-      addButton("Renew a Domain", "renew-button", "domain-renewal-section");
-      document.getElementById("domain-renewal-wrapper").style.columnGap= "8px";
-  }
-
-  // Add child name servers
-  if (
-    sender === 'bot' && isUserSignedIn &&
-    (message.includes("add a child name server") || message.includes("register child name server") || message.includes("To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.")) &&
-    !message.includes("Thank you for signing in!")
-) {
-    addButton("Add Child Nameservers", "child-ns-button", "add-child-name-server-section");
-    
-    document.getElementById("chat-log").style.height = "60%";
-    document.getElementById("ns-wrapper").style.padding = "0";
-    document.getElementById("registerchildnameserver").style.fontSize = "5px";
-    document.getElementById("registerchildnameserver").style.borderRadius = "5px";
-    document.getElementById("addchildnameserver").style.fontSize = "5px";
-    document.getElementById("addchildnameserver").style.borderRadius = "5px";
-    let buttons = document.getElementsByClassName("chat-input-button");
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].style.borderRadius = "5px";
-    }
-    let buttonGroups = document.getElementsByClassName("button-group-child");
-
-    // Loop through each element and apply the styles
-    for (let i = 0; i < buttonGroups.length; i++) {
-        buttonGroups[i].style.height = "50px"; // Adjust the height as needed
-        buttonGroups[i].style.fontSize = "16px"; // Adjust the font size as needed
-    }
-    document.getElementById("child-ns-button").addEventListener("click", () => {
-        updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
-    });
-}
 
   // Show auth buttons if response matches predefined responses
   if (sender === 'bot' && checkBotResponse(message)) {
@@ -684,11 +585,218 @@ function updateChatLog(message, sender) {
     sender === 'user' && isUserSignedIn &&
     (message == "How do I register a domain?")
 ) {
-    updateChatLog("Before registering the domain, check its availability by clicking the 'Check Availability' button.",'bot');
     document.getElementById("domain-availability-section").style.display="flex";
+    document.getElementById("domain-renewal-section").style.display="none";
     document.getElementById("login-chat-section").style.display="none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("check-domain-input").value= "";
     document.getElementById("check-domain-button").style.borderRadius = "20px";
     document.getElementById("domain-availability-section").style.gap = "0px"
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    message.trim().toLowerCase() === "how can i renew a domain?"
+) {
+    updateChatLog("Enter duration and click renew button to renew your domain seamlessly.", "bot");
+
+    // Show renewal section and hide unnecessary sections
+    document.getElementById("domain-renewal-section").style.display = "flex";
+    document.getElementById("domain-availability-section").style.display = "none";
+    document.getElementById("domain-registration-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("login-chat-section").style.display = "none";
+    document.getElementById("domain-transfer-section").style.display = "none"; 
+    document.getElementById("name-server-update-section").style.display = "none";
+
+    // Clear domain input field
+    document.getElementById("renew-domain-name").value = "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    message === "How do I transfer IN/OUT domains?"
+) {
+    updateChatLog("Enter authcode(EPP code) and enable or disable Whois protection to transfer your domain to us seamlessly.", "bot");
+    document.getElementById("domain-renewal-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display = "none";
+    document.getElementById("domain-registration-section").style.display = "none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("login-chat-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("domain-transfer-section").style.display = "flex"; // Kept only one
+    document.getElementById("name-server-update-section").style.display = "none";
+    // Clear domain input field
+    document.getElementById("renew-domain-name").value = "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    message === "How can I update the name servers for a domain?"
+) {
+    updateChatLog("🔄 Please enter the domain name and the name servers that need to be updated. You can add more name servers by clicking '➕ Add Name Server' button. Maximum 4 name servers can be added. Then click '🖊 Update Name Server' button to save the changes.","bot");
+    document.getElementById("domain-renewal-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display = "none";
+    document.getElementById("domain-registration-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("login-chat-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("domain-transfer-section").style.display = "none"; 
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "flex";
+    document.getElementById("name-server-container").style.display = "flex";
+    document.getElementById("nameserver-container").style.width = "100%";
+    document.getElementById("name-server-update-section").style.display = "flex"; 
+    document.getElementById("update-nameserver-button-group").style.width = "100%";
+    document.getElementById("addNameServer").style.borderRadius = "5px";
+    document.getElementById("addNameServer").style.fontSize = "10px";
+    document.getElementById("addNameServer").style.height = "90%";
+    document.getElementById("updateNameServer").style.fontSize = "10px";
+    document.getElementById("updateNameServer").style.height = "90%";
+    document.getElementById("updateNameServer").style.borderRadius = "5px";
+    document.getElementById("chat-log").style.height = "60%";
+    document.getElementById("updatenamebackbutton").style.fontSize = "12px";
+    document.getElementById("updatenamebackbutton").style.height = "90%";
+    document.getElementById("domain-name-input").style.height = "85%";
+    document.getElementById("nameserver-container").style.marginTop = "-10px";
+
+    // Clear domain input field
+    document.getElementById("renew-lock-name").value = "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    message === "How can I add a child nameserver?"
+) {
+    updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
+    document.getElementById("domain-renewal-section").style.display = "none";
+    document.getElementById("domain-renewal-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display = "none";
+    document.getElementById("domain-registration-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("login-chat-section").style.display = "none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "flex";
+    document.getElementById("chat-log").style.height = "60%";
+    document.getElementById("ns-wrapper").style.padding = "0";
+    document.getElementById("registerchildnameserver").style.fontSize = "5px";
+    document.getElementById("registerchildnameserver").style.borderRadius = "5px";
+    document.getElementById("addchildnameserver").style.fontSize = "5px";
+    document.getElementById("addchildnameserver").style.borderRadius = "5px";
+    let buttons = document.getElementsByClassName("chat-input-button");
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].style.borderRadius = "5px";
+    }
+    let buttonGroups = document.getElementsByClassName("button-group-child");
+
+    // Loop through each element and apply the styles
+    for (let i = 0; i < buttonGroups.length; i++) {
+        buttonGroups[i].style.height = "50px"; // Adjust the height as needed
+        buttonGroups[i].style.fontSize = "16px"; // Adjust the font size as needed
+    }
+    // Clear domain input field
+    document.getElementById("child-domain-name").value = "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    (message == "Enable/disable privacy protection for mydomain.com")
+) {
+    document.getElementById("privacy-protection-section").style.display = "flex";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("login-chat-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-domain-name").value= "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    (message == "Lock/unlock mydomain.com")
+) {
+    document.getElementById("domain-lock-section").style.display = "flex";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("login-chat-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-name").value= "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    (message == "Enable/disable theft protection for mydomain.com")
+) {
+    document.getElementById("theft-protection-section").style.display = "flex";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("login-chat-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("theft-protection-domain-name").value= "";
+    return;
+}
+
+if (
+    sender === 'user' && isUserSignedIn &&
+    (message == "Suspend/Unsuspend mydomain.com")
+) {
+    document.getElementById("domain-suspension-section").style.display = "flex";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("login-chat-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    document.getElementById("domain-suspension-name").value= "";
+    return;
 }
 
   // Call scrollToBottom only once
@@ -797,6 +905,36 @@ function fillChatAndSubmit(question) {
     }, 10);
 }
 
+function fillChatAndSubmitandshowquerybar(question) {
+    console.trace("🔍 fillChatAndSubmitandshowquerybar() CALLED!");
+
+    const userInput = document.getElementById("domain-query-text");
+    const submitButton = document.getElementById("submitDomainQuery"); // Post-login "Submit" button
+    const loginChatSection = document.getElementById("login-chat-section");
+
+    if (!userInput || !submitButton) {
+        console.error("❌ Chat input field or 'Submit' button not found!");
+        return;
+    }
+
+    // Make login-chat-section visible first
+    if (loginChatSection) {
+        loginChatSection.style.display = "flex"; 
+        document.getElementById("domain-query-text").value = "";
+        console.log("📢 'login-chat-section' made visible.");
+    } else {
+        console.error("❌ 'login-chat-section' not found!");
+    }
+
+    updateChatInput(userInput, question);
+
+    setTimeout(() => {
+        console.log("🚀 Clicking 'Submit' button...");
+        submitButton.click();
+    }, 10);
+}
+
+
 // ✅ Helper Function to Update Chat Input
 function updateChatInput(inputField, question) {
     const normalizedQuestion = question.trim().toLowerCase();
@@ -829,10 +967,30 @@ function fillChatInputWithPlaceholder(template) {
     const lockToggle = document.getElementById('domain-lock-dropdown-container');
     const suspendToggle = document.getElementById('domain-suspend-toggle-container');
     const privacyToggle = document.getElementById('domain-privacy-dropdown');
+    const loginChatSection = document.getElementById("login-chat-section");
 
     if (!chatInput) {
         console.error("❌ Chat input field not found!");
         return;
+    }
+
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+
+    // Make login-chat-section visible first
+    if (loginChatSection) {
+        loginChatSection.style.display = "flex"; // or "flex" based on your styling
+        console.log("📢 'login-chat-section' made visible.");
+    } else {
+        console.error("❌ 'login-chat-section' not found!");
     }
 
     console.log("📌 Current Chat Input Value:", chatInput.value.trim());
@@ -962,6 +1120,27 @@ function autoHideTooltip(tooltipRef) {
 
 function fillChatInputWithPlaceholderDate(template) {
     const chatInput = document.getElementById('domain-query-text');
+    const loginChatSection = document.getElementById("login-chat-section");
+
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+
+    // Make login-chat-section visible first
+    if (loginChatSection) {
+        loginChatSection.style.display = "flex"; // or "flex" based on your styling
+        console.log("📢 'login-chat-section' made visible.");
+    } else {
+        console.error("❌ 'login-chat-section' not found!");
+    }
+
     chatInput.value = template;
     chatInput.focus();
 
@@ -972,6 +1151,27 @@ function fillChatInputWithPlaceholderDate(template) {
 
 function fillChatInputWithPlaceholderCategory(template) {
     const chatInput = document.getElementById('domain-query-text');
+    const loginChatSection = document.getElementById("login-chat-section");
+
+
+    document.getElementById("domain-suspension-section").style.display = "none";
+    document.getElementById("theft-protection-section").style.display = "none";
+    document.getElementById("domain-lock-section").style.display = "none";
+    document.getElementById("privacy-protection-section").style.display = "none";
+    document.getElementById("domain-availability-section").style.display="none";
+    document.getElementById("domain-renewal-section").style.display="none";
+    document.getElementById("domain-registration-section").style.display="none";
+    document.getElementById("domain-transfer-section").style.display = "none";
+    document.getElementById("name-server-update-section").style.display = "none";
+    document.getElementById("add-child-name-server-section").style.display = "none";
+    // Make login-chat-section visible first
+    if (loginChatSection) {
+        loginChatSection.style.display = "flex"; // or "flex" based on your styling
+        console.log("📢 'login-chat-section' made visible.");
+    } else {
+        console.error("❌ 'login-chat-section' not found!");
+    }
+
     chatInput.value = template;
     chatInput.focus();
 
@@ -979,6 +1179,7 @@ function fillChatInputWithPlaceholderCategory(template) {
     tooltipCategory = highlightPlaceholder(chatInput, template, "Category", "Enter a category.", tooltipCategory);
     autoHideTooltip(tooltipCategory);
 }
+
 
 //------------------------------------------------------ Domain Theft Section --------------------------------------------------------//
 
@@ -1241,6 +1442,9 @@ function handleYesClick(domainInput) {
 
 function handleNoClick() {
     updateChatLog("Okay! Let me know if you need anything else. 😊", "bot");
+    document.getElementById("domain-availability-section").style.display = "none";
+    document.getElementById("login-chat-section").style.display = "flex";
+    document.getElementById("login-chat-section").value = "";
 }
 
 function handleTryAnother() {
@@ -2476,7 +2680,7 @@ async function submitDomainQuery() {
     console.log("submitDomainQuery called"); 
     const submitButton = document.getElementById('submitDomainQuery'); // Replace with the actual button ID
     submitButton.disabled = true; // Disable button
-    setTimeout(() => { submitButton.disabled = false; }, 1000);
+    setTimeout(() => { submitButton.disabled = false; }, 500);
     const queryInput = document.getElementById('domain-query-text');
     const queryText = queryInput.value.trim();
 
@@ -3158,7 +3362,7 @@ if (!inputElement) {
     console.log(`📝 User Input: "${usersInput}"`);
 
     // FIXED REGEX
-    const privacyRegex = /(?:^|\s)(enable|disable)(?:\/disable|\/enable)?\s+privacy\s+protection(?:\s+\w+)*\s*(?:for\s+)?((?:[a-zA-Z0-9-]+)+\.[a-zA-Z]{2,63})/i;
+    const privacyRegex = /(?:^|\s)(enable|disable)\s+privacy\s+protection(?:\s+\w+)*\s*(?:for\s+)?((?:[a-zA-Z0-9-]+)+\.[a-zA-Z]{2,63})/i;
 
     const privacyMatch = usersInput.match(privacyRegex);
 
