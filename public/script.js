@@ -1957,20 +1957,20 @@ async function registerDomain() {
                     const noButton = lastButtonContainer.querySelector("#noButton");
             
                     if (yesButton) {
-                        yesButton.onclick = () => {
-                            // Find the confirmation message div
-                            const confirmationMessage = document.getElementById("confirmation-message-div");
-                    
-                            if (confirmationMessage) {
-                                // Replace the content with a message indicating the process is starting
-                                confirmationMessage.innerHTML = `🔄 Proceeding to register your domain <strong>${domainName}</strong>...`;
-                            }
-                    
-                            // Proceed with registration
-                            confirmRegistration(domainName, duration, additionalsection.style.display === "flex");
-                        };
-                    }
-                    
+    yesButton.onclick = () => {
+        // Find the confirmation message div
+        const confirmationMessage = document.getElementById("confirmation-message-div");
+
+        if (confirmationMessage) {
+            // Replace the content with a message indicating the process is starting
+            confirmationMessage.innerHTML = `🔄 Proceeding to register your domain <strong>${domainName}</strong>...`;
+        }
+
+        // Proceed with registration
+        confirmRegistration(domainName, duration, additionalsection.style.display === "flex");
+    };
+}
+
                     if (noButton) {
                         noButton.onclick = () => {
                             // Find the confirmation message div
