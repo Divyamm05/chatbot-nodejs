@@ -2599,7 +2599,7 @@ login-chat-wrapper button:disabled {
 /* Extra Small Devices (Below 480px) */
 @media (max-height: 480px) {
   #chat-container {
-    width: 43vh;
+    width: 100vh;
     height: 65vh;
     border-radius: 5;
   }
@@ -2618,7 +2618,7 @@ login-chat-wrapper button:disabled {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: calc(98vh - 280px);
+    max-height: calc(98vh - 180px);
 }
 
   #chatbox {
@@ -2652,6 +2652,7 @@ login-chat-wrapper button:disabled {
   .chat-log {
     flex-grow: 1;
     overflow-y: auto;
+    height: 35%;
   }
 
   .bot-message {
@@ -2672,7 +2673,7 @@ login-chat-wrapper button:disabled {
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .button-group {
@@ -2713,11 +2714,84 @@ login-chat-wrapper button:disabled {
   transition: background-color 0.3s ease;
 }
 
+.domain-registration-wrapper {
+  display: flex
+;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  row-gap: 4px;
+  column-gap: 8px;
+}
+
+#domain-registration-section {
+  display: flex
+;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  padding: 6px;
+  box-sizing: border-box;
+  color: #ecf0f1;
+  width: 100%;
+}
+
+#domain-registration-section button {
+  background-color: #066;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 260px;
+}
+
+.domain-registration-wrapper {
+  display: flex
+;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  row-gap: 4px;
+  column-gap: 8px;
+  overflow-y: yes;
+}
+
+.chat-input {
+  padding: 6px;
+  background-color: #34495e;
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 20px 20px;
+  box-sizing: border-box;
+  bottom: 0%;
+  gap: 6px;
+  flex-wrap: wrap;}
+
+  .domain-transfer-wrapper {
+    display: flex
+;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 99%;
+    gap: 7px;
+}
+
 }
 
 @media (max-height: 380px) {
   #chat-container {
-    width: 40vh;
+    width: 115vh;
     height: 70vh;
     border-radius: 5;
   }
@@ -2736,7 +2810,7 @@ login-chat-wrapper button:disabled {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: calc(98vh - 240px);
+    max-height: calc(98vh - 170px);
 }
 
   #chatbox {
@@ -2768,6 +2842,7 @@ login-chat-wrapper button:disabled {
 
   /* Allow chat to be scrollable */
   .chat-log {
+    height: 35%;
     flex-grow: 1;
     overflow-y: auto;
   }
@@ -2790,7 +2865,7 @@ login-chat-wrapper button:disabled {
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .chat-input {
@@ -2814,6 +2889,32 @@ login-chat-wrapper button:disabled {
   width: 117%;
 }
 
+.domain-registration-wrapper {
+  display: flex
+;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  row-gap: 4px;
+  column-gap: 8px;
+}
+
+#domain-registration-section {
+  display: flex
+;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  padding: 6px;
+  box-sizing: border-box;
+  color: #ecf0f1;
+  width: 100%;
+}
+
 #domain-registration-section button {
   background-color: #066;
   color: white;
@@ -2826,6 +2927,39 @@ login-chat-wrapper button:disabled {
   cursor: pointer;
   width: 100%;
   max-width: 260px;
+}
+
+.domain-registration-wrapper {
+  display: flex
+;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  row-gap: 4px;
+  column-gap: 8px;
+  overflow-y: yes;
+}
+
+.chat-input {
+  padding: 6px;
+  background-color: #34495e;
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 20px 20px;
+  box-sizing: border-box;
+  bottom: 0%;
+  gap: 6px;
+  flex-wrap: wrap;}
+
+  .domain-transfer-wrapper {
+    display: flex
+;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 99%;
+    gap: 7px;
 }
 
 }
