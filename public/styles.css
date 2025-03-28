@@ -380,8 +380,9 @@ body {
 .button-container-register,
 .button-container-renew { /* Apply same styling to both */
   display: flex;
-  margin-top: -15px;
+  margin-top: -18px;
   height: 5vh;
+  gap: 5px;
   margin-bottom: -40px;
   margin-left: -60px;
 }
@@ -403,7 +404,7 @@ body {
 .button-container-register #noButton {
   background-color: #ccc;
   color: black;
-  margin-left: -7vh;
+  margin-left: -10vh;
 }
 
 /* Renewal & Transfer buttons */
@@ -2363,6 +2364,358 @@ login-chat-wrapper button:disabled {
 }
 
 @media (max-width: 380px) {
+  #chat-container {
+    width: 40vh;
+    height: 70vh;
+    border-radius: 5;
+  }
+  .faq-list li {
+    padding: 8px;
+    background: #066;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: white;
+    font-size: 12px;
+  }
+
+  .faq-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: calc(98vh - 240px);
+}
+
+  #chatbox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar {
+    width: 30%;
+    height: auto;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    background: #3b3b3b;
+}
+
+  /* Show toggle button to open sidebar */
+  #toggle-sidebar {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    background: #3b3b3b;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Allow chat to be scrollable */
+  .chat-log {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  .bot-message {
+    background-color: #066;
+    color: #ffffff;
+    align-self: flex-start;
+    margin-left: 20px;
+    font-size: 12px;
+  }
+  
+  .chat-input button {
+    padding: 8px;
+    background-color: #066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .chat-input {
+    padding: 8px;
+    background-color: #34495e;
+    display: flex
+;
+    align-items: center;
+    border-radius: 0 0 20px 20px;
+    box-sizing: border-box;
+    bottom: 0%;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex
+;
+  justify-content: space-between;
+  gap: 3px;
+  width: 117%;
+}
+
+#domain-registration-section button {
+  background-color: #066;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 260px;
+}
+
+}
+
+
+@media (max-height: 600px) {
+  #chat-container {
+    width: 60vh;
+    height: 75vh;
+    display: flex;
+    flex-direction: row; /* Ensure chatbox is next to sidebar */
+    border-radius: 15px;
+    position: fixed;
+    bottom: 90px;
+    right: 15px;
+  }
+
+  .chat-input button {
+    background-color: rgb(0, 102, 102);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    padding: 8px;
+    border-width: initial;
+    border-style: none;
+    border-color: initial;
+    border-image: initial;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    font-size: 10px;
+}
+
+  #sidebar {
+    width: 25%;
+    height: auto;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    background: #3b3b3b;
+  }
+
+  #chatbox {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background-color: #34495e;
+  }
+
+  /* Sidebar toggle button */
+  #toggle-sidebar {
+    width: 92%;
+    text-align: center;
+    padding: 10px;
+    background: #3b3b3b;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+
+#toggle-sidebar .menu-icon {
+  position: relative;
+  left: 1%;
+  font-size: 15px;}
+
+  .bot-message {
+    background-color: #066;
+    color: #ffffff;
+    align-self: flex-start;
+    margin-left: 20px;
+    font-size: 12px;
+  }
+  
+  .chat-input button {
+    padding: 8px;
+    background-color: #066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    font-size: 9px;
+  }
+
+
+#otp-section button {
+  width: 22%;
+  margin-left: 10px;
+  background-color: #066;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 10px;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+  margin: 3px;
+}
+
+#domain-transfer-section button, #domain-transfer-section select {
+  width: 213%;
+  font-size: 11px;
+}
+
+.faq-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 9px;
+  max-height: calc(98vh - 210px);
+}
+}
+
+
+/* Extra Small Devices (Below 480px) */
+@media (max-height: 480px) {
+  #chat-container {
+    width: 43vh;
+    height: 65vh;
+    border-radius: 5;
+  }
+  .faq-list li {
+    padding: 8px;
+    background: #066;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: white;
+    font-size: 12px;
+  }
+
+  .faq-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: calc(98vh - 280px);
+}
+
+  #chatbox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar {
+    width: 30%;
+    height: auto;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    background: #3b3b3b;
+}
+
+  /* Show toggle button to open sidebar */
+  #toggle-sidebar {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    background: #3b3b3b;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Allow chat to be scrollable */
+  .chat-log {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  .bot-message {
+    background-color: #066;
+    color: #ffffff;
+    align-self: flex-start;
+    margin-left: 20px;
+    font-size: 12px;
+  }
+  
+  .chat-input button {
+    padding: 8px;
+    background-color: #066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .button-group {
+    display: flex
+  ;
+    justify-content: space-between;
+    gap: 3px;
+    width: 117%;
+  }
+  
+  #domain-registration-section button {
+    background-color: #066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+    max-width: 260px;
+  }
+  
+  #closeadditionaldomaindetails, #registerDomain {
+    font-size: 9px !important;
+}
+
+.chat-input button:nth-child(3) {
+  width: 100%;
+  background-color: #066;
+  color: #ffffff;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+}
+
+@media (max-height: 380px) {
   #chat-container {
     width: 40vh;
     height: 70vh;

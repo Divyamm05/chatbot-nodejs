@@ -119,6 +119,10 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
 });
 
+pool.on('error', (err) => {
+  console.error('❌ Database connection error:', err);
+});
+
 //--------------------------------------------------- OTP through mail setup -----------------------------------------------------------//
 
 // Nodemailer setup
@@ -364,49 +368,36 @@ app.post('/api/check-email', async (req, res) => {
     return res.status(400).json({ success: false, message: "Email is required." });
   }
 
-  const normalizedEmail = email.trim().toLowerCase(); // ✅ Always store email in lowercase
-  req.session.email = normalizedEmail; // Store email in session
+  const normalizedEmail = email.trim().toLowerCase(); // ✅ Normalize email
 
   try {
     const connection = await pool.getConnection(); // ✅ Get a connection from the pool
-    const [users] = await connection.query("SELECT clientId FROM Client WHERE UserName = ?", [normalizedEmail]);
-    connection.release(); // ✅ Release the connection
+    try {
+      const [users] = await connection.query("SELECT clientId FROM Client WHERE UserName = ?", [normalizedEmail]);
+      
+      if (users.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: `Email not found in our records. You can Signup easily by clicking on the buttons below.<br> <a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a><br>Or enter your registered email ID to continue.`
+        });
+      }
 
-    if (users.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: `Email not found in our records. You can Signup easily by clicking on the buttons below.<br> <a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a><br>Or enter your registered email ID to continue.`
+      res.json({
+        success: true,
+        message: "Email found in database.",
+        clientId: users[0].clientId
       });
+
+    } finally {
+      connection.release(); // ✅ Always release connection
     }
 
-    // ✅ Generate OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 60000); // 1-minute expiration time
-
-    // Store OTP and expiration time in session
-    req.session.otp = otp;
-    req.session.otpExpiresAt = expiresAt;
-
-    // ✅ Send OTP email
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: normalizedEmail,
-      subject: 'Your OTP Code',
-      text: `Your OTP code is: ${otp}. It is valid for 1 minute.`
-    };
-    await transporter.sendMail(mailOptions);
-
-    res.json({
-      success: true,
-      message: 'OTP sent to your email address.',
-      otpRequired: true
-    });
-    console.log('otp', otp); // ✅ Sending OTP in response for now
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ success: false, message: "Internal server error." });
+    console.error("❌ Database error:", error);
+    res.status(500).json({ success: false, message: "Internal server error. Please try again later." });
   }
 });
+
 
 app.post('/api/resend-otp', async (req, res) => {
   const { email } = req.body;
@@ -1126,14 +1117,19 @@ app.get('/api/renew-domain', async (req, res) => {
       console.log(`✅ [DB] Found clientId: ${clientId}, ResellerId: ${resellerId}`);
 
   } catch (error) {
+      console.error("❌ [ERROR] Database error while fetching client details:", error);
       return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
   // Fetch renewal fee for the domain
   try {
+      console.log(`🔍 [FETCHING RENEWAL FEE] API Call: https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${FETCHED_API_KEY}`);
+
       const renewalFeeResponse = await axios.get(
           `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${FETCHED_API_KEY}`
       );
+
+      console.log(`📄 [RENEWAL FEE RESPONSE]`, renewalFeeResponse.data);
 
       const tldData = renewalFeeResponse.data.find(entry => entry.tld === `.${Websitename.split('.').pop()}`);
       if (tldData) {
@@ -1144,14 +1140,17 @@ app.get('/api/renew-domain', async (req, res) => {
           return res.json({ success: false, message: "Could not fetch renewal fee for this domain." });
       }
   } catch (error) {
+      console.error("❌ [ERROR] Fetching renewal fee failed:", error.response?.data || error.message);
       return res.status(500).json({ success: false, message: "Error fetching renewal fee." });
   }
 
   // Check reseller balance
   try {
-      const balanceResponse = await axios.get(
-          `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`
-      );
+      const balanceApiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`;
+      console.log(`🔍 [CHECK BALANCE] API Call: ${balanceApiUrl}`);
+
+      const balanceResponse = await axios.get(balanceApiUrl);
+      console.log(`📄 [BALANCE RESPONSE]`, balanceResponse.data);
 
       const balance = parseFloat(balanceResponse.data.responseData);
       console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
@@ -1174,7 +1173,11 @@ app.get('/api/renew-domain', async (req, res) => {
           IsWhoisProtection: "false"
       };
 
+      console.log(`🚀 [RENEW REQUEST] Sending renewal request to: ${apiUrl}`);
+      console.log(`📦 [RENEW REQUEST PAYLOAD]`, params);
+
       const renewalResponse = await axios.get(apiUrl, { params });
+      console.log(`📄 [RENEW RESPONSE]`, renewalResponse.data);
 
       if (renewalResponse.data.responseMsg.statusCode === 200) {
           return res.json({
@@ -1183,12 +1186,15 @@ app.get('/api/renew-domain', async (req, res) => {
               expiryDate: renewalResponse.data.responseData.exdate
           });
       } else {
-          return res.json({ success: false, message: renewalResponse.data.responseMsg.message });
+          console.error("❌ [RENEW ERROR] API Response:", renewalResponse.data);
+          return res.json({ success: false, message: renewalResponse.data.responseMsg.message || "Renewal failed." });
       }
   } catch (error) {
+      console.error("❌ [ERROR] Renewal request failed:", error.response?.data || error.message);
       return res.status(500).json({ success: false, message: "Failed to check funds or renew domain." });
   }
 });
+
 
 //-------------------------------------------------------- Domain Availability ---------------------------------------------------------//
 
