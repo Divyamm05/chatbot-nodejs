@@ -2936,8 +2936,7 @@ login-chat-wrapper button:disabled {
 }
 
 #domain-registration-section {
-  display: flex
-;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
