@@ -1,3 +1,5 @@
+/*------------------------------------------------- #background container -------------------------------------------------------------*/
+
 .background-container {
   position: fixed;
   top: 0;
@@ -16,6 +18,8 @@
   left: 0;
   z-index: 0; /* Keeps the website in the background */
 }
+
+/*----------------------------------------------------- #body, container etc. ----------------------------------------------------------*/
 
 /* General Body Styles */
 body {
@@ -43,6 +47,39 @@ body {
   bottom: 90px;
   right: 15px;
 }
+
+/*-------------------------------------------------------- #assistant logo ------------------------------------------------------------*/
+
+/* Assistant Logo */
+#assistant-logo {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #066;
+  color: #fff;
+  border-radius: 50%;
+  padding: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  font-size: 26px;
+  z-index: 1000;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+/* Hover Effect */
+#assistant-logo:hover {
+  transform: scale(1.1);
+}
+
+/* Hidden State */
+#assistant-logo.hidden {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none; /* Prevents interaction when hidden */
+}
+
+/*-------------------------------------------------------- #sidebar ---------------------------------------------------------------------*/
 
 #sidebar {
   width: 25%;
@@ -120,6 +157,56 @@ body {
   display: none;
 }
 
+.faq-list {
+  list-style: none;
+  margin: 0;
+  padding-top: 5px;
+  padding-bottom: 10px;
+  padding-right: 10px;
+  padding-left: 0px;
+  font-size: 13px;
+  max-height: calc(98vh - 200px); /* Adjust the 200px based on header/footer */
+  overflow-y: auto; /* Enables scrolling when needed */
+}
+
+.faq-list li:hover {
+  background: black;
+  color: white;
+}
+
+/* Scrollbar Customization */
+.faq-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.faq-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.faq-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* FAQ Items */
+.faq-list li {
+  padding: 8px;
+  background: #066;
+  margin: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: white;
+}
+
+#chatbox.sidebar-open {
+  max-width: calc(100% - 200px); /* Adjust chatbox width */
+  transform: translateX(-200px); /* Shift chatbox to the left */
+  transition: transform 0.3s ease;
+  z-index: 20; /* Ensure chatbox is below the sidebar */
+}
+
+/*-------------------------------------------------------- #chatbox --------------------------------------------------------------------*/
 
 #chatbox {
   flex: 1; /* Chatbox takes remaining space */
@@ -133,6 +220,8 @@ body {
   opacity: 1;
   overflow: hidden;
 }
+
+/*-------------------------------------------------------- #header ---------------------------------------------------------------------*/
 
 .header {
   font-size: 18px;
@@ -222,6 +311,8 @@ body {
   cursor: pointer;
 }
 
+/*------------------------------------------------------ #info button ------------------------------------------------------------------*/
+
 .info-btn {
   cursor: pointer;
   position: absolute;
@@ -285,6 +376,8 @@ body {
   color: #ffdddd;
 }
 
+/*-------------------------------------------------------- #chatlog ---------------------------------------------------------------------*/
+
 .chat-log {
   position: relative;
   flex-grow: 7;
@@ -318,6 +411,9 @@ body {
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
+/*------------------------------------------------------ #bot and user message --------------------------------------------------------*/
+
 .message {
   margin-bottom: 10px;
   padding: 12px 15px;
@@ -342,19 +438,24 @@ body {
   margin-right: 20px;
 }
 
-/* Container for Authentication Buttons */
+#response-message {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+/*------------------------------------------------------- #auth buttons ----------------------------------------------------------------*/
+
 #auth-buttons-container {
-  display: none; /* Initially hidden (it will show when the condition is met) */
+  display: none; 
   justify-content: center;
   text-align: center;
   margin-left: 15px;
   margin-top: 10px;
   position: relative;
-  bottom: 0; /* Ensure the buttons stay at the bottom */
-  z-index: 1000; /* Make sure buttons are above other content if needed */
+  bottom: 0; 
+  z-index: 1000; 
 }
 
-/* Signup and Login Buttons */
 .signup-button, .login-button, 
 .suggestion-buttons button {
   padding: 10px 20px;
@@ -362,23 +463,22 @@ body {
   cursor: pointer;
   border: none;
   color: white;
-  border-radius: 20px; /* Matches button radius in chat-input section */
-  background-color: #45a049; /* Matches button color */
+  border-radius: 20px; 
+  background-color: #45a049; 
   transition: background-color 0.3s ease;
-  margin: 5px; /* Ensure some space between buttons */
+  margin: 5px; 
 }
 
-/* Hover effects */
 .signup-button:hover, .suggestion-buttons button {
-  background-color: #066; /* Green when hovering */
+  background-color: #066; 
 }
 
 .login-button:hover {
-  background-color: #007B9E; /* Blue when hovering */
+  background-color: #007B9E; 
 }
 
 .button-container-register,
-.button-container-renew { /* Apply same styling to both */
+.button-container-renew {
   display: flex;
   margin-top: -18px;
   height: 5vh;
@@ -388,7 +488,7 @@ body {
 }
 
 .button-container-register button,
-.button-container-renew button { /* Common button styles */
+.button-container-renew button { 
   padding: 8px 12px;
   border: none;
   cursor: pointer;
@@ -407,23 +507,23 @@ body {
   margin-left: -10vh;
 }
 
-/* Renewal & Transfer buttons */
 .button-container-renew #yesRenew,
-.button-container-renew #yesTransfer { /* Both renewal & transfer use same green */
-  background-color: #008CBA; /* Green */
+.button-container-renew #yesTransfer { 
+  background-color: #008CBA; 
   color: white;
 }
 
 .button-container-renew #noRenew,
-.button-container-renew #noTransfer { /* Both renewal & transfer use same gray */
+.button-container-renew #noTransfer { 
   background-color: #ccc;
   color: black;
   margin-left: -7vh;
 }
 
+/*---------------------------------------------------- suggest button ------------------------------------------------------------------*/
 
 #suggest-buttons-container {
-  display: flex; /* Initially hidden (it will show when the condition is met) */
+  display: flex; 
   text-align: center;
   margin-left: 15px;
 }
@@ -434,13 +534,12 @@ body {
   cursor: pointer;
   border: none;
   color: white;
-  border-radius: 20px; /* Matches button radius in chat-input section */
-  background-color: #f1c40f; /* Matches button color */
+  border-radius: 20px; 
+  background-color: #f1c40f;
   transition: background-color 0.3s ease;
-  margin: 5px; /* Ensure some space between buttons */
+  margin: 5px; 
 }
 
-/* Hover effects */
 .suggest-button:hover {
   background-color: #45a049;
 }
@@ -467,108 +566,8 @@ body {
 .available-button:hover {
   background-color: #45a049;
 }
-/* FAQ Sidebar - Default (Desktop View) */
-/* FAQ Sidebar */
-#faq-sidebar {
-  position: fixed;
-  top: 0;
-  right: -200px; /* Start hidden off-screen */
-  width: 200px;
-  height: 80vh;
-  background: #f8f8f8;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, right 0.3s ease;
-  z-index: 50; /* Increased to ensure it is above the chatbox */
-  overflow-y: auto;
-}
 
-/* Collapsed Sidebar */
-#faq-sidebar.faq-collapsed {
-  transform: translateX(0); /* Remains hidden */
-}
-
-/* Expanded Sidebar */
-#faq-sidebar.faq-expanded {
-  left: 0; /* Fully visible */
-  transform: translateX(0); /* Reset transform */
-}
-
-/* Sidebar Toggle Button */
-.faq-header {
-  position: absolute;
-  left: -30px; /* Sticks out from the sidebar */
-  top: 50%;
-  transform: translateY(-50%);
-  width: 30px;
-  height: 50px;
-  background: #007bff;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 5px 0 0 5px;
-  z-index: 60; /* Ensure button is always visible */
-}
-
-
-.faq-list {
-  list-style: none;
-  margin: 0;
-  padding-top: 5px;
-  padding-bottom: 10px;
-  padding-right: 10px;
-  padding-left: 0px;
-  font-size: 13px;
-  max-height: calc(98vh - 200px); /* Adjust the 200px based on header/footer */
-  overflow-y: auto; /* Enables scrolling when needed */
-}
-
-.faq-list li:hover {
-  background: black;
-  color: white;
-}
-
-/* Scrollbar Customization */
-.faq-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.faq-list::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 5px;
-}
-
-.faq-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* FAQ Items */
-.faq-list li {
-  padding: 8px;
-  background: #066;
-  margin: 5px 0;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.2s;
-  color: white;
-}
-
-#add-child-name-server-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 100%;
-}
-
-/* Chatbox when Sidebar is Open */
-#chatbox.sidebar-open {
-  max-width: calc(100% - 200px); /* Adjust chatbox width */
-  transform: translateX(-200px); /* Shift chatbox to the left */
-  transition: transform 0.3s ease;
-  z-index: 20; /* Ensure chatbox is below the sidebar */
-}
+/*----------------------------------------------------- #input fields-------------------------------------------------------------------*/
 
 .chat-input {
   padding: 8px;
@@ -625,7 +624,6 @@ body {
   background-color: black;
 }
 
-/* Specific styling for the third button if needed, remove if not */
 .chat-input button:nth-child(3) {
   width: 100%;
   background-color: #066;
@@ -641,6 +639,8 @@ body {
 .chat-input button:nth-child(3):hover {
   background-color: #bd1401;
 }
+
+/*----------------------------------------------------- #back button -------------------------------------------------------------------*/
 
 #back-to-domain-section {
   width: 100%;
@@ -659,19 +659,81 @@ body {
   background-color: #bd1401;
 }
 
-
-/* Add to your existing CSS */
-.timestamp {
-  font-size: 0.8em;
-  color: #95a5a6;
-  text-align: right;
-  margin-top: 5px;
+/* Back Button Styling */
+#back-to-domain-section {
+  width: 100%; 
+  padding: 12px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px; 
 }
 
-.message-content {
-  font-size: 1em;
-  line-height: 1.5;
+#back-to-domain-section:hover {
+  background-color: #bd1401;
 }
+
+
+#back-to-domain-section {
+  width: 100%;
+    padding: 8px;
+    background-color: #066;
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#back-to-domain-section:hover {
+  background-color: #bd1401;
+}
+
+/* Back button below the wrapper */
+#back-to-previous-section {
+  width: 100%; 
+  padding: 12px 18px;
+  background-color: #1abc9c;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for back button */
+#back-to-previous-section:hover {
+  background-color: #bd1401;
+}
+
+/* Full-width Back Button */
+#back-to-domain-section {
+  width: 100%; 
+  padding: 12px 18px;
+  background-color: #1abc9c;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#back-to-domain-section:hover {
+  background-color: #bd1401;
+}
+
+/*----------------------------------------------------- #otp section-------------------------------------------------------------------*/
 
 /* OTP Section Layout */
 #otp-section {
@@ -712,6 +774,8 @@ body {
   background-color: #7f8c8d;
   cursor: not-allowed;
 }
+
+/*----------------------------------------------------- #email section-------------------------------------------------------------------*/
 
 #email-buttons{
   display: flex;
@@ -754,153 +818,8 @@ body {
   background-color: #000000;
 }
 
-/* Domain Options and Button Container */
-#domain-options {
-  display: none;
-  flex-direction: column;
-  padding: 15px 20px;
-  gap: 10px;
-  width: 100%;
-  justify-content: flex-start;
-  align-items: center;
-  box-sizing: border-box;
-}
+/*----------------------------------------------------- #domain query-------------------------------------------------------------------*/
 
-#domain-options.visible {
-  display: flex;
-}
-
-#domain-options .button-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  height: 100%;
-}
-
-#domain-options .button-container button {
-  padding: 8px 16px;
-  background-color: #f1c40f;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 100%;
-}
-
-#domain-options .button-container button:hover {
-  background-color: #1abc9c;
-}
-
-#domain-options-next {
-  display: none;
-  flex-direction: column;
-  padding: 15px 20px;
-  gap: 6px;
-  max-width: 650px;
-  max-height: 120px;
-}
-
-#domain-options-next.visible {
-  display: flex;
-}
-
-#domain-options-next button {
-  padding: 6px 12px;
-  background-color: #f1c40f;
-  color: #ffffff;
-  gap: 6px;
-  border: none;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 100%;
-  max-height: 120px;
-}
-
-#domain-options-next button:hover {
-  background-color: #16a085;
-}
-
-#domain-options-next .button-container {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-}
-
-/* More Options and Button Container */
-#more-options {
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  padding: 15px;
-  top: 80.5%;
-  width: 100%;
-  box-sizing: border-box;
-  height: 20%;
-  overflow-y: auto;
-}
-
-#more-options.visible {
-  display: flex;
-  height: auto;
-}
-
-#more-options-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  width: 100%;
-  height: 90px;
-}
-
-#more-options-buttons button {
-  padding: 8px 16px;
-  background-color: #f1c40f;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: calc(50% - 10px);
-}
-
-#more-options-buttons button:hover {
-  background-color: #16a085;
-}
-
-#more-options.visible {
-  display: flex;
-  height: auto;
-}
-
-#more-options-buttons button:nth-child(3) {
-  background-color: #16a085; 
-  color: #ffffff; 
-  border-radius: 20px; 
-  font-size: 14px; 
-  font-weight: bold; 
-  width: 100%; 
-  padding: 10px 0; 
-  cursor: pointer; 
-  transition: background-color 0.3s ease;
-}
-
-#more-options-buttons button:nth-child(3):hover {
-  background-color: #bd1401; 
-}
-
-/* Domain Query Section */
 #domain-query-section {
   display: flex;
   flex-direction: column; 
@@ -967,6 +886,8 @@ body {
   cursor: not-allowed;
 }
 
+/*----------------------------------------------------- #domain registration-------------------------------------------------------------------*/
+
 /* Domain Registration Section */
 #domain-registration-section {
   display: flex;
@@ -986,14 +907,13 @@ body {
 .domain-registration-wrapper {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Centering the two visible inputs initially */
+  justify-content: center; 
   align-items: flex-start;
   width: 100%;
   row-gap: 8px;
   column-gap: 8px;
 }
 
-/* Input Fields - Only Two Initially Visible */
 .domain-registration-wrapper .input-group {
   width: calc(50% - 10px); /* Two inputs per row */
   display: flex;
@@ -1072,6 +992,34 @@ body {
   flex: 1;
   min-width: 150px;
 }
+
+/* Button Styling */
+#domain-registration-section button {
+  background-color: #066;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 260px;
+}
+
+/* Button Hover Effect */
+#domain-registration-section button:hover {
+  background-color: black;
+}
+
+/* Disabled Button */
+#domain-registration-section button:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+/*----------------------------------------------------- #domain transfer----------------------------------------------------------------*/
 
 /* Domain Transfer Section */
 #domain-transfer-section {
@@ -1177,31 +1125,7 @@ body {
   outline: none;
 }
 
-/* Button Styling */
-#domain-registration-section button {
-  background-color: #066;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-  cursor: pointer;
-  width: 100%;
-  max-width: 260px;
-}
-
-/* Button Hover Effect */
-#domain-registration-section button:hover {
-  background-color: black;
-}
-
-/* Disabled Button */
-#domain-registration-section button:disabled {
-  background-color: #7f8c8d;
-  cursor: not-allowed;
-}
+/*----------------------------------------------------- #domain renew----------------------------------------------------------------*/
 
 /* Domain Renewal Section */
 #domain-renewal-section {
@@ -1215,6 +1139,32 @@ body {
   box-sizing: border-box;
   color: #ecf0f1;
   width: 100%;
+}
+
+/* Domain Renewal Button */
+.renew-button {
+  padding: 10px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    color: #2c3e50;
+    border-radius: 20px;
+    background-color: #f1c40f;
+    transition: background-color 0.3s ease;
+    margin-top: 12px;
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.renew-button:hover {
+  background-color: #d4ac0d;
+}
+
+.button-container {
+  margin-top: 10px;
 }
 
 /* Wrapper for input fields */
@@ -1283,28 +1233,9 @@ body {
   background-color: #16a085;
 }
 
-        /* Basic Styling */
-        .ns-wrapper {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-      }
-      .ns-input {
-          flex: 1 1 calc(20% - 10px); /* 5 inputs per row */
-          min-width: 180px;
-      }
-      .input-group, .ns-input input {
-          width: 100%;
-      }
-      #update-status {
-          margin-top: 10px;
-          font-weight: bold;
-      }
-/* Response Message */
-#response-message {
-  margin-top: 20px;
-  font-size: 14px;
-}
+
+
+/*-------------------------------------------------------- #tooltip --------------------------------------------------------------------*/
 
 .tooltip {
   position: absolute;
@@ -1335,6 +1266,8 @@ body {
   transition: opacity 0.2s ease-out;
 }
 
+/*----------------------------------------------------- #theft protection --------------------------------------------------------------*/
+
 #theft-protection-wrapper {
   display: flex;
   align-items: center;
@@ -1352,40 +1285,6 @@ body {
   opacity: 0;
   width: 0;
   height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  border-radius: 50%;
-  left: 4px;
-  background-color: white;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #4CAF50;
-}
-
-input:checked + .slider:before {
-  transform: translateX(60px);
 }
 
 #toggle-text-enable, #toggle-text-disable {
@@ -1417,34 +1316,17 @@ input:not(:checked) + .slider + #toggle-text-disable {
   opacity: 1;
 }
 
-/* Domain Renewal Button */
-.renew-button {
-  padding: 10px 10px;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    color: #2c3e50;
-    border-radius: 20px;
-    background-color: #f1c40f;
-    transition: background-color 0.3s ease;
-    margin-top: 12px;
-    display: block;
-    width: 100%;
-    text-align: center;
-}
-
-.renew-button:hover {
-  background-color: #d4ac0d;
-}
-
-.button-container {
-  margin-top: 10px;
-}
+/*--------------------------------------------------- #nameserver and childnameserver -------------------------------------------------*/
 
 .name-server-container {
  height: auto;
+}
+
+#add-child-name-server-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
 }
 
 .input-group {
@@ -1456,6 +1338,15 @@ input:not(:checked) + .slider + #toggle-text-disable {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.input-group, .ns-input input {
+  width: 100%;
+}
+
+#update-status {
+  margin-top: 10px;
+  font-weight: bold;
 }
 
 .ns-input, .childns-input  {
@@ -1512,13 +1403,14 @@ input:not(:checked) + .slider + #toggle-text-disable {
   border-radius: 10px;
 }
 
-/* Animation */
 @keyframes fadeInOut {
     0% { opacity: 0; transform: translateY(10px); }
     10% { opacity: 1; transform: translateY(0); }
     90% { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(10px); }
 }
+
+/*--------------------------------------------------------- #popup --------------------------------------------------------------------*/
 
 /* Chat Popup Box */
 .chat-popup-box {
@@ -1558,6 +1450,7 @@ input:not(:checked) + .slider + #toggle-text-disable {
   background-color: #000000;
 }
 
+/*----------------------------------------------------- #login chat section----------------------------------------------------------------*/
 
 /* Domain Query Section */
 login-chat-section {
@@ -1627,26 +1520,6 @@ login-chat-wrapper button:disabled {
   cursor: not-allowed;
 }
 
-/* Back Button Styling */
-#back-to-domain-section {
-  width: 100%; 
-  padding: 12px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 10px; 
-}
-
-#back-to-domain-section:hover {
-  background-color: #bd1401;
-}
-
-
 #domain-query-wrapper {
   display: flex;
   width: 100%;
@@ -1691,24 +1564,6 @@ login-chat-wrapper button:disabled {
   background-color: #16a085;
 }
 
-/* Full-width Back Button */
-#back-to-domain-section {
-  width: 100%; 
-  padding: 12px 18px;
-  background-color: #1abc9c;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-#back-to-domain-section:hover {
-  background-color: #bd1401;
-}
-
 #domain-query-section .full-width-button {
   display: block;
   width: 100%; 
@@ -1726,6 +1581,8 @@ login-chat-wrapper button:disabled {
 #domain-query-section .full-width-button:hover {
   background-color: #bd1401;
 }
+
+/*--------------------------------------------- #domain and domain availability section -----------------------------------------------*/
 
 /* Domain Section */
 #domain-section {
@@ -1829,23 +1686,6 @@ login-chat-wrapper button:disabled {
   background-color: #16a085;
 }
 
-#back-to-domain-section {
-  width: 100%;
-    padding: 8px;
-    background-color: #066;
-    color: #ffffff;
-    border: none;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#back-to-domain-section:hover {
-  background-color: #bd1401;
-}
-
 #domain-availability-check-section .full-width-button {
   display: block; 
   width: 100%; 
@@ -1870,6 +1710,8 @@ login-chat-wrapper button:disabled {
   gap: 10px;
   justify-content: center;
 }
+
+/*----------------------------------------------------- #domain suggestions ------------------------------------------------------------*/
 
 #domain-name-suggestions {
   flex: 1; 
@@ -1902,56 +1744,22 @@ login-chat-wrapper button:disabled {
   background-color: #16a085;
 }
 
-/* Back button below the wrapper */
-#back-to-previous-section {
-  width: 100%; 
-  padding: 12px 18px;
-  background-color: #1abc9c;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+/*------------------------------------------------------- #extra sections --------------------------------------------------------------*/
+
+.timestamp {
+  font-size: 0.8em;
+  color: #95a5a6;
+  text-align: right;
+  margin-top: 5px;
 }
 
-/* Hover effect for back button */
-#back-to-previous-section:hover {
-  background-color: #bd1401;
+.message-content {
+  font-size: 1em;
+  line-height: 1.5;
 }
 
-/* Assistant Logo */
-#assistant-logo {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: #066;
-  color: #fff;
-  border-radius: 50%;
-  padding: 18px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  font-size: 26px;
-  z-index: 1000;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  opacity: 1;
-}
+/*------------------------------------------------- #media queries for minimum width ---------------------------------------------------*/
 
-/* Hover Effect */
-#assistant-logo:hover {
-  transform: scale(1.1);
-}
-
-/* Hidden State */
-#assistant-logo.hidden {
-  opacity: 0;
-  transform: scale(0.8);
-  pointer-events: none; /* Prevents interaction when hidden */
-}
-
-
-/* Default (Large Screens - 1024px and above) */
 @media (min-width: 1024px) {
   #chat-container {
     display: flex;
@@ -2492,6 +2300,7 @@ login-chat-wrapper button:disabled {
 
 }
 
+/*------------------------------------------------- #media queries for minimum height --------------------------------------------------*/
 
 @media (max-height: 600px) {
   #chat-container {
