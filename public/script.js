@@ -651,12 +651,12 @@ if (
     const height = window.innerHeight;
 
 
-    if (height <= 480) {
-        chatLog.style.height = "35%";
-    } else if (height <= 525) {
-        chatLog.style.height = "47%";
+    if (height <= 320) {
+        chatLog.style.height = "21%";
+    } else if (height <= 380) {
+        chatLog.style.height = "25%";
     } else if (height <= 573) {
-        chatLog.style.height = "52%";
+        chatLog.style.height = "33%";
     } else if (height <= 600) {
         chatLog.style.height = "58%";
     } else if (height <= 640) {
@@ -688,7 +688,7 @@ if (
     document.getElementById("name-server-update-section").style.display = "flex";
     document.getElementById("name-server-container").style.display = "flex";
     document.getElementById("nameserver-container").style.width = "100%";
-    document.getElementById("name-server-update-section").style.display = "flex"; 
+    document.getElementById("name-server-update-section").style.display = "flex";  
     document.getElementById("update-nameserver-button-group").style.width = "100%";
     document.getElementById("addNameServer").style.borderRadius = "5px";
     document.getElementById("addNameServer").style.fontSize = "10px";
@@ -703,7 +703,48 @@ if (
     document.getElementById("nameserver-container").style.marginTop = "-10px";
 
     // Clear domain input field
-    document.getElementById("renew-lock-name").value = "";
+    document.getElementById("domain-name-input").value = "";
+
+    const chatLog = document.getElementById("chat-log");
+    const height = window.innerHeight; // Get total window height
+
+    if (height <= 320) {
+        chatLog.style.height = "10%";
+        document.getElementById("domain-name-input").style.height= "20px";
+        document.getElementById("name-server-update-section").style.gap = "5px";
+        document.getElementById("update-nameserver-button-group").style.height= "32px";
+        document.getElementById("nameserver-container").style.gap= "5px";
+        document.getElementById("addNameServer").style.fontSize= "8px";
+        document.getElementById("updateNameServer").style.fontSize= "8px";
+        document.getElementById("updatenamebackbutton").style.fontSize= "10px";
+        document.querySelectorAll(".ns-input input").forEach(input => {
+            input.style.height = "20px";
+        });
+
+    } else if (height <= 380) {
+        chatLog.style.height = "10%";
+        document.getElementById("domain-name-input").style.height= "20px";
+        document.getElementById("name-server-update-section").style.gap = "5px";
+        document.getElementById("update-nameserver-button-group").style.height= "32px";
+        document.getElementById("nameserver-container").style.gap= "5px";
+        document.getElementById("addNameServer").style.fontSize= "8px";
+        document.getElementById("updateNameServer").style.fontSize= "8px";
+        document.getElementById("updatenamebackbutton").style.fontSize= "10px";
+        document.querySelectorAll(".ns-input input").forEach(input => {
+            input.style.height = "20px";
+        });
+    } else if (height <= 480) {
+        chatLog.style.height = "30%";
+    } else if (height <= 573) {
+        chatLog.style.height = "52%";
+    } else if (height <= 600) {
+        chatLog.style.height = "58%";
+    } else if (height <= 640) {
+        chatLog.style.height = "62%";
+    } else {
+        chatLog.style.height = "64%";
+    }
+
     return;
 }
 
@@ -712,6 +753,9 @@ if (
     message === "How can I add a child nameserver?"
 ) {
     updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
+    const chatLog = document.getElementById("chat-log");
+    const height = window.innerHeight; // Get total window height
+
     document.getElementById("domain-renewal-section").style.display = "none";
     document.getElementById("domain-renewal-section").style.display = "none";
     document.getElementById("domain-availability-section").style.display = "none";
@@ -724,7 +768,6 @@ if (
     document.getElementById("domain-lock-section").style.display = "none";
     document.getElementById("theft-protection-section").style.display = "none";
     document.getElementById("add-child-name-server-section").style.display = "flex";
-    document.getElementById("chat-log").style.height = "60%";
     document.getElementById("ns-wrapper").style.padding = "0";
     document.getElementById("registerchildnameserver").style.fontSize = "5px";
     document.getElementById("registerchildnameserver").style.borderRadius = "5px";
@@ -743,6 +786,30 @@ if (
     }
     // Clear domain input field
     document.getElementById("child-domain-name").value = "";
+
+    // ✅ Adjust chat log height dynamically
+    if (height <= 320) {
+        chatLog.style.height = "10%";
+    
+        const childDomain = document.getElementById("child-domain-name");
+        const childNameserver = document.getElementById("childnameserver1");
+        const childIP = document.getElementById("child-ip-address1");
+    
+        if (childDomain) childDomain.style.height = "5px";
+        if (childNameserver) childNameserver.style.height = "5px";
+        if (childIP) childIP.style.height = "5px";    
+    } else if (height <= 480) {
+        chatLog.style.height = "20%";
+    } else if (height <= 525) {
+        chatLog.style.height = "47%";
+    } else if (height <= 573) {
+        chatLog.style.height = "52%";
+    } else if (height <= 600) {
+        chatLog.style.height = "58%";
+    } else {
+        chatLog.style.height = "64%"; // Fallback for larger screens
+    }
+
     return;
 }
 
@@ -762,6 +829,24 @@ if (
     document.getElementById("theft-protection-section").style.display = "none";
     document.getElementById("domain-lock-section").style.display = "none";
     document.getElementById("privacy-protection-domain-name").value= "";
+
+    const chatLog = document.getElementById("chat-log");
+    const height = window.innerHeight; // Get total window height
+    if (height <= 320) {
+        chatLog.style.height = "15%";
+    } else if (height <= 480) {
+        chatLog.style.height = "35%";
+    } else if (height <= 525) {
+        chatLog.style.height = "47%";
+    } else if (height <= 573) {
+        chatLog.style.height = "52%";
+    } else if (height <= 600) {
+        chatLog.style.height = "58%";
+    } else if (height <= 640) {
+        chatLog.style.height = "62%";
+    } else {
+        chatLog.style.height = "64%"; // ✅ Ensure there's a fallback value
+    }
     return;
 }
 
@@ -781,6 +866,25 @@ if (
     document.getElementById("domain-suspension-section").style.display = "none";
     document.getElementById("theft-protection-section").style.display = "none";
     document.getElementById("domain-lock-name").value= "";
+
+    updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
+    const chatLog = document.getElementById("chat-log");
+    const height = window.innerHeight; // Get total window height
+    if (height <= 320) {
+        chatLog.style.height = "15%";
+    } else if (height <= 480) {
+        chatLog.style.height = "35%";
+    } else if (height <= 525) {
+        chatLog.style.height = "47%";
+    } else if (height <= 573) {
+        chatLog.style.height = "52%";
+    } else if (height <= 600) {
+        chatLog.style.height = "58%";
+    } else if (height <= 640) {
+        chatLog.style.height = "62%";
+    } else {
+        chatLog.style.height = "64%"; // ✅ Ensure there's a fallback value
+    }
     return;
 }
 
@@ -800,6 +904,24 @@ if (
     document.getElementById("name-server-update-section").style.display = "none";
     document.getElementById("add-child-name-server-section").style.display = "none";
     document.getElementById("theft-protection-domain-name").value= "";
+
+    const chatLog = document.getElementById("chat-log");
+    const height = window.innerHeight; // Get total window height
+    if (height <= 320) {
+        chatLog.style.height = "15%";
+    } else if (height <= 480) {
+        chatLog.style.height = "35%";
+    } else if (height <= 525) {
+        chatLog.style.height = "47%";
+    } else if (height <= 573) {
+        chatLog.style.height = "52%";
+    } else if (height <= 600) {
+        chatLog.style.height = "58%";
+    } else if (height <= 640) {
+        chatLog.style.height = "62%";
+    } else {
+        chatLog.style.height = "64%"; // ✅ Ensure there's a fallback value
+    }
     return;
 }
 
@@ -819,6 +941,25 @@ if (
     document.getElementById("name-server-update-section").style.display = "none";
     document.getElementById("add-child-name-server-section").style.display = "none";
     document.getElementById("domain-suspension-name").value= "";
+
+    const chatLog = document.getElementById("chat-log");
+    const height = window.innerHeight; // Get total window height
+    if (height <= 320) {
+        chatLog.style.height = "15%";
+        document.getElementById("manageDomainSuspension").style.fontSize= "9px";
+    } else if (height <= 480) {
+        chatLog.style.height = "35%";
+    } else if (height <= 525) {
+        chatLog.style.height = "47%";
+    } else if (height <= 573) {
+        chatLog.style.height = "52%";
+    } else if (height <= 600) {
+        chatLog.style.height = "58%";
+    } else if (height <= 640) {
+        chatLog.style.height = "62%";
+    } else {
+        chatLog.style.height = "64%"; // ✅ Ensure there's a fallback value
+    }
     return;
 }
 
@@ -1136,6 +1277,12 @@ function highlightPlaceholder(inputElement, template, placeholder, tooltipText, 
         let charWidth = fontSize * 0.6;
         let placeholderX = rect.left + window.scrollX + startPos * charWidth;
         let placeholderY = rect.top + window.scrollY - 40;
+
+        // ✅ Adjust for small screens (height < 320px)
+        if (window.innerHeight < 320) {
+            leftPosition = rect.left + window.scrollX; // Move to start of input
+            topPosition = rect.top + window.scrollY + rect.height + 5; // Below input
+        }
 
         tooltipRef.style.left = `${placeholderX}px`;
         tooltipRef.style.top = `${placeholderY}px`;
@@ -2416,12 +2563,14 @@ function addNameServerInput() {
         return;
     }
 
+    nameServerCount++; // Increment first
+
     const container = document.getElementById("nameserver-container");
 
     const input = document.createElement("input");
     input.type = "text";
-    input.id = `nameserver${nameServerCount + 1}`; // Unique ID for each input
-    input.placeholder = `Enter Name Server ${nameServerCount + 1}`;
+    input.id = `nameserver${nameServerCount}`;
+    input.placeholder = `Enter Name Server ${nameServerCount}`;
     input.required = true;
 
     const nsInputWrapper = document.createElement("div");
@@ -2430,8 +2579,7 @@ function addNameServerInput() {
 
     container.appendChild(nsInputWrapper);
 
-    nameServerCount++;
-
+    // ✅ Adjust chat log height based on screen size
     if (nameServerCount >= 3) {
         if (window.matchMedia("(max-width: 768px)").matches) {
             document.getElementById("chat-log").style.height = "45%";
@@ -2440,9 +2588,35 @@ function addNameServerInput() {
             document.getElementById("chat-log").style.height = "40%";
         }
         document.getElementById("chat-log").style.height = "55%";
-        document.getElementsByClassName("chat-input").style.borderRadius= "0";
-        document.getElementsByClassName("chat-input").style.gap = "10px"
+
+        document.querySelectorAll(".chat-input").forEach(input => {
+            input.style.borderRadius = "0";
+            input.style.gap = "10px";
+        });
     }
+
+    // ✅ If window height is < 320px, set all inputs to 20px height
+    if (window.innerHeight < 380) {
+        document.getElementById("chat-log").style.height = "18%";
+        document.getElementById("name-server-update-section").style.gap = "4px";
+        document.getElementById("update-nameserver-button-group").style.height = "32px"; // ✅ Keep this
+
+        document.querySelectorAll(".ns-input input").forEach(input => {
+            input.style.height = "20px";
+        });
+
+        document.getElementById("domain-name-input").style.height = "20px";
+    } else if (window.innerHeight < 480) {
+        document.getElementById("chat-log").style.height = "22%";
+        document.getElementById("name-server-update-section").style.gap = "4px";
+        document.getElementById("updateNameServer").style.height = "32px"; 
+        document.getElementById("updateNameServer").style.fontSize = "9px"; 
+        document.getElementById("update-nameserver-button-group").style.fontSize = "9px"; // ✅ Keep this
+
+        document.querySelectorAll(".ns-input input").forEach(input => {
+            input.style.height = "20px";
+        });
+    }       
 }
 
 // Function to show a popup message
@@ -2572,11 +2746,92 @@ function addChildNameServerInput() {
     childInputWrapper.appendChild(ipInput);
     container.appendChild(childInputWrapper);
 
-    if (childNameServerCount >= 3) {
+    // ✅ Adjust height and styles if screen is < 320px
+    if (window.innerHeight < 320) {
+        document.getElementById("chat-log").style.height = "10%";
+        
+        // Apply 10px height to child name server inputs
+        document.querySelectorAll(".childns-input input").forEach(input => {
+            input.style.height = "10px";
+        });
+
+        // ✅ Adjust `child-domain-name` field to 10px
+        document.getElementById("child-domain-name").style.height = "10px";
+
+        // ✅ Apply styles to `#childnameserver-container`
+        const nsWrapper = document.getElementById("childnameserver-container");
+        nsWrapper.style.marginTop = "-13px";
+        nsWrapper.style.display = "flex";
+        nsWrapper.style.flexWrap = "wrap";
+        nsWrapper.style.gap = "2px";
+    } else if (window.innerHeight < 380) {
+        document.getElementById("chat-log").style.height = "20%";
+        
+        // Apply 10px height to child name server inputs
+        document.querySelectorAll(".childns-input input").forEach(input => {
+            input.style.height = "10px";
+        });
+
+        // ✅ Adjust `child-domain-name` field to 10px
+        document.getElementById("child-domain-name").style.height = "10px";
+
+        // ✅ Apply styles to `#childnameserver-container`
+        const nsWrapper = document.getElementById("childnameserver-container");
+        nsWrapper.style.marginTop = "-13px";
+        nsWrapper.style.display = "flex";
+        nsWrapper.style.flexWrap = "wrap";
+        nsWrapper.style.gap = "2px";
+    }  else if (childNameServerCount >= 3) {
         document.getElementById("chat-log").style.height = "47%";
-        document.getElementsByClassName("chat-input").style.borderRadius= "0";
     }
+
+    // ✅ Fix: Apply border-radius correctly
+    document.querySelectorAll(".chat-input").forEach(input => {
+        input.style.borderRadius = "0";
+    });
 }
+
+// ✅ Ensure first pair & `child-domain-name` get correct height on page load
+window.addEventListener("load", function () {
+    if (window.innerHeight < 320) {
+        document.querySelectorAll(".childns-input input").forEach(input => {
+            input.style.height = "10px"; // Ensure first inputs have correct height
+        });
+
+        // ✅ Adjust `child-domain-name` on load
+        document.getElementById("child-domain-name").style.height = "10px";
+
+        // ✅ Apply styles to `#childnameserver-container` on load
+        const nsWrapper = document.getElementById("childnameserver-container");
+        nsWrapper.style.marginTop = "-13px";
+        nsWrapper.style.display = "flex";
+        nsWrapper.style.flexWrap = "wrap";
+        nsWrapper.style.gap = "2px";
+    }
+});
+
+
+// ✅ Ensure first pair & `child-domain-name` get correct height on page load
+window.addEventListener("load", function () {
+    if (window.innerHeight < 320) {
+        document.querySelectorAll(".childns-input input").forEach(input => {
+            input.style.height = "10px"; // Ensure first inputs have correct height
+        });
+
+        // ✅ Adjust `child-domain-name` on load
+        document.getElementById("child-domain-name").style.height = "10px";
+    }
+});
+
+
+// ✅ Ensure first pair gets correct height at page load
+window.addEventListener("load", function () {
+    if (window.innerHeight < 320) {
+        document.querySelectorAll(".childns-input input").forEach(input => {
+            input.style.height = "10px";  // Ensure first inputs have correct height
+        });
+    }
+});
 
 // Function to show a popup message and disable chat
 function showChildNSPopup(message, isSuccess) {

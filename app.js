@@ -383,7 +383,7 @@ app.post('/api/check-email', async (req, res) => {
       if (users.length === 0) {
         return res.status(404).json({
           success: false,
-          message: `Email not found in our records.`
+          message: `Email not found in our records. You can signup here: \n\n<a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a><br>\n<a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 10px 15px; font-size: 16px; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a>\n\n or enter your registered email to continue.`
         });
       }
 

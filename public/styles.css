@@ -301,7 +301,7 @@ body {
   opacity: 1;
   visibility: visible;
   animation: fadeIn 0.5s forwards;
-  height: 65%;
+  height: 60%;
 }
 
 #chat-log.sidebar-open {
@@ -2300,6 +2300,7 @@ login-chat-wrapper button:disabled {
   .chat-log {
     flex-grow: 1;
     overflow-y: auto;
+    height: 15%;
   }
 
   .bot-message {
@@ -2320,8 +2321,21 @@ login-chat-wrapper button:disabled {
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    font-size: 12px;
+    font-size: 8px;
   }
+
+  .chat-input {
+    padding: 8px;
+    background-color: #34495e;
+    display: flex
+;
+    align-items: center;
+    border-radius: 0 0 20px 20px;
+    box-sizing: border-box;
+    bottom: 0%;
+    gap: 6px;
+    flex-wrap: wrap;
+}
 
   .button-group {
     display: flex
@@ -2593,6 +2607,20 @@ login-chat-wrapper button:disabled {
   font-size: 9px;
   max-height: calc(98vh - 210px);
 }
+
+
+#toggle-sidebar .menu-icon {
+  position: relative;
+  left: 1%;
+  font-size: 11px;
+}
+
+#toggle-sidebar .faqs-text {
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  margin-left: -18%;
+}
 }
 
 
@@ -2810,7 +2838,7 @@ login-chat-wrapper button:disabled {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: calc(98vh - 170px);
+    max-height: calc(98vh - 150px);
 }
 
   #chatbox {
@@ -2959,7 +2987,235 @@ login-chat-wrapper button:disabled {
     justify-content: space-between;
     align-items: flex-start;
     width: 99%;
-    gap: 7px;
+    gap: 5px;
+}
+
+}
+
+@media (max-height: 320px) {
+
+  #toggle-sidebar {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    background: #3b3b3b;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    height: 15px;
+}
+
+  .profile-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+  #chat-container {
+    width: 115vh;
+    height: 68vh;
+    border-radius: 5;
+  }
+  .faq-list li {
+    padding: 8px;
+    background: #066;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: white;
+    font-size: 12px;
+  }
+
+  .faq-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: calc(98vh - 140px);
+}
+
+  #chatbox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar {
+    width: 30%;
+    height: auto;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    background: #3b3b3b;
+}
+
+  /* Show toggle button to open sidebar */
+  #toggle-sidebar {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    background: #3b3b3b;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Allow chat to be scrollable */
+  .chat-log {
+    height: 10%;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  .bot-message {
+    background-color: #066;
+    color: #ffffff;
+    align-self: flex-start;
+    margin-left: 20px;
+    font-size: 12px;
+  }
+  
+  .chat-input button {
+    padding: 8px;
+    background-color: #066;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    font-size: 8px;
+  }
+
+  .chat-input {
+    padding: 8px;
+    background-color: #34495e;
+    display: flex
+;
+    align-items: center;
+    border-radius: 0 0 20px 20px;
+    box-sizing: border-box;
+    bottom: 0%;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex;
+  height: 32px;
+  justify-content: space-between;
+  gap: 3px;
+  width: 117%;
+}
+
+.domain-registration-wrapper {
+  display: flex
+;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  row-gap: 4px;
+  column-gap: 8px;
+}
+
+#domain-registration-section {
+  display: flex
+;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  background-color: #34495e;
+  border-radius: 0 0 20px 20px;
+  padding: 6px;
+  box-sizing: border-box;
+  color: #ecf0f1;
+  width: 100%;
+}
+
+#domain-registration-section button {
+  background-color: #066;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 260px;
+}
+
+.domain-registration-wrapper {
+  display: flex
+;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  row-gap: 4px;
+  column-gap: 8px;
+  overflow-y: yes;
+}
+
+.chat-input {
+  padding: 6px;
+  background-color: #34495e;
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 20px 20px;
+  box-sizing: border-box;
+  bottom: 0%;
+  gap: 6px;
+  flex-wrap: wrap;}
+
+  .domain-transfer-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 99%;
+    gap: 5px;
+}
+
+#auth-buttons-container {
+  margin-left: 0px;
+  margin-top: 0px;
+}
+
+
+#email-section {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#back-to-domain-section {
+  margin-top: 3px;
+  padding: 5px;
+}
+
+.domain-transfer-input {
+  height: 30px;
+}
+
+.tooltip {
+  position: absolute;
+  font-size: 12px; /* Adjust the font size as needed */
+  padding: 4px; /* Optional: Adjust padding for better spacing */
+}
+
+.button-group-name, .button-group-child {
+  height: 21px;
 }
 
 }
