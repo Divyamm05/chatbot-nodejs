@@ -341,72 +341,103 @@ app.post('/ask-question', (req, res) => {
 
 // Tester login without checking in db
 app.post('/api/tester-login', logSession, (req, res) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required for tester login.' });
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required for tester login.' });
+    }
+
+    req.session.email = email;
+    req.session.verified = true;  
+    req.session.userState = 'awaiting_domain_name'; 
+
+    res.json({
+      success: true,
+      message: 'Logged in as tester successfully.',
+      options: [
+        { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
+        { text: 'More Options', action: 'askMoreOptions' },
+      ],
+    });
+  } catch (error) {
+    console.error('❌ Error in /api/tester-login:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-
-  req.session.email = email;
-  req.session.verified = true;  
-  req.session.userState = 'awaiting_domain_name'; 
-
-  res.json({
-    success: true,
-    message: 'Logged in as tester successfully.',
-    options: [
-      { text: 'Get Domain Name Suggestions', action: 'getDomainSuggestions' },
-      { text: 'More Options', action: 'askMoreOptions' },
-    ],
-  });
 });
 
 app.post('/api/check-email', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required." });
-  }
-
-  const normalizedEmail = email.trim().toLowerCase(); // ✅ Normalize email
-
   try {
-    const connection = await pool.getConnection(); // ✅ Get a connection from the pool
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const connection = await pool.getConnection();
     try {
       const [users] = await connection.query("SELECT clientId FROM Client WHERE UserName = ?", [normalizedEmail]);
-      
+
       if (users.length === 0) {
         return res.status(404).json({
           success: false,
-          message: `Email not found in our records. You can Signup easily by clicking on the buttons below.<br> <a href='https://india.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px; margin-right: 10px;'>🇮🇳 India Panel</a> <a href='https://global.connectreseller.com/signup' target='_blank' style='display: inline-block; padding: 8px 11px; font-size: 14px; font-weight: bold; color: #fff; background-color: #28a745; text-decoration: none; border-radius: 5px;'>🌍 Global Panel</a><br>Or enter your registered email ID to continue.`
+          message: `Email not found in our records.`
         });
+      }
+
+      // ✅ Define whether OTP is required
+      const otpRequired = true; 
+
+      if (otpRequired) {
+        try {
+          // ✅ Generate OTP and store in session
+          const otp = crypto.randomInt(100000, 999999).toString();
+          console.log(`🔑 First-Time OTP for ${normalizedEmail}: ${otp}`); // ✅ Log OTP
+          const expiresAt = new Date(Date.now() + 60000); // 1-minute expiry
+
+          req.session.otp = otp;
+          req.session.otpExpiresAt = expiresAt;
+
+          const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: normalizedEmail,
+            subject: 'Your OTP Code',
+            text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
+          };
+
+          await transporter.sendMail(mailOptions);
+        } catch (emailError) {
+          console.error('❌ Error sending OTP email:', emailError);
+          return res.status(500).json({ success: false, message: "Failed to send OTP. Please try again later." });
+        }
       }
 
       res.json({
         success: true,
         message: "Email found in database.",
-        clientId: users[0].clientId
+        clientId: users[0].clientId,
+        otpRequired
       });
 
     } finally {
-      connection.release(); // ✅ Always release connection
+      connection.release();
     }
-
   } catch (error) {
     console.error("❌ Database error:", error);
     res.status(500).json({ success: false, message: "Internal server error. Please try again later." });
   }
 });
 
-
 app.post('/api/resend-otp', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required." });
-  }
-
   try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+
     const normalizedEmail = email.trim().toLowerCase(); // Normalize the email
     req.session.email = normalizedEmail; // Store the email in the session
 
@@ -415,49 +446,60 @@ app.post('/api/resend-otp', async (req, res) => {
     const sessionOtpExpiresAt = req.session.otpExpiresAt;
 
     if (sessionOtp && new Date(sessionOtpExpiresAt) > new Date()) {
-      // OTP is still valid, resend the OTP
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: normalizedEmail,
-        subject: 'Your OTP Code',
-        text: `Your OTP code is: ${sessionOtp}. It is still valid for 1 minute.`,
-      };
+      try {
+        // OTP is still valid, resend the OTP
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: normalizedEmail,
+          subject: 'Your OTP Code',
+          text: `Your OTP code is: ${sessionOtp}. It is still valid for 1 minute.`,
+        };
 
-      await transporter.sendMail(mailOptions);
-      return res.json({ success: true, message: 'OTP resent to your email address.' });
+        await transporter.sendMail(mailOptions);
+        return res.json({ success: true, message: 'OTP resent to your email address.' });
+      } catch (emailError) {
+        console.error('❌ Error resending OTP:', emailError);
+        return res.status(500).json({ success: false, message: "Failed to resend OTP. Please try again later." });
+      }
     } else {
-      // OTP expired or not found, generate new OTP
-      const otp = crypto.randomInt(100000, 999999).toString();
-      const expiresAt = new Date(Date.now() + 60000); // 1-minute expiration time
+      try {
+        // OTP expired or not found, generate new OTP
+        const otp = crypto.randomInt(100000, 999999).toString();
+        console.log(`🔑 New OTP for ${normalizedEmail}: ${otp}`); // ✅ Log OTP
+        const expiresAt = new Date(Date.now() + 60000); // 1-minute expiration time
 
-      // Store the new OTP and expiration time in session
-      req.session.otp = otp;
-      req.session.otpExpiresAt = expiresAt;
+        // Store the new OTP and expiration time in session
+        req.session.otp = otp;
+        req.session.otpExpiresAt = expiresAt;
 
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: normalizedEmail,
-        subject: 'Your OTP Code',
-        text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
-      };
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: normalizedEmail,
+          subject: 'Your OTP Code',
+          text: `Your OTP code is: ${otp}. It is valid for 1 minute.`,
+        };
 
-      await transporter.sendMail(mailOptions);
-      return res.json({ success: true, message: 'New OTP sent to your email address.' });
+        await transporter.sendMail(mailOptions);
+        return res.json({ success: true, message: 'New OTP sent to your email address.' });
+      } catch (emailError) {
+        console.error('❌ Error sending new OTP:', emailError);
+        return res.status(500).json({ success: false, message: "Failed to send new OTP. Please try again later." });
+      }
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error in /api/resend-otp:', error);
     return res.status(500).json({ success: false, message: "Internal server error." });
   }
 });
 
 app.post('/api/verify-otp', async (req, res) => {
-  const { otp, email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required.' });
-  }
-
   try {
+    const { otp, email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required.' });
+    }
+
     const normalizedEmail = email.trim().toLowerCase(); // Normalize the email
     req.session.email = normalizedEmail; // Store the email in the session
 
@@ -476,15 +518,26 @@ app.post('/api/verify-otp', async (req, res) => {
 
     req.session.verified = true; // Mark the user as verified
 
-    // Optionally, fetch customerId from MySQL if necessary (you can skip this if no database interaction is needed)
-    const [clientRows] = await pool.query('SELECT clientId FROM Client WHERE UserName = ?', [normalizedEmail]);
-    if (clientRows.length > 0) {
-      req.session.customerId = clientRows[0].clientId; // Store customerId in session
-    } else {
-      return res.status(404).json({ success: false, message: 'Client not found in database.' });
+    try {
+      // Optionally, fetch customerId from MySQL
+      const [clientRows] = await pool.query('SELECT clientId FROM Client WHERE UserName = ?', [normalizedEmail]);
+      if (clientRows.length > 0) {
+        req.session.customerId = clientRows[0].clientId; // Store customerId in session
+      } else {
+        return res.status(404).json({ success: false, message: 'Client not found in database.' });
+      }
+    } catch (dbError) {
+      console.error('❌ Error fetching clientId:', dbError);
+      return res.status(500).json({ success: false, message: "Database error. Please try again later." });
     }
 
-    await updateAPIKey(normalizedEmail); // Update the API key in MySQL, if necessary
+    try {
+      await updateAPIKey(normalizedEmail); // Update API key in MySQL
+    } catch (apiError) {
+      console.error('❌ Error updating API key:', apiError);
+      return res.status(500).json({ success: false, message: "Failed to update API key." });
+    }
+
     return res.json({
       success: true,
       message: 'OTP verified successfully.',
@@ -492,29 +545,44 @@ app.post('/api/verify-otp', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error during OTP verification:', error);
+    console.error('❌ Error in /api/verify-otp:', error);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
 
 app.post('/api/mock-authenticate', async (req, res) => {  // 🔄 Make it async
-  const { email } = req.body;
-  
-  const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; // ✅ Store in array
-  
-  if (testEmails.includes(email)) { // ✅ Proper check
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+
+    const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; // ✅ Store in array
+
+    if (testEmails.includes(email)) { // ✅ Proper check
       req.session.email = email;
       req.session.verified = true;  // ✅ Ensures session is marked authenticated
 
       try {
-          await updateAPIKey(email); // ✅ Fetch and update API key for test user
-          return res.json({ success: true, message: "User authenticated.", apiKeyUpdated: true });
-      } catch (error) {
-          return res.status(500).json({ success: false, message: "User authenticated but failed to update API key.", error: error.message });
+        await updateAPIKey(email); // ✅ Fetch and update API key for test user
+        return res.json({ success: true, message: "User authenticated.", apiKeyUpdated: true });
+      } catch (apiError) {
+        console.error('❌ Error updating API key:', apiError);
+        return res.status(500).json({
+          success: false,
+          message: "User authenticated but failed to update API key.",
+          error: apiError.message
+        });
       }
-  }
+    }
 
-  return res.status(401).json({ success: false, message: 'Unauthorized' });
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+  } catch (error) {
+    console.error('❌ Error in /api/mock-authenticate:', error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
 });
 
 //------------------------------------------------------- Fetching API Key -------------------------------------------------------------//
@@ -523,11 +591,7 @@ let FETCHED_API_KEY = process.env.CONNECT_RESELLER_API_KEY; // Default API key
 
 // Fetch API Key from DB and update FETCHED_API_KEY based on new approach
 const updateAPIKey = async (email) => {
-    console.log(`🔍 Starting API key update process for email: ${email}`);
-
     try {
-        // Fetch ResellerId based on the email
-        console.log(`🔄 Fetching ResellerId for ${email}...`);
         const [clientRows] = await pool.execute(
             "SELECT resellerId FROM Reseller WHERE UserName = ? LIMIT 1",
             [email]
@@ -539,19 +603,15 @@ const updateAPIKey = async (email) => {
         }
 
         const resellerId = clientRows[0].resellerId;  // Get resellerId from the fetched result
-        console.log(`📡 ResellerId for ${email}: ${resellerId}`);
 
         if (!resellerId) {
             throw new Error("ResellerId is missing or invalid.");
         }
 
-        // Fetch APIKey using the ResellerId
-        console.log(`🔄 Fetching API Key for ResellerId: ${resellerId}...`);
         const [apiKeyRows] = await pool.execute(
             "SELECT APIKey FROM APIKey WHERE ID = ? LIMIT 1",
             [resellerId]
         );
-        console.log(`⚙️ Fetched API key rows:`, apiKeyRows);
 
         if (apiKeyRows.length === 0) {
             FETCHED_API_KEY = null; // No API key found, set FETCHED_API_KEY to null

@@ -55,7 +55,6 @@ function taketosigninsection() {
         emailSection.style.display = 'none';
     }
 }
-
 function requestOTP() {
     const email = document.getElementById("user-email").value.trim();
     const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; // ✅ List of test emails
@@ -70,11 +69,11 @@ function requestOTP() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                clearchatlog();
+                if (typeof clearchatlog === 'function') clearchatlog(); // ✅ Ensure function exists
                 document.getElementById('domain-query-text').value = ''; // Reset the input field
                 updateChatLog("Thank you for signing in 😊. You're all set to explore our 🚀 advanced features, including domain registration, renewal, transfer, and so much more.", 'bot');
                 
-                // Hide login elements
+                // ✅ Hide login elements & Show authenticated UI
                 document.getElementById('login-text').style.display = 'none';
                 document.getElementById('signup-text').style.display = 'none';
                 document.getElementById('profile-icon').style.display = 'flex';
@@ -86,17 +85,17 @@ function requestOTP() {
                 document.getElementById('sidebar-content').style.display = 'none';
                 document.getElementById('faq-post-login').style.display = 'flex';
 
-                isSignedIn = true;
+                let isSignedIn = true; // ✅ Declare isSignedIn if not already defined
                 localStorage.setItem('isSignedIn', 'true');
-                updateAuthUI();
-                toggleSidebar();
+                if (typeof updateAuthUI === 'function') updateAuthUI(); // ✅ Ensure function exists
+                if (typeof toggleSidebar === 'function') toggleSidebar(); // ✅ Ensure function exists
             } else {
                 updateChatLog("Authentication failed. Please try again.", 'bot');
                 document.getElementById("user-email").value = "";
             }
         })
         .catch(error => {
-            console.error("Error during authentication:", error);
+            console.error("❌ Error during authentication:", error);
             updateChatLog("An error occurred while signing in. Please try again.", 'bot');
         });
 
@@ -118,28 +117,26 @@ function requestOTP() {
     .then(data => {
         if (data.success) {
             document.getElementById("email-section").style.display = "none";
-
+    
             if (data.otpRequired) {
-                // Show OTP input section if OTP is required
+                // ✅ Only show OTP section, NOT login-chat-section yet
                 document.getElementById("otp-section").style.display = "flex";
                 document.getElementById("verify-otp").style.display = "block";
                 document.getElementById("resend-otp").style.display = "block";
                 document.getElementById("back-otp-section").style.display = "block";
-
+    
                 document.getElementById("otp-code").value = "";
                 updateChatLog('OTP has been sent to your email address. Please check your inbox.', 'bot');
             } else {
-                // Directly handle authenticated state (No message shown)
-                handleAuthenticatedUser();
+                // ✅ Ensure login-chat-section is NOT shown here
+                updateChatLog('No OTP required. Please proceed.', 'bot');
             }
         } else {
             updateChatLog(data.message, 'bot');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
     });
 }
+
 
 // Resend OTP 
   async function resendOTP() {
