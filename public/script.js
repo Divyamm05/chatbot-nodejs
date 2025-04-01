@@ -166,7 +166,6 @@ async function resendOTP() {
   
 let isSignedIn = localStorage.getItem('isSignedIn') === 'true'; 
 
-// Verify OTP
 async function verifyOTP() {
 const email = document.getElementById('user-email').value.trim();
 const otpInput = document.getElementById('otp-code');

@@ -2335,8 +2335,8 @@ app.post('/api/domain-queries', async (req, res) => {
   if (isDomainSuggestionQuery) {
     return res.json({
       success: true,
-      triggerDomainSection: true,
-      answer: 'I can help you with domain suggestions! Please click domain name suggestions button.',
+      triggerDomainSection: false,
+      answer: "Sorry, I can't answer that right now. Let me know if you need any other help. 😊",
     });
   }
 
@@ -2345,17 +2345,6 @@ app.post('/api/domain-queries', async (req, res) => {
       success: true,
       answer: predefinedResult.message,
       button: predefinedResult.button || null  // Send button if available
-    });
-  }
-
-  // Check for Domain Availability
-  const isAvailable = lowerQuery.includes('availability') || lowerQuery.includes('available');
-
-  if (isAvailable) {
-    return res.json({
-      success: true,
-      triggerDomainSection: true,
-      answer: 'I can help you with checking domain availability! Please click check domain availability button.',
     });
   }
 
