@@ -7,7 +7,6 @@ const observer = new MutationObserver(() => {
 const botMessages = chatLog.querySelectorAll('.bot-message');
 const lastBotMessage = botMessages[botMessages.length - 1]?.textContent;
 
-  // Check if the last bot message matches any of the predefined responses
 checkBotResponse(lastBotMessage);
 });
 
@@ -24,7 +23,6 @@ document.getElementById("submitDomainQuery").style.borderRadius="20px"
 document.getElementById("submit-question").style.borderRadius="20px"
 //---------------------------------------- Request OTP, Resend ,Verification Section and logout-----------------------------------------//
 
-// Show email verification section
 function taketosigninsection() {
     const emailSection = document.getElementById('email-section');
     const userinputSection = document.getElementById('user-input-section');
@@ -55,6 +53,7 @@ function taketosigninsection() {
         emailSection.style.display = 'none';
     }
 }
+
 function requestOTP() {
     const email = document.getElementById("user-email").value.trim();
     const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; // ✅ List of test emails
@@ -137,9 +136,7 @@ function requestOTP() {
     });
 }
 
-
-// Resend OTP 
-  async function resendOTP() {
+async function resendOTP() {
     const email = document.getElementById('user-email').value.trim();
     if (!email) {
       updateChatLog('Please enter a valid email to resend the OTP.', 'bot');
@@ -327,7 +324,6 @@ function logout(){
 
 //---------------------------------------------- Show and hide Chatbot, Sidebar Section -----------------------------------------------//
 
-// Show chatbot
 function toggleAssistantLogo(show) {
   const assistantLogo = document.getElementById("assistant-logo");
   
@@ -338,12 +334,10 @@ function toggleAssistantLogo(show) {
   }
 }
 
-// Show/hide sidebar
 document.getElementById('toggle-sidebar').addEventListener('click', function () {
   document.getElementById('sidebar').classList.toggle('active');
 });
 
-// Function to toggle the chatbox visibility
 function toggleChatbox() {
   const chatContainer = document.getElementById('chat-container');
 
@@ -385,8 +379,6 @@ function openChatbox() {
     document.addEventListener('click', outsideChatboxClickListener);
 }
 
-
-// Function to close the chatbox
 function closeChatbox() {
     const chatbox = document.getElementById('chatbox');
     const chatContainer = document.getElementById('chat-container');
@@ -409,7 +401,6 @@ function closeChatbox() {
     document.removeEventListener('click', outsideChatboxClickListener);
 }
 
-// Function to close chatbox when clicking outside of it
 function outsideChatboxClickListener(event) {
     const chatbox = document.getElementById('chat-container');
     const assistantLogo = document.getElementById('assistant-logo');
@@ -427,7 +418,6 @@ function outsideChatboxClickListener(event) {
         console.log("✅ Click detected inside chatbox or on assistant logo");
     }
 }
-
 
 window.addEventListener('load', () => {
       const emailVerified = localStorage.getItem('emailVerified');
@@ -993,7 +983,6 @@ function scrollToAuthButtons() {
   }
 }
 
-// Checks if the given bot response requires the need to show auth buttons(sign up or log in).
 function checkBotResponse(response) {
   const botMessages = [
       "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!",
@@ -1022,7 +1011,6 @@ function showAuthButtons() {
     }
 }
 
-// Function to update UI after authentication
 function updateAuthUI() {
         const authContainer = document.getElementById('auth-buttons-container');
         if (isSignedIn && authContainer) {
@@ -1032,7 +1020,6 @@ function updateAuthUI() {
 
 //------------ Prefills chat input with a domain query, highlights the domain name placeholder, and show a tooltip section ------------//
 
-// ✅ Function for Pre-Login (Clicks "Ask" Button)
 function fillChatInput(question) {
     console.trace("🔍 fillChatAndAsk() CALLED!");
 
@@ -1052,7 +1039,6 @@ function fillChatInput(question) {
     }, 10);
 }
 
-// ✅ Function for Post-Login (Clicks "Submit" Button)
 function fillChatAndSubmit(question) {
     console.trace("🔍 fillChatAndSubmit() CALLED!");
 
@@ -1111,8 +1097,6 @@ function fillChatAndSubmitandshowquerybar(question) {
     }, 10);
 }
 
-
-// ✅ Helper Function to Update Chat Input
 function updateChatInput(inputField, question) {
     const normalizedQuestion = question.trim().toLowerCase();
     const normalizedInput = inputField.value.trim().toLowerCase();
@@ -1245,7 +1229,6 @@ function fillChatInputWithPlaceholder(template) {
     console.log("✅ fillChatInputWithPlaceholder execution completed.");
 }
 
-
 function highlightPlaceholder(inputElement, template, placeholder, tooltipText, tooltipRef) {
     let startPos = template.indexOf(placeholder);
     let endPos = startPos !== -1 ? startPos + placeholder.length : -1;
@@ -1292,7 +1275,6 @@ function highlightPlaceholder(inputElement, template, placeholder, tooltipText, 
 }
 
 function autoHideTooltip(tooltipRef) {
-    // Auto hide tooltip after 5 seconds
     setTimeout(() => {
         if (tooltipRef) {
             tooltipRef.remove();
@@ -1363,7 +1345,6 @@ function fillChatInputWithPlaceholderCategory(template) {
     autoHideTooltip(tooltipCategory);
 }
 
-
 //------------------------------------------------------ Domain Theft Section --------------------------------------------------------//
 
 function manageTheftProtection() {
@@ -1421,7 +1402,6 @@ function manageTheftProtection() {
     });
 }
 
-
 //------------------------------------------------- Get Domain Suggestions Section ---------------------------------------------------//
 
 function checkDomainSuggestions(response) {
@@ -1443,7 +1423,6 @@ function checkDomainSuggestions(response) {
   return botMessages.some(msg => responseText.includes(msg.toLowerCase()));
 }
 
-// Get domain suggestions from the API
 async function getDomainSuggestions() {
     const email = document.getElementById('user-email').value.trim();
     const domain = document.getElementById('domain-name-suggestions').value.trim();
@@ -1492,7 +1471,6 @@ async function getDomainSuggestions() {
     }
 }
 
-// Get suggestions for a different domain
 function getNewDomainSuggestions() {
     logButtonPress('Get New Domain Suggestions');
     document.getElementById('domain-name-suggestions').value = ''; 
@@ -1700,7 +1678,6 @@ function handleNoClick() {
     document.getElementById("login-chat-section").style.display = "flex";
 }
 
-
 function handleTryAnother() {
     console.log("🔄 Try Another clicked!");
 
@@ -1721,7 +1698,6 @@ function handleTryAnother() {
         );
     }
 }
-
 
 function handleSuggestAlternatives(domainInput) {
     if (typeof fetchDomainSuggestions === "function") {
@@ -1867,7 +1843,6 @@ function addChatMessage(sender, message, showButtons = false, domainInput = "") 
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Event Listener for "Check Availability" button
 document.getElementById("check-domain-button").addEventListener("click", function () {
     const domainName = document.getElementById("check-domain-input").value.trim();
     if (!domainName) {
@@ -1877,9 +1852,9 @@ document.getElementById("check-domain-button").addEventListener("click", functio
     checkDomainAvailability(domainName);
 });
 
-let suggestionData = []; // Store fetched suggestions
-let suggestionIndex = 0; // Track current batch index
-const SUGGESTION_BATCH_SIZE = 5; // Number of suggestions per batch
+let suggestionData = []; 
+let suggestionIndex = 0;
+const SUGGESTION_BATCH_SIZE = 5; 
 
 async function fetchDomainSuggestions(domainInput) {
     try {
@@ -1945,7 +1920,6 @@ async function fetchDomainSuggestions(domainInput) {
     }
 }
 
-// ✅ Moved this function to the global scope
 function handleNoSuggestionsClick() {
     addChatMessage("bot", "Okay! Let me know if you need anything else. 😊");
     document.getElementById("domain-availability-section").style.display = "none";
@@ -1953,8 +1927,6 @@ function handleNoSuggestionsClick() {
     document.getElementById("login-chat-section").value = "";
 }
 
-
-// Display domain suggestions as buttons in the chat
 function displayDomainSuggestions(domains) {
     const suggestionContainer = document.createElement("div");
     suggestionContainer.className = "domain-suggestions";
@@ -1996,8 +1968,6 @@ function selectDomain(domainName) {
     addChatMessage("bot", `✅ Selected domain: ${domainName}`);
 }
 
-
-// Show the domain registration section
 function showDomainRegistration(domainName) {
     console.log("🛠 Showing registration form for:", domainName);
 
@@ -2006,7 +1976,6 @@ function showDomainRegistration(domainName) {
     document.getElementById("domain-button-group").style.display="flex";
 }
 
-// Handle "Go Back" button from registration section
 function goBackToCheckSection() {
     document.getElementById("domain-registration-section").style.display = "none";
     document.getElementById("check-availability-section").style.display = "block";
@@ -2140,7 +2109,6 @@ async function registerDomain() {
     }
 }
 
-
 function confirmRegistration(domainName, duration, isAdditionalVisible) {
     updateChatLog("⏳ Registering your domain, please wait...", "bot");
     disableChat();
@@ -2187,7 +2155,6 @@ function confirmRegistration(domainName, duration, isAdditionalVisible) {
             enableChat();
         });
 }
-
 
 //------------------------------------------------- Enable/Disable Chatbox Section ---------------------------------------------------//
 
@@ -2292,7 +2259,6 @@ function showChatPopup(message, isSuccess = true, isProcessing = false) {
 
 //---------------------------------------------------- Transfer Domain Section ------------------------------------------------------//
 
-// Function to handle domain transfer
 async function transferDomain() {
     const domainName = document.getElementById('transfer-domain-name').value.trim();
     const authCode = document.getElementById('auth-code').value.trim();
@@ -2372,7 +2338,6 @@ async function transferDomain() {
     }
 }
 
-// Function to confirm and process domain transfer
 async function confirmDomainTransfer(domainName, authCode, isWhoisProtection) {
     updateChatLog(`🔄 Initiating domain transfer for <strong>${domainName}</strong>, please wait...`, "bot");
     disableChat();
@@ -2398,7 +2363,6 @@ async function confirmDomainTransfer(domainName, authCode, isWhoisProtection) {
         enableChat();
     }
 }
-
 
 //----------------------------------------------------- Renew Domain Section --------------------------------------------------------//
 async function renewDomain() {
@@ -2483,7 +2447,6 @@ async function renewDomain() {
         updateChatLog("⚠️ Failed to fetch renewal fee. Please try again.", "bot");
     }
 }
-
 
 function confirmRenewal(domainName, duration) {
     closeConfirmationBox();
@@ -2619,7 +2582,6 @@ function addNameServerInput() {
     }       
 }
 
-// Function to show a popup message
 function showNameServerPopup(message, isSuccess) {
     disableChat(); // Disable chat interactions
 
@@ -2650,7 +2612,6 @@ function showNameServerPopup(message, isSuccess) {
     }, 5000);
 }
 
-// Function to update Name Servers
 async function updateNameServers() {
     let domain = document.getElementById("domain-name-input").value.trim();
     let nameServers = [];
@@ -2791,7 +2752,6 @@ function addChildNameServerInput() {
     });
 }
 
-// ✅ Ensure first pair & `child-domain-name` get correct height on page load
 window.addEventListener("load", function () {
     if (window.innerHeight < 320) {
         document.querySelectorAll(".childns-input input").forEach(input => {
@@ -2810,8 +2770,6 @@ window.addEventListener("load", function () {
     }
 });
 
-
-// ✅ Ensure first pair & `child-domain-name` get correct height on page load
 window.addEventListener("load", function () {
     if (window.innerHeight < 320) {
         document.querySelectorAll(".childns-input input").forEach(input => {
@@ -2823,8 +2781,6 @@ window.addEventListener("load", function () {
     }
 });
 
-
-// ✅ Ensure first pair gets correct height at page load
 window.addEventListener("load", function () {
     if (window.innerHeight < 320) {
         document.querySelectorAll(".childns-input input").forEach(input => {
@@ -2833,7 +2789,6 @@ window.addEventListener("load", function () {
     }
 });
 
-// Function to show a popup message and disable chat
 function showChildNSPopup(message, isSuccess) {
     disableChat(); // Disable chat interactions
     updateChatLog(message, 'bot'); // Update chat log with the message
@@ -2876,8 +2831,6 @@ function showChildNSPopup(message, isSuccess) {
     }, 5000);
 }
 
-
-// Function to handle child name server registration
 async function registerChildNameServer() {
     let domain = document.getElementById("child-domain-name").value.trim();
     let nameServers = [];
@@ -3124,7 +3077,6 @@ function sendCategoryToBackend(template) {
     });
 }
 
-// Extract closest matching action from the allowed actions
 function extractActionName(userQuery) {
     const normalizedQuery = userQuery.toLowerCase().trim();
     return allowedActions.find(action => normalizedQuery.includes(action.toLowerCase())) || null;
@@ -4191,14 +4143,12 @@ function goBackToQuerySection() {
 
 //--------------------------------------------------- Event Listeners Section ------------------------------------------------------//
 
-// ✅ Fix duplicate event listeners for 'back-to-previous-section'
 const backButton = document.getElementById("back-to-previous-section");
 if (backButton) {
     backButton.removeEventListener("click", goBackToPreviousSection);
     backButton.addEventListener("click", goBackToPreviousSection);
 }
 
-// ✅ Optimize Enter Key Event Handling
 document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         event.preventDefault();
@@ -4228,13 +4178,12 @@ document.getElementById('otp-code').addEventListener('keypress', function(event)
       // Trigger the OTP verification function when Enter is pressed
       verifyOTP();
     }
-  });
+});
 
-  document.getElementById('verify-otp').addEventListener('click', function() {
+document.getElementById('verify-otp').addEventListener('click', function() {
     verifyOTP();
-  });
+});
 
-// ✅ Fix issue with Enter key on domain query input
 const domainQueryInput = document.getElementById("domain-query-text");
 if (domainQueryInput) {
     domainQueryInput.addEventListener("keypress", function (event) {
@@ -4283,7 +4232,6 @@ function scrollToBottom() {
     }
 }
 
-// Function to clear the chat log
 function clearchatlog() {
     const chatContainer = document.getElementById('chat-log');
     if (chatContainer) {
@@ -4321,7 +4269,6 @@ function showInfo() {
     document.getElementById("info-close-btn").addEventListener("click", closeInfo);
 }
 
-// Function to close info box
 function closeInfo() {
     let infoBox = document.getElementById("info-box");
     if (infoBox) {
@@ -4330,7 +4277,6 @@ function closeInfo() {
     }
 }
 
-// Function to close info box when clicking outside of it
 function outsideClickListener(event) {
     let infoBox = document.getElementById("info-box");
     let infoButton = document.getElementById("info-button"); // Ensure your button has this ID
@@ -4344,7 +4290,6 @@ if (loadingContainer) {
     loadingContainer.style.display = 'none';  
 }
 
-// Function to check if the page is scrolled to the bottom and scroll to the bottom if necessary
 function scrollToBottom() {
     const lastMessage = document.querySelector('.message:last-child');  
     if (lastMessage) {
@@ -4396,7 +4341,6 @@ function goBackTouserinputsection() {
 
     updateChatLog("Welcome! 👋 I'm here to assist you. If you’d like to know what I can do, just click the 'ℹ️' button at the top. Let me know how can I help! 😊", 'bot');
 }
-
 
 async function getDomainId(domainName) {
     return 1; // Replace with actual API call if needed
