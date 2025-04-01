@@ -2244,8 +2244,6 @@ function showChatConfirmation(message, confirmCallback, cancelCallback) {
     updateChatLog(confirmationHtml, "bot");
 }
 
-
-// Function to show a popup message in the chatbox
 function showChatPopup(message, isSuccess = true, isProcessing = false) {
     let chatMessage = isProcessing 
         ? `⏳ ${message}` 
@@ -2255,7 +2253,6 @@ function showChatPopup(message, isSuccess = true, isProcessing = false) {
 
     updateChatLog(chatMessage, "bot");
 }
-
 
 //---------------------------------------------------- Transfer Domain Section ------------------------------------------------------//
 

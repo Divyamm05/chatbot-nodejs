@@ -1819,7 +1819,6 @@ app.get('/api/manage-privacy-protection', async (req, res) => {
 
 //------------------------------------------------------- Update Name Servers ---------------------------------------------------------//
 
-// Function to Update Name Servers
 async function updateNameServer(domainName, nameServers) {
   try {
       console.log(`[UPDATE-NS] 🔍 Checking domain: ${domainName}`);
@@ -1882,7 +1881,6 @@ async function updateNameServer(domainName, nameServers) {
   }
 }
 
-// API Endpoint for Updating Name Servers
 app.get('/update-name-servers', async (req, res) => {
   const { domainName, nameServers } = req.query;
 
@@ -2241,7 +2239,6 @@ app.get("/api/tld-suggestions", async (req, res) => {
 
 //----------------------------------------------------- Submit query section -----------------------------------------------------------//
 
-// Define allowedTopics before initializing Fuse
 const allowedTopics = [
   'domain', 'website', 'hosting', 'DNS', 'SSL', 'WHOIS', 'web development',
   'domain registration', 'SEO', 'online presence', 'how to register a domain name',
@@ -2252,7 +2249,6 @@ const allowedTopics = [
   'when was this domain registered'
 ];
 
-// Refined predefined answers with improved grammar, chatbot tone, and categorized responses
 const predefinedAnswers = {
   // Register Domain
   "Where can I register domains?": "To register a domain, enter your desired name in the search bar. If it's unavailable, our Domain Suggestion Tool will suggest similar alternatives. If available, select the number of years for registration, review the pricing details, and decide whether to proceed or dismiss the registration.",
@@ -2275,7 +2271,6 @@ const predefinedAnswers = {
   "How can I add a child nameserver?": "To add a child nameserver, click the add child nameserver button below, fill in the registered domain for which you want to add child nameserver, Child Nameserver which you want to add and IP address which you want to associate with the Child Nameservers. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.",
 };
 
-// Convert predefined questions into an array
 const predefinedQuestions = Object.keys(predefinedAnswers);
 
 const normalizeQuery = (query) => {
@@ -2285,32 +2280,27 @@ const normalizeQuery = (query) => {
     .trim();
 };
 
-// Initialize Fuse.js once (outside of the API function) for predefined questions
 const fuse1 = new Fuse(predefinedQuestions, {
   includeScore: true,
   threshold: 0.4 // Adjust threshold for flexibility
 });
 
-// Initialize second Fuse instance for allowed topics
 const fuse2 = new Fuse(allowedTopics, {
   includeScore: true,
   threshold: 0.4
 });
 
-// Function to extract domain name from the query
 const extractDomain = (text) => {
   const domainRegex = /\b((?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})\b/;
   const match = text.match(domainRegex);
   return match ? match[1] : null;
 };
 
-// Search function for predefined answers
 const searchPredefinedAnswer = (query) => {
   const result = fuse1.search(query);
   return result.length > 0 ? predefinedAnswers[result[0].item] : null;
 };
 
-// Search function for allowed topics
 const searchAllowedTopics = (query) => {
   const result = fuse2.search(query);
   return result.length > 0 ? result[0].item : null;
