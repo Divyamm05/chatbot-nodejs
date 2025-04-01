@@ -571,43 +571,58 @@ app.post('/api/mock-authenticate', async (req, res) => {
 let FETCHED_API_KEY = process.env.CONNECT_RESELLER_API_KEY; 
 
 // Fetch API Key from DB and update FETCHED_API_KEY based on each new user
-const updateAPIKey = async (email) => {
-    try {
-        const [clientRows] = await pool.execute(
-            "SELECT resellerId FROM Reseller WHERE UserName = ? LIMIT 1",
-            [email]
-        );
-        console.log(`⚙️ Fetched client rows:`, clientRows);
+const updateAPIKey = async (email, retryCount = 1) => {
+  try {
+      const connection = await pool.getConnection();
 
-        if (clientRows.length === 0) {
-            throw new Error("Client not found in database.");
-        }
+      try {
+          const [clientRows] = await connection.execute(
+              "SELECT resellerId FROM Reseller WHERE UserName = ? LIMIT 1",
+              [email]
+          );
 
-        const resellerId = clientRows[0].resellerId;  
+          console.log(`⚙️ Fetched client rows for ${email}:`, clientRows);
 
-        if (!resellerId) {
-            throw new Error("ResellerId is missing or invalid.");
-        }
+          if (clientRows.length === 0) {
+              throw new Error("Client not found in database.");
+          }
 
-        const [apiKeyRows] = await pool.execute(
-            "SELECT APIKey FROM APIKey WHERE ID = ? LIMIT 1",
-            [resellerId]
-        );
+          const resellerId = clientRows[0].resellerId;
 
-        if (apiKeyRows.length === 0) {
-            FETCHED_API_KEY = null; // No API key found, set FETCHED_API_KEY to null
-            console.log(`❌ No API Key found for ResellerId: ${resellerId}. FETCHED_API_KEY set to null.`);
-        } else {
-            FETCHED_API_KEY = apiKeyRows[0].APIKey;  // Update FETCHED_API_KEY with the fetched value
-            console.log(`✅ FETCHED_API_KEY updated for ${email}: ${FETCHED_API_KEY}`);
-        }
+          if (!resellerId) {
+              throw new Error("ResellerId is missing or invalid.");
+          }
 
-        return true;
+          const [apiKeyRows] = await connection.execute(
+              "SELECT APIKey FROM APIKey WHERE ID = ? LIMIT 1",
+              [resellerId]
+          );
 
-    } catch (error) {
-        console.error("❌ Error updating FETCHED_API_KEY:", error);
-        throw error;
-    }
+          if (apiKeyRows.length === 0) {
+              FETCHED_API_KEY = null;
+              console.warn(`❌ No API Key found for ResellerId: ${resellerId}. FETCHED_API_KEY set to null.`);
+          } else {
+              FETCHED_API_KEY = apiKeyRows[0].APIKey;
+              console.log(`✅ FETCHED_API_KEY updated for ${email}: ${FETCHED_API_KEY}`);
+          }
+
+          return true;
+      } catch (queryError) {
+          console.error("❌ Query Error:", queryError);
+
+          if (queryError.code === 'ETIMEDOUT' && retryCount > 0) {
+              console.log("⏳ Retrying updateAPIKey due to timeout...");
+              return updateAPIKey(email, retryCount - 1);
+          }
+
+          throw queryError;
+      } finally {
+          connection.release();
+      }
+  } catch (dbError) {
+      console.error("❌ Database connection error:", dbError);
+      throw dbError;
+  }
 };
 
 //---------------------------------------------------------- Register Domain -----------------------------------------------------------//
