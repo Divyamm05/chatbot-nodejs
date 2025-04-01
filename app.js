@@ -17,17 +17,14 @@ const util = require('util');
 //-------------------------------------------------- Logs in extrernal file ------------------------------------------------------------//
 const logDir = '/home2/chatbot-logs';
 
-// Ensure log directory exists
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
 }
 
-// Create write streams for different log types
 const accessLog = fs.createWriteStream(`${logDir}/access.log`, { flags: 'a' });
 const errorLog = fs.createWriteStream(`${logDir}/error.log`, { flags: 'a' });
 const generalLog = fs.createWriteStream(`${logDir}/logs.txt`, { flags: 'a' });
 
-// Override console.log to write to both file and console
 const originalLog = console.log;
 console.log = function (...args) {
     const message = util.format(...args);
@@ -38,7 +35,6 @@ console.log = function (...args) {
     originalLog.apply(console, args);
 };
 
-// Override console.error to write to error log
 console.error = function (...args) {
     const message = util.format(...args);
     const timestamp = new Date().toISOString();
@@ -75,7 +71,6 @@ app.use(express.json());
 app.use(express.static('public'));
 
 //---------------------------------------------------------- Session -----------------------------------------------------------------//
-// Session timeout duration
 const SESSION_TIMEOUT = 30 * 60 * 1000; 
 
 // Session setup
@@ -265,17 +260,15 @@ const regexPatterns = [
 
 const basicGreetingRegex = /^(hi|hello|hey|howdy|greetings|what(?:'s| is) up|wassup|sup|yo|good\s(?:morning|afternoon|evening|day)|how\s+are\s+you|how\s+(?:is it going|have you been|do you do)|what(?:'s| is)\s+(?:new|happening)|how's\s+(?:everything|life)|long time no see|nice to meet you|pleased to meet you|good to see you)[!.,?\s]*$/i;
 
-// Helper function to normalize user input
 function normalizeText(text) {
   return text.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
 }
-// Normalize predefined questions
+
 const normalizedStartQuestions = Object.keys(startQuestions).reduce((acc, key) => {
   acc[normalizeText(key)] = startQuestions[key];
   return acc;
 }, {});
 
-// Route to handle the question
 app.post('/ask-question', (req, res) => {
   const userQuestion = req.body.question;
   
@@ -287,7 +280,7 @@ app.post('/ask-question', (req, res) => {
   if (greetingMatch) {
     console.log("👋 Greeting detected!");
 
-    let response = "Hello! 😊 How can I assist you today?"; // Default greeting response
+    let response = "Hello! 😊 How can I assist you today?"; 
 
     if (/how are you/i.test(userQuestion)) {
       response = "I'm doing great! 😊 How can I help you today?";
@@ -308,7 +301,6 @@ app.post('/ask-question', (req, res) => {
 
   const normalizedUserQuestion = normalizeText(userQuestion);
 
-  // Prioritize exact matches first
   if (normalizedStartQuestions[normalizedUserQuestion]) {
     return res.json({ answer: normalizedStartQuestions[normalizedUserQuestion] });
   }
@@ -333,13 +325,11 @@ app.post('/ask-question', (req, res) => {
     });
   }
 
-  // Default response if no match
   return res.json({ answer: "Create an account today to gain access to our platform and manage your domains effortlessly. Take control of your domain portfolio now!" });
 });
 
 //------------------------------------------------------ Login and verification --------------------------------------------------------//
 
-// Tester login without checking in db
 app.post('/api/tester-login', logSession, (req, res) => {
   try {
     const { email } = req.body;
@@ -387,14 +377,12 @@ app.post('/api/check-email', async (req, res) => {
         });
       }
 
-      // ✅ Define whether OTP is required
       const otpRequired = true; 
 
       if (otpRequired) {
         try {
-          // ✅ Generate OTP and store in session
           const otp = crypto.randomInt(100000, 999999).toString();
-          console.log(`🔑 First-Time OTP for ${normalizedEmail}: ${otp}`); // ✅ Log OTP
+          console.log(`🔑 First-Time OTP for ${normalizedEmail}: ${otp}`); 
           const expiresAt = new Date(Date.now() + 60000); // 1-minute expiry
 
           req.session.otp = otp;
@@ -438,16 +426,14 @@ app.post('/api/resend-otp', async (req, res) => {
       return res.status(400).json({ success: false, message: "Email is required." });
     }
 
-    const normalizedEmail = email.trim().toLowerCase(); // Normalize the email
-    req.session.email = normalizedEmail; // Store the email in the session
+    const normalizedEmail = email.trim().toLowerCase(); 
+    req.session.email = normalizedEmail; 
 
-    // Check if OTP exists in session
     const sessionOtp = req.session.otp;
     const sessionOtpExpiresAt = req.session.otpExpiresAt;
 
     if (sessionOtp && new Date(sessionOtpExpiresAt) > new Date()) {
       try {
-        // OTP is still valid, resend the OTP
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: normalizedEmail,
@@ -463,12 +449,10 @@ app.post('/api/resend-otp', async (req, res) => {
       }
     } else {
       try {
-        // OTP expired or not found, generate new OTP
         const otp = crypto.randomInt(100000, 999999).toString();
-        console.log(`🔑 New OTP for ${normalizedEmail}: ${otp}`); // ✅ Log OTP
+        console.log(`🔑 New OTP for ${normalizedEmail}: ${otp}`); 
         const expiresAt = new Date(Date.now() + 60000); // 1-minute expiration time
 
-        // Store the new OTP and expiration time in session
         req.session.otp = otp;
         req.session.otpExpiresAt = expiresAt;
 
@@ -500,10 +484,9 @@ app.post('/api/verify-otp', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email is required.' });
     }
 
-    const normalizedEmail = email.trim().toLowerCase(); // Normalize the email
-    req.session.email = normalizedEmail; // Store the email in the session
+    const normalizedEmail = email.trim().toLowerCase(); 
+    req.session.email = normalizedEmail; 
 
-    // Check if OTP exists in session
     const sessionOtp = req.session.otp;
     const sessionOtpExpiresAt = req.session.otpExpiresAt;
 
@@ -511,18 +494,16 @@ app.post('/api/verify-otp', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
     }
 
-    // If OTP exists in the session and matches the provided OTP, authenticate the user
     if (sessionOtp !== otp) {
       return res.status(400).json({ success: false, message: 'Invalid OTP.' });
     }
 
-    req.session.verified = true; // Mark the user as verified
+    req.session.verified = true; 
 
     try {
-      // Optionally, fetch customerId from MySQL
       const [clientRows] = await pool.query('SELECT clientId FROM Client WHERE UserName = ?', [normalizedEmail]);
       if (clientRows.length > 0) {
-        req.session.customerId = clientRows[0].clientId; // Store customerId in session
+        req.session.customerId = clientRows[0].clientId; 
       } else {
         return res.status(404).json({ success: false, message: 'Client not found in database.' });
       }
@@ -532,7 +513,7 @@ app.post('/api/verify-otp', async (req, res) => {
     }
 
     try {
-      await updateAPIKey(normalizedEmail); // Update API key in MySQL
+      await updateAPIKey(normalizedEmail); 
     } catch (apiError) {
       console.error('❌ Error updating API key:', apiError);
       return res.status(500).json({ success: false, message: "Failed to update API key." });
@@ -550,7 +531,7 @@ app.post('/api/verify-otp', async (req, res) => {
   }
 });
 
-app.post('/api/mock-authenticate', async (req, res) => {  // 🔄 Make it async
+app.post('/api/mock-authenticate', async (req, res) => { 
   try {
     const { email } = req.body;
 
@@ -558,14 +539,14 @@ app.post('/api/mock-authenticate', async (req, res) => {  // 🔄 Make it async
       return res.status(400).json({ success: false, message: "Email is required." });
     }
 
-    const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; // ✅ Store in array
+    const testEmails = ['aichatbot@iwantdemo.com', 'itec.rw@iwantdemo.com']; 
 
-    if (testEmails.includes(email)) { // ✅ Proper check
+    if (testEmails.includes(email)) { 
       req.session.email = email;
-      req.session.verified = true;  // ✅ Ensures session is marked authenticated
+      req.session.verified = true;  
 
       try {
-        await updateAPIKey(email); // ✅ Fetch and update API key for test user
+        await updateAPIKey(email); 
         return res.json({ success: true, message: "User authenticated.", apiKeyUpdated: true });
       } catch (apiError) {
         console.error('❌ Error updating API key:', apiError);
@@ -587,9 +568,9 @@ app.post('/api/mock-authenticate', async (req, res) => {  // 🔄 Make it async
 
 //------------------------------------------------------- Fetching API Key -------------------------------------------------------------//
 
-let FETCHED_API_KEY = process.env.CONNECT_RESELLER_API_KEY; // Default API key
+let FETCHED_API_KEY = process.env.CONNECT_RESELLER_API_KEY; 
 
-// Fetch API Key from DB and update FETCHED_API_KEY based on new approach
+// Fetch API Key from DB and update FETCHED_API_KEY based on each new user
 const updateAPIKey = async (email) => {
     try {
         const [clientRows] = await pool.execute(
@@ -602,7 +583,7 @@ const updateAPIKey = async (email) => {
             throw new Error("Client not found in database.");
         }
 
-        const resellerId = clientRows[0].resellerId;  // Get resellerId from the fetched result
+        const resellerId = clientRows[0].resellerId;  
 
         if (!resellerId) {
             throw new Error("ResellerId is missing or invalid.");
@@ -643,7 +624,7 @@ const domainRegistrationService = async (params) => {
       ns2: params.ns2 || '11338.dns2.managedns.org',
       ns3: params.ns3 || '',  
       ns4: params.ns4 || '',  
-      Id: params.clientId,  // ✅ Corrected: Use `clientId` (not ResellerId)
+      Id: params.clientId,  
       isEnablePremium: params.isEnablePremium || '0',
       lang: params.lang || "en"
     });
@@ -679,7 +660,6 @@ const checkDomainAvailability = async (domainName) => {
     const message = response.data?.responseMsg?.message || "Unknown response from API";
     const isAvailable = response.data?.responseMsg?.message === "Domain Available for Registration";
 
-    // ✅ Ensure correct price extraction
     const registrationFee = isAvailable ? response.data?.responseData?.registrationFee || null : null;
 
     console.log(`Domain Availability: ${isAvailable}`);
@@ -688,7 +668,7 @@ const checkDomainAvailability = async (domainName) => {
     return {
       available: isAvailable,
       message: message,
-      registrationFee: registrationFee, // ✅ Ensure price is returned
+      registrationFee: registrationFee, 
     };
   } catch (error) {
     console.error("Error checking domain availability:", error.message);
@@ -720,7 +700,6 @@ app.get("/api/domainname-suggestions", async (req, res) => {
       console.log("✅ API Response Received:");
       console.log(JSON.stringify(response.data, null, 2));
 
-      // Ensure we properly access the registryDomainSuggestionList
       const suggestions = response.data?.registryDomainSuggestionList; 
 
       if (!suggestions || suggestions.length === 0) {
@@ -733,7 +712,6 @@ app.get("/api/domainname-suggestions", async (req, res) => {
           console.log(`   ${index + 1}. ${suggestion.domainName} - $${suggestion.price}`);
       });
 
-      // Correctly send the list of domain suggestions
       res.json({ success: true, data: suggestions });
   } catch (error) {
       console.error("❌ Error fetching domain suggestions:", error.message);
@@ -782,7 +760,6 @@ app.get('/api/check-availability', async (req, res) => {
       const data = response.data;
       console.log("✅ API Response:", JSON.stringify(data, null, 2));
 
-      // ✅ FIX: Read statusCode correctly from responseMsg
       if (data.responseMsg?.statusCode === 200) {
           const { available, registrationFee, renewalfee, transferFee } = data.responseData;
 
@@ -796,9 +773,9 @@ app.get('/api/check-availability', async (req, res) => {
               success: true,
               available,
               registrationFee,
-              renewalFee: renewalfee,  // Fix casing
+              renewalFee: renewalfee,  
               transferFee,
-              message: data.responseMsg.message  // Send a clear message
+              message: data.responseMsg.message  
           });
       } else {
           console.error(`❌ Error: API returned status ${data.responseMsg?.statusCode}`);
@@ -866,13 +843,11 @@ app.get("/api/register-domain", async (req, res) => {
       return res.json({ success: false, message: "Failed to retrieve a valid domain price." });
     }
 
-    // Ensure Duration is a valid number
     Duration = parseInt(Duration, 10);
     if (isNaN(Duration) || Duration <= 0) {
       return res.json({ success: false, message: "Invalid domain registration duration." });
     }
 
-    // Multiply the fee by the selected duration
     const totalPrice = registrationFee * Duration;
 
     console.log(`💰 [DOMAIN PRICE] Total Registration Fee for ${Duration} years: $${totalPrice.toFixed(2)}`);
@@ -889,7 +864,7 @@ app.get("/api/register-domain", async (req, res) => {
 
       balance = parseFloat(balanceResponse.data.responseData);
       if (isNaN(balance)) {
-        balance = 0; // If the balance is not a valid number, set it to 0
+        balance = 0;
       }
     } catch (error) {
       console.error("❌ [BALANCE API ERROR] Failed to fetch balance:", error.message);
@@ -907,7 +882,6 @@ app.get("/api/register-domain", async (req, res) => {
 
     console.log(`🚀 [DOMAIN REGISTRATION] Initiating for ${WebsiteName}...`);
 
-    // Construct API parameters dynamically
     let apiParams = {
       APIKey: FETCHED_API_KEY,
       ProductType: 1,
@@ -931,11 +905,9 @@ app.get("/api/register-domain", async (req, res) => {
       apiParams.nexusCategory = usNexusCategory;
     }
 
-    // Log the full request URL for debugging
     const fullRequestUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder?${new URLSearchParams(apiParams).toString()}`;
     console.log("🔗 [DOMAIN REGISTRATION] Full API Request URL:", fullRequestUrl);
 
-    // Send request to ConnectReseller
     const registrationResponse = await axios.get(
       `https://api.connectreseller.com/ConnectReseller/ESHOP/domainorder`,
       { params: apiParams }
@@ -960,7 +932,6 @@ app.get("/api/register-domain", async (req, res) => {
 const API_KEY_TRANSFER = FETCHED_API_KEY; 
 const API_URL_TRANSFER = 'https://api.connectreseller.com/ConnectReseller/ESHOP/TransferOrder';
 
-// API for fetching the transfer fee
 app.get('/api/get-transfer-fee', async (req, res) => {
   const { domain } = req.query;
 
@@ -984,7 +955,6 @@ app.get('/api/get-transfer-fee', async (req, res) => {
 
       if (tldData) {
           let transferFee = parseFloat(tldData.transferPrice);
-          // Check if transferFee is a valid number
           if (isNaN(transferFee)) {
               return res.status(500).json({ success: false, message: "Invalid transfer fee value." });
           }
@@ -999,7 +969,6 @@ app.get('/api/get-transfer-fee', async (req, res) => {
   }
 });
 
-// API for transferring domain
 app.post('/api/transfer-domain', async (req, res) => {
   const { domainName, authCode, isWhoisProtection } = req.body;
 
@@ -1033,7 +1002,6 @@ app.post('/api/transfer-domain', async (req, res) => {
       return res.status(500).json({ success: false, message: "Database error while fetching customer ID." });
   }
 
-  // Step 3: Fetch transfer fee for the domain from tldsync API
   const domainParts = domainName.split('.');
   const tld = `.${domainParts[domainParts.length - 1]}`;
   
@@ -1046,21 +1014,18 @@ app.post('/api/transfer-domain', async (req, res) => {
 
       if (tldData) {
           let transferFee = parseFloat(tldData.transferPrice);
-          // Check if transferFee is a valid number
           if (isNaN(transferFee)) {
               return res.status(500).json({ success: false, message: "Invalid transfer fee value." });
           }
           console.log(`✅ [TRANSFER FEE] TLD: ${tld}, Fee: $${transferFee}`);
 
-          // Step 4: Fetch available balance for the reseller
           const balanceResponse = await axios.get(
               `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`
           );
 
           let balance = parseFloat(balanceResponse.data.responseData);
-          // Check if balance is valid
           if (isNaN(balance)) {
-              balance = 0;  // Set to 0 if invalid balance
+              balance = 0;  
               console.log("💰 [BALANCE API] Invalid balance, defaulting to $0.00");
           }
           console.log(`💰 [BALANCE API] Current Balance: $${balance.toFixed(2)}`);
@@ -1072,7 +1037,6 @@ app.post('/api/transfer-domain', async (req, res) => {
               });
           }
 
-          // Proceed with domain transfer if funds are sufficient
           const params = {
               APIKey: FETCHED_API_KEY,
               OrderType: 4,
@@ -1109,7 +1073,6 @@ app.post('/api/transfer-domain', async (req, res) => {
 
 const ORDER_TYPE_RENEWAL = 2;
 
-// Fetch renewal fee using TLD sync API
 app.get('/api/get-renewal-fee', async (req, res) => {
   const { domain } = req.query;
 
@@ -1144,7 +1107,6 @@ app.get('/api/get-renewal-fee', async (req, res) => {
   }
 });
 
-// Renew domain
 app.get('/api/renew-domain', async (req, res) => {
   let { Websitename, Duration } = req.query;
   console.log(`🔍 [RENEW DOMAIN] Received request for domain: ${Websitename}, Duration: ${Duration}`);
@@ -1181,7 +1143,6 @@ app.get('/api/renew-domain', async (req, res) => {
       return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
-  // Fetch renewal fee for the domain
   try {
       console.log(`🔍 [FETCHING RENEWAL FEE] API Call: https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${FETCHED_API_KEY}`);
 
@@ -1204,7 +1165,6 @@ app.get('/api/renew-domain', async (req, res) => {
       return res.status(500).json({ success: false, message: "Error fetching renewal fee." });
   }
 
-  // Check reseller balance
   try {
       const balanceApiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`;
       console.log(`🔍 [CHECK BALANCE] API Call: ${balanceApiUrl}`);
@@ -1222,7 +1182,6 @@ app.get('/api/renew-domain', async (req, res) => {
           });
       }
 
-      // Proceed with renewal
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/RenewalOrder`;
       const params = {
           APIKey: FETCHED_API_KEY,
@@ -1255,10 +1214,8 @@ app.get('/api/renew-domain', async (req, res) => {
   }
 });
 
-
 //-------------------------------------------------------- Domain Availability ---------------------------------------------------------//
 
-// Function to check availability of multiple domains
 const checkDomainsAvailability = async (suggestions) => {
   const availabilityChecks = suggestions.map((domain) =>
     isAvailable(domain).then(
@@ -1267,10 +1224,8 @@ const checkDomainsAvailability = async (suggestions) => {
     )
   );
 
-  // Use Promise.allSettled to handle multiple domain availability checks concurrently
   const results = await Promise.allSettled(availabilityChecks);
 
-  // Map through results to filter out failures and gather successful ones
   const availableDomains = results
     .filter(result => result.status === 'fulfilled' && result.value.available)
     .map(result => result.value.domain);
@@ -1278,9 +1233,8 @@ const checkDomainsAvailability = async (suggestions) => {
   return availableDomains;
 };
 
-// Helper function to clean the domain names (remove numbers and extra characters)
 const cleanDomainName = (domain) => {
-  return domain.replace(/^\d+\.\s*/, '').trim(); // Remove numbers and extra characters
+  return domain.replace(/^\d+\.\s*/, '').trim(); 
 };
 
 app.post('/api/check-domain-availability', async (req, res) => {
@@ -1302,21 +1256,18 @@ app.post('/api/check-domain-availability', async (req, res) => {
   }
 });
 
-
 //-------------------------------------------------------- Domain Suggestions ----------------------------------------------------------//
 
 app.post('/api/domain-suggestions', async (req, res) => {
-  const { domain } = req.body; // Extract the base domain or topic from the request body
+  const { domain } = req.body; 
 
   if (!domain) {
     return res.status(400).json({ success: false, message: 'Domain name is required.' });
   }
 
   try {
-    // Modify the prompt to focus on professional, short, and industry-specific domains
     const prompt = `Suggest 5 unique and professional domain names related to "${domain}". The names should be brandable, suitable for a legitimate business, and easy to remember. Use common domain extensions such as .com, .net, and .co. Avoid using numbers, hyphens, or generic words. The suggestions should reflect the type of business represented by the term "${domain}". Please give only the domain names, no extra information. The domain names should be unique so that they are available to register. Do not use hyphens in suggesting domain names`;
 
-    //Generate domain name suggestions using Cohere API
     const getDomainSuggestions = async () => {
       const response = await axios.post(
         COHERE_API_URL,
@@ -1335,7 +1286,6 @@ app.post('/api/domain-suggestions', async (req, res) => {
       );
       const rawText = response.data.generations?.[0]?.text || '';
 
-      // Clean up and filter the domain names
       let suggestions = rawText
         .split('\n')  
         .map((s) => cleanDomainName(s))
@@ -1457,9 +1407,8 @@ async function getDomainDetails(domainName) {
 
       const domainDetails = { domainNameId: rows[0].domainNameId };
 
-      // 🔥 Store in cache (expires after 10 minutes)
       domainCache.set(domainName, domainDetails);
-      setTimeout(() => domainCache.delete(domainName), 600000); // 10 min expiration
+      setTimeout(() => domainCache.delete(domainName), 600000); 
 
       return domainDetails;
   } catch (error) {
@@ -1488,7 +1437,6 @@ async function getDomainDetails(domainName) {
 
 //--------------------------------------------------------- Theft Protection ----------------------------------------------------------//
 
-// Function to manage theft protection
 async function manageTheftProtection(domainName, enable) {
   console.log(`🔐 [${new Date().toISOString()}] Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
 
@@ -1512,7 +1460,7 @@ async function manageTheftProtection(domainName, enable) {
       const result = {
           success: isSuccess,
           message: response.data?.responseMsg?.message || 'Failed to update theft protection.',
-          ...(isSuccess ? {} : { fullResponse: response.data }) // Include full response only if failure
+          ...(isSuccess ? {} : { fullResponse: response.data }) 
       };
 
       console.log('✅ Sending response to frontend:', result);
@@ -1530,7 +1478,6 @@ async function manageTheftProtection(domainName, enable) {
   }
 }
 
-// API Route
 app.get('/api/manage-theft-protection', async (req, res) => {
   console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
@@ -1541,7 +1488,7 @@ app.get('/api/manage-theft-protection', async (req, res) => {
       return res.status(400).json(errorResponse);
   }
 
-  const isTheftProtection = enable === 'true'; // Convert to boolean
+  const isTheftProtection = enable === 'true'; 
   console.log(`🔄 Parsed isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection}, Raw: ${enable})`);
 
   try {
@@ -1579,7 +1526,7 @@ async function manageDomainLockStatus(domainName, lock) {
 
   try {
       const response = await axios.get(apiUrl);
-      console.log('📨 API Response:', JSON.stringify(response.data, null, 2)); // Log full API response
+      console.log('📨 API Response:', JSON.stringify(response.data, null, 2)); 
 
       if (response.data.responseMsg?.statusCode === 200) {
           const successMessage = `✅ Domain ${domainName} has been successfully ${lock ? "locked" : "unlocked"}.`;
@@ -1592,7 +1539,7 @@ async function manageDomainLockStatus(domainName, lock) {
       return { 
           success: false, 
           message: errorMessage, 
-          fullResponse: response.data // Send full API response in case of failure
+          fullResponse: response.data 
       };
   } catch (error) {
       console.error('❌ Error managing domain lock:', error);
@@ -1613,7 +1560,7 @@ app.get('/api/lock-domain', async (req, res) => {
   console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked}`);
 
   const result = await manageDomainLockStatus(domainName, isDomainLocked);
-  console.log(`📤 Final response to frontend:`, JSON.stringify(result, null, 2)); // Log final response sent to frontend
+  console.log(`📤 Final response to frontend:`, JSON.stringify(result, null, 2)); 
   return res.json(result);
 });
 
