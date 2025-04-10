@@ -209,8 +209,9 @@ try {
 
         // Use customerId (resellerId) from the response
         if (data.customerId) {
+
+
             localStorage.setItem('customerId', data.customerId);
-            console.log("💾 Customer ID stored:", data.customerId);
         } else {
             console.error("⚠️ No customer ID received in response");
             localStorage.removeItem('customerId');
@@ -264,8 +265,9 @@ async function verifyOtpAndSetCustomerId(otp) {
             body: JSON.stringify({ otp })
         });
   
+
+
         const data = await response.json();
-        console.log(data); // Debug: check if the response has resellerId
   
         if (data.success) {
             const customerIdInput = document.getElementById('customerId');
@@ -310,10 +312,11 @@ function logout(){
     sectionsToHide.forEach(sectionId => {
       const element = document.getElementById(sectionId);
       if (element) {
+
+
         element.style.display = 'none';
-        console.log(`Hid section: ${sectionId}`);
-      } else {
-        console.log(`Element not found: ${sectionId}`);
+
+    } else {
       }
     });
     clearchatlog();
@@ -390,7 +393,6 @@ function closeChatbox() {
     chatContainer.classList.add('minimized');
     chatContainer.classList.remove('visible');
 
-    console.log("❌ Chatbox closed");
 
     setTimeout(() => {
         chatContainer.style.display = "none"; // ✅ Hide it after animation
@@ -410,11 +412,13 @@ function outsideChatboxClickListener(event) {
     }
 
     // Check if the clicked element is inside the chatbox or the assistant logo
+
+
     if (!chatbox.contains(event.target) && !assistantLogo.contains(event.target)) {
-        console.log("🛑 Clicked outside chatbox, closing...");
         closeChatbox();
+
+
     } else {
-        console.log("✅ Click detected inside chatbox or on assistant logo");
     }
 }
 
@@ -434,8 +438,7 @@ function toggleSidebar() {
 
 function updateChatLog(message, sender) {
 
-  console.log("updateChatLog called:", message);
-  
+    
   const chatLog = document.querySelector('.chat-log');
   if (!chatLog) {
       console.error("Chat log element not found.");
@@ -1032,8 +1035,9 @@ function fillChatInput(question) {
 
     updateChatInput(userInput, question);
 
+
+
     setTimeout(() => {
-        console.log("🚀 Clicking 'Ask' button...");
         askButton.click();
     }, 10);
 }
@@ -1051,8 +1055,8 @@ function fillChatAndSubmit(question) {
 
     updateChatInput(userInput, question);
 
+
     setTimeout(() => {
-        console.log("🚀 Clicking 'Submit' button...");
         submitButton.click();
     }, 10);
 }
@@ -1083,15 +1087,12 @@ function fillChatAndSubmitandshowquerybar(question) {
     if (loginChatSection) {
         loginChatSection.style.display = "flex"; 
         document.getElementById("domain-query-text").value = "";
-        console.log("📢 'login-chat-section' made visible.");
     } else {
-        console.error("❌ 'login-chat-section' not found!");
     }
 
     updateChatInput(userInput, question);
 
     setTimeout(() => {
-        console.log("🚀 Clicking 'Submit' button...");
         submitButton.click();
     }, 10);
 }
@@ -1105,12 +1106,10 @@ function updateChatInput(inputField, question) {
         return;
     }
 
-    console.log("✅ Updating chat input...");
     inputField.value = ""; // Clear input first
     setTimeout(() => {
         inputField.value = question;
         inputField.focus();
-        console.log("✍️ Chat input updated with:", question);
     }, 10);
 }
 
@@ -1119,8 +1118,6 @@ let tooltipDate = null;
 let tooltipCategory = null;
 
 function fillChatInputWithPlaceholder(template) {
-    console.log("🟢 Function call: fillChatInputWithPlaceholder()");
-    console.log("🔹 Received template:", template);
 
     const chatInput = document.getElementById('domain-query-text');
     const submitButton = document.getElementById('submitDomainQuery');
@@ -1148,12 +1145,11 @@ function fillChatInputWithPlaceholder(template) {
     // Make login-chat-section visible first
     if (loginChatSection) {
         loginChatSection.style.display = "flex"; // or "flex" based on your styling
-        console.log("📢 'login-chat-section' made visible.");
+
     } else {
         console.error("❌ 'login-chat-section' not found!");
     }
 
-    console.log("📌 Current Chat Input Value:", chatInput.value.trim());
 
     // Avoid triggering multiple times
     if (chatInput.value.trim() === template.trim()) {
@@ -1163,19 +1159,15 @@ function fillChatInputWithPlaceholder(template) {
 
     chatInput.value = template;
     chatInput.focus();
-    console.log("✅ Chat input updated with:", template);
 
     // Highlight "mydomain.com" and show tooltip
     tooltipDomain = highlightPlaceholder(chatInput, template, "mydomain.com", "Enter your domain name here.", tooltipDomain);
     autoHideTooltip(tooltipDomain);
-    console.log("📢 Tooltip updated for 'mydomain.com'.");
 
     // Extract action name and fetch API details
     const actionName = extractActionName(template);
-    console.log("📌 Extracted Action Name:", actionName);
 
     if (actionName) {
-        console.log("🔄 Fetching API details for action:", actionName);
         getAPIDetails(template, actionName);
     } else {
         console.log("❌ No action name detected.");
@@ -1183,19 +1175,15 @@ function fillChatInputWithPlaceholder(template) {
 
     // Always show submit button
     submitButton.style.display = 'block';
-    console.log("🚀 Submit button made visible");
 
     // Lock Toggle
     if (!lockToggle) {
         console.error("❌ Lock toggle container not found! Check the HTML ID.");
     } else {
-        console.log("✅ Lock toggle container found.");
         if (/how do I (lock|unlock)\/?(lock|unlock)? (.+)/i.test(template)) {
             lockToggle.style.display = 'block';
-            console.log("🔒 Lock toggle displayed.");
         } else {
             lockToggle.style.display = 'none';
-            console.log("🔒 Lock toggle hidden.");
         }
     }
 
@@ -1205,10 +1193,8 @@ function fillChatInputWithPlaceholder(template) {
     } else {
         if (/privacy protection (.+)/i.test(template)) {
             privacyToggle.style.display = 'block';
-            console.log("🛡 Privacy toggle displayed.");
         } else {
             privacyToggle.style.display = 'none';
-            console.log("🛡 Privacy toggle hidden.");
         }
     }
 
@@ -1218,14 +1204,13 @@ function fillChatInputWithPlaceholder(template) {
     } else {
         if (/suspend domain (.+)/i.test(template)) {
             suspendToggle.style.display = 'block';
-            console.log("⏸ Suspend toggle displayed.");
+
         } else {
             suspendToggle.style.display = 'none';
-            console.log("⏸ Suspend toggle hidden.");
+
         }
     }
 
-    console.log("✅ fillChatInputWithPlaceholder execution completed.");
 }
 
 function highlightPlaceholder(inputElement, template, placeholder, tooltipText, tooltipRef) {
@@ -1297,10 +1282,8 @@ function fillChatInputWithPlaceholderDate(template) {
     document.getElementById("name-server-update-section").style.display = "none";
     document.getElementById("add-child-name-server-section").style.display = "none";
 
-    // Make login-chat-section visible first
     if (loginChatSection) {
-        loginChatSection.style.display = "flex"; // or "flex" based on your styling
-        console.log("📢 'login-chat-section' made visible.");
+        loginChatSection.style.display = "flex"; 
     } else {
         console.error("❌ 'login-chat-section' not found!");
     }
@@ -1331,7 +1314,6 @@ function fillChatInputWithPlaceholderCategory(template) {
     // Make login-chat-section visible first
     if (loginChatSection) {
         loginChatSection.style.display = "flex"; // or "flex" based on your styling
-        console.log("📢 'login-chat-section' made visible.");
     } else {
         console.error("❌ 'login-chat-section' not found!");
     }
@@ -1360,13 +1342,11 @@ function manageTheftProtection() {
     // Convert action to boolean for backend
     const isEnabled = action === "enabled";
 
-    console.log(`🔒 Managing Theft Protection for ${domainName}: ${isEnabled ? "Enabled" : "Disabled"}`);
     disableChat();
     // Send API request
     fetch(`/api/manage-theft-protection?domainName=${domainName}&enable=${isEnabled}`)
     .then(response => response.json())
     .then(data => {
-        console.log("📩 Full API Response:", data); // ✅ Logs full response
 
         // Check if Theft Protection is already in the requested state
         if (data.fullResponse?.responseMsg?.message === "Domain Theif Manage Failed" &&
@@ -1404,7 +1384,6 @@ function manageTheftProtection() {
 //------------------------------------------------- Get Domain Suggestions Section ---------------------------------------------------//
 
 function checkDomainSuggestions(response) {
-  console.log("📩 checkDomainSuggestions() called with:", response); // Debug log
 
   const botMessages = [
       "I can help you with domain suggestions! Please click domain name suggestions button."
@@ -1488,20 +1467,16 @@ function getMoreSuggestions() {
 //-------------------------------------------------- Domain Availability Section ----------------------------------------------------//
 const checkDomainAvailability = async (domainName) => {
     try {
-        console.log(`Checking domain availability for: ${domainName}`);
 
         const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${process.env.CONNECT_RESELLER_API_KEY}&websiteName=${domainName}`;
 
-        console.log(`Request URL: ${url}`);
 
         const response = await axios.get(url, { headers: { "Accept": "application/json" } });
 
-        console.log("API Response:", JSON.stringify(response.data, null, 2));
 
         const message = response.data?.responseMsg?.message || "Unknown response from API";
         const isAvailable = response.data?.responseMsg?.message === "Domain Available for Registration";
 
-        console.log(`Domain Availability: ${isAvailable}`);
 
         return {
             available: isAvailable,
@@ -1562,17 +1537,13 @@ async function handleCheckDomain() {
     document.getElementById('domain-query-text').value = ''; 
 
     try {
-        console.log("🔵 Sending request to API...");
         const response = await fetch(`/api/check-domain?domain=${domainInput}`);
-
-        console.log("🟡 Response received:", response);
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("🟢 Parsed JSON response:", data);
 
         if (data.message?.includes("Error checking domain availability")) {
             throw new Error(data.message);
@@ -1582,7 +1553,6 @@ async function handleCheckDomain() {
             throw new Error("Missing 'available' property in API response.");
         }
 
-        console.log("🔍 Checking domain availability:", data.available);
 
         // Get the existing message again in case it was modified
         checkAvailabilityDiv = document.getElementById(availabilityMessageId);
@@ -1599,7 +1569,6 @@ async function handleCheckDomain() {
         let availabilityMessage;
         
         if (data.available) {
-            console.log("✅ Domain is available. Showing message...");
 
             availabilityMessage = `✅ <strong>${domainInput}</strong> is available for registration!<br>Do you want to register this domain?
                 <div style="display: flex; gap: 10px; margin-top: -12px; margin-left:-85px;">
@@ -1607,7 +1576,6 @@ async function handleCheckDomain() {
                     <button onclick="handleNoClick()" style="padding:8px 12px; border:none; cursor:pointer; background-color:#ccc; color:#000; border-radius:5px; margin-left:-83px;">No</button>
                 </div>`;
         } else {
-            console.log("❌ Domain is taken. Showing message...");
 
             availabilityMessage = `❌ <strong>${domainInput}</strong> is already taken. Try another name?
                 <div style="display: flex; margin-top: -15px; margin-left:-37px;">
@@ -1628,7 +1596,6 @@ async function handleCheckDomain() {
 }
 
 function handleYesClick(domainInput) {
-    console.log("✅ Yes button clicked!");
 
     // Hide previous sections
     document.getElementById("domain-availability-section").style.display = "none";
@@ -1661,7 +1628,6 @@ function handleYesClick(domainInput) {
 }
 
 function handleNoClick() {
-    console.log("❌ No button clicked!");
 
     // Find the chat log and replace the registration prompt
     const chatLog = document.getElementById("chat-log");
@@ -1678,7 +1644,6 @@ function handleNoClick() {
 }
 
 function handleTryAnother() {
-    console.log("🔄 Try Another clicked!");
 
     const domainInputField = document.getElementById("check-domain-input");
     if (domainInputField) {
@@ -1707,7 +1672,6 @@ function handleSuggestAlternatives(domainInput) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ DOM fully loaded!");
 
     const domainRegistrationSection = document.getElementById("domain-registration-section");
 
@@ -1735,7 +1699,6 @@ function addChatMessage(sender, message, showButtons = false, domainInput = "") 
             console.error("❌ 'showDomainRegistration' function is missing!");
         }
     } else if (typeof fetchDomainSuggestions === "function" && domainInput.trim() !== "") {
-        console.log("Fetching domain suggestions for:", domainInput);
         fetchDomainSuggestions(domainInput);
     } else {
         console.error("❌ 'fetchDomainSuggestions' function is missing OR domainInput is empty!");
@@ -1783,7 +1746,6 @@ function addChatMessage(sender, message, showButtons = false, domainInput = "") 
         yesButton.style.transition = "background-color 0.3s ease";
 
         yesButton.onclick = () => {
-            console.log("✅ Yes button clicked!");
 
             const checkAvailabilitySection = document.getElementById("domain-availability-section");
             const domainRegistrationSection = document.getElementById("domain-registration-section");
@@ -1857,7 +1819,6 @@ const SUGGESTION_BATCH_SIZE = 5;
 
 async function fetchDomainSuggestions(domainInput) {
     try {
-        console.log("🔍 Fetching domain suggestions...");
 
         // Ensure "www." is removed before sending
         if (domainInput.startsWith("www.")) {
@@ -1968,7 +1929,6 @@ function selectDomain(domainName) {
 }
 
 function showDomainRegistration(domainName) {
-    console.log("🛠 Showing registration form for:", domainName);
 
     document.getElementById("domain-name").value = domainName;
     document.getElementById("domain-registration-section").style.display = "block";
@@ -2628,12 +2588,10 @@ async function updateNameServers() {
    
     let apiUrl = `/update-name-servers?domainName=${encodeURIComponent(domain)}&nameServers=${encodeURIComponent(JSON.stringify(nameServers))}`;
 
-    console.log("[FRONTEND] 📡 Sending request:", apiUrl);
 
     try {
         const response = await fetch(apiUrl);
         const result = await response.json();
-        console.log("[FRONTEND] 🌐 Server Response:", result);
         enableChat();
         if (result.success) {
             showNameServerPopup("Name Servers updated successfully!", true);
@@ -2665,8 +2623,6 @@ function resetNameServers() {
 
     // Reset the name server count
     nameServerCount = 1;
-
-    console.log("🔄 Name servers reset to default (only 1 field).");
 }
 
 //------------------------------------------------- Add Child Nameservers Section -----------------------------------------------------//
@@ -2854,12 +2810,9 @@ async function registerChildNameServer() {
     for (const ns of nameServers) {
         const apiUrl = `/add-child-ns?domainName=${encodeURIComponent(domain)}&ipAddress=${encodeURIComponent(ns.ip)}&hostname=${encodeURIComponent(ns.hostname)}`;
 
-        console.log("[FRONTEND] 📡 Sending request:", apiUrl);
-
         try {
             const response = await fetch(apiUrl);
             const result = await response.json();
-            console.log("[FRONTEND] 🌐 Server Response:", result);
 
             // Show the result in the chat log
             showChildNSPopup(
@@ -2909,7 +2862,6 @@ function manageDomainSuspension() {
     }
 
     const isSuspended = action === "suspended";
-    console.log(`🚫 Managing Domain Suspension for ${domainName}: ${isSuspended ? "Suspended" : "Unsuspended"}`);
 
     updateChatLog(`⏳ Updating domain suspension status for ${domainName}...`, "bot");
 
@@ -2918,11 +2870,9 @@ function manageDomainSuspension() {
 
     fetch(`/api/suspend-domain?domainName=${encodeURIComponent(domainName)}&suspend=${isSuspended}`)
         .then(response => {
-            console.log("🛜 Response Status:", response.status);
             return response.json();
         })
         .then(data => {
-            console.log("📩 Full API Response:", data);
             if (data.success) {
                 updateChatLog(`✅ Domain ${domainName} has been successfully ${isSuspended ? "suspended" : "unsuspended"}.`, "bot");
             } else {
@@ -2972,7 +2922,6 @@ function managePrivacyProtection() {
     // Convert action to boolean for backend
     const isEnabled = action === "enabled";
 
-    console.log(`🛡️ Managing Privacy Protection for ${domainName}: ${isEnabled ? "Enabled" : "Disabled"}`);
 
     // Show loading message in chatlog
     updateChatLog(`⏳ Updating privacy protection status for ${domainName}...`, "bot");
@@ -2981,7 +2930,6 @@ function managePrivacyProtection() {
     fetch(`/api/manage-privacy-protection?domainName=${domainName}&enable=${isEnabled ? "true" : "false"}`)
         .then(response => response.json())
         .then(data => {
-            console.log("📩 Full API Response:", data); // ✅ Logs full response
 
             if (data.success) {
                 const statusText = isEnabled ? "enabled" : "disabled";
@@ -3010,18 +2958,15 @@ function manageDomainLock() {
     }
 
     const isLocked = action === "locked";
-    console.log(`🔒 Managing Domain Lock for ${domainName}: ${isLocked ? "Locked" : "Unlocked"}`);
 
     updateChatLog(`⏳ Updating domain lock status for ${domainName}...`, "bot");
 
     disableChat();
     fetch(`/api/lock-domain?domainName=${domainName}&lock=${isLocked ? "true" : "false"}`)
         .then(response => {
-            console.log("🛜 Response Status:", response.status);
             return response.json();
         })
         .then(data => {
-            console.log("📩 Full API Response:", data);
             if (data.success) {
                 updateChatLog(`✅ Domain lock for ${domainName} has been successfully ${isLocked ? "locked" : "unlocked"}.`, "bot");
             } else {
@@ -3066,7 +3011,6 @@ function sendCategoryToBackend(template) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Category submitted successfully:', data);
     })
     .catch(error => {
         console.error('Error submitting category:', error);
@@ -3082,7 +3026,6 @@ function extractActionName(userQuery) {
 
 async function submitDomainQuery() {
     const inputElement = document.getElementById("domain-query-text");
-    console.log("submitDomainQuery called"); 
     const submitButton = document.getElementById('submitDomainQuery'); // Replace with the actual button ID
     submitButton.disabled = true; // Disable button
     setTimeout(() => { submitButton.disabled = false; }, 500);
@@ -3125,7 +3068,6 @@ async function submitDomainQuery() {
       // If user query matches predefined questions, send it directly to /api/domain-queries
       if (predefinedQueries.includes(queryText)) {
           try {
-              console.log('Sending predefined query to backend:', queryText);
               const response = await fetch('/api/domain-queries', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -3137,7 +3079,6 @@ async function submitDomainQuery() {
               }
   
               const data = await response.json();
-              console.log('Backend response:', data);
   
               if (data.success) {
                   updateChatLog(`${data.answer}`, 'bot');
@@ -3155,14 +3096,12 @@ async function submitDomainQuery() {
         console.error("❌ Input field not found!");
     } else {
         const userInput = inputElement.value.trim().toLowerCase();
-        console.log(`📝 User Input: "${userInput}"`);
     
         // Enhanced regex to capture various greetings and specific phrases
         const basicGreetingRegex = /^(hi|hello|hey|howdy|greetings|what(?:'s| is) up|wassup|sup|yo|good\s(?:morning|afternoon|evening|day)|how\s+are\s+you|how\s+(?:is it going|have you been|do you do)|what(?:'s| is)\s+(?:new|happening)|how's\s+(?:everything|life)|long time no see|nice to meet you|pleased to meet you|good to see you)[!.,?\s]*$/i;    
         const greetingMatch = userInput.match(basicGreetingRegex);
     
         if (greetingMatch) {
-            console.log("👋 Greeting detected!");
     
             let response = "Hello! 😊 How can I assist you today?"; // Default response
     
@@ -3197,9 +3136,6 @@ async function submitDomainQuery() {
         const domainName = match[1] ? match[1].trim() : "";
         const duration = match[2] ? parseInt(match[2], 10) : null;
     
-        console.log("🔍 Extracted domain:", domainName);
-        console.log("⏳ Extracted duration:", duration);
-    
         // Delay to allow UI updates
         setTimeout(() => {
             const domainInput = document.getElementById("check-domain-input");
@@ -3214,15 +3150,12 @@ async function submitDomainQuery() {
                 checkButton.style.borderRadius = "20px"; // UI update
             }
     
-            console.log("📌 Setting domain name to input field:", domainName);
             domainInput.value = domainName;
             domainInput.dispatchEvent(new Event("input", { bubbles: true }));
     
-            console.log("✅ Prefilled domain input:", domainInput.value);
     
             // Delay handleCheckDomain() to ensure input is set
             setTimeout(() => {
-                console.log("⏳ Waiting before checking domain...");
                 handleCheckDomain();
             }, 200);
         }, 100);
@@ -3248,8 +3181,6 @@ async function submitDomainQuery() {
         const domainName = renewMatch[1] || renewMatch[3] || ""; // Allow empty domain
         const duration = renewMatch[2] ? parseInt(renewMatch[2], 10) : (renewMatch[4] ? parseInt(renewMatch[4], 10) : null);
     
-        console.log("Matched domain for renewal:", domainName || "(none)");
-        console.log("Matched duration:", duration || "(default)");
     
         updateChatLog("Enter duration and click renew button to renew your domain seamlessly.","bot");
     
@@ -3276,10 +3207,8 @@ async function submitDomainQuery() {
     );
     
     if (transferMatch) {
-        console.log("Matched keyword:", transferMatch[1] || "(general transfer query)");
     
         if (transferMatch[2]) {
-            console.log("Extracted domain:", transferMatch[2]); // Extracted domain if present
             updateChatLog(`Enter authcode(EPP code) and enable or disable Whois protection to transfer your domain to us seamlessly.`, 'bot');
     
             // Show the transfer section
@@ -3303,15 +3232,14 @@ if (queryText.match(/\b(?:registered\s+on|registration\s+date\s*[:]?|when\s*was\
             return;
         }
     
-        const inputDate = dateMatch[0];  // Extract date as string "07-03-2025"
-        console.log(`Fetching registered domains for date: ${inputDate}`);
+        const inputDate = dateMatch[0];  
     
         updateChatLog(`📡 Fetching domains registered on: ${inputDate}`, "bot");
     
-        disableChat(); // Disable chat while fetching data
+        disableChat(); 
     
         try {
-            // Fetch domain registration data
+
             const response = await fetch(`/api/registrationdate-domains?date=${encodeURIComponent(inputDate)}`);
     
             if (!response.ok) {
@@ -3319,7 +3247,6 @@ if (queryText.match(/\b(?:registered\s+on|registration\s+date\s*[:]?|when\s*was\
             }
     
             const data = await response.json();
-            console.log('📥 Registered domains response:', data);
     
             let message = `📅 Domains Registered on ${inputDate}:\n`;
     
@@ -3370,17 +3297,15 @@ if (expiringDomainMatch) {
     disableChat(); // Disable chat while fetching data
 
     try {
-        console.log(`📡 Fetching expiring domains for: ${selectedDate}`);
+
         const response = await fetch(`/api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
 
-        console.log(`🔄 API Request URL: /api/expiring-domains?date=${encodeURIComponent(selectedDate)}`);
 
         if (!response.ok) {
             throw new Error(`❌ Failed to fetch data. Status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('📥 API Response Data:', data); // Debugging log
 
         let message = `⏳ Domains Expiring on ${selectedDate}:\n`;
 
@@ -3391,7 +3316,6 @@ if (expiringDomainMatch) {
 
             updateChatLog(message, 'bot');
         } else {
-            console.log(`⚠️ No domains found for ${selectedDate}`);
             updateChatLog(`⚠️ No domains are expiring on ${selectedDate}.`, 'bot');
         }
     } catch (error) {
@@ -3406,13 +3330,11 @@ if (expiringDomainMatch) {
         
 const deletedDomainMatch = queryText.match(/\b(?:which\s+domains\s+(?:are\s+)?)?(getting\s+)?(deleted|deleting|removing|removed)\s+(on|by|before)?\s*(\d{1,2}-\d{1,2}-\d{4})\b/i);
 
-console.log("🔎 Checking for deleted domain match in query:", queryText);
-console.log("🔍 Regex Match Result:", deletedDomainMatch);
+
 
 if (deletedDomainMatch) {
     const selectedDate = deletedDomainMatch[4]?.trim(); // Ensure correct capture group
 
-    console.log("📅 Extracted Deletion Date:", selectedDate);
 
     if (!selectedDate) {
         console.error("❌ No valid date extracted from query.");
@@ -3432,22 +3354,17 @@ if (deletedDomainMatch) {
         .split("/")
         .join("-");
 
-    console.log("📅 Expiration Date:", expirationDate);
-
     updateChatLog(`📡 Fetching domains deleting on: ${selectedDate}`, "bot");
-    console.log(`📡 Fetching domains deleting on: ${expirationDate} (to check for deletion on ${selectedDate})`);
     disableChat();
     try {
         const response = await fetch(`/api/expiring-domains?date=${encodeURIComponent(expirationDate)}`);
 
-        console.log(`🔄 API Request URL: /api/expiring-domains?date=${encodeURIComponent(expirationDate)}`);
 
         if (!response.ok) {
             throw new Error(`❌ Failed to fetch data. Status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('📥 API Response Data:', data);
 
         if (data.success && data.domains.length > 0) {
             let message = `⏳ Domains deleting on ${selectedDate}:\n`;
@@ -3458,7 +3375,6 @@ if (deletedDomainMatch) {
             enableChat();
             updateChatLog(message, 'bot');
         } else {
-            console.log(`⚠️ No domains found for ${selectedDate}`);
             updateChatLog(`⚠️ No domains are deleting on ${selectedDate}.`, 'bot');
             enableChat();
         }
@@ -3488,7 +3404,6 @@ if (tldMatch) {
     disableChat();  // Disable chat while fetching the TLDs
 
     try {
-        console.log('Fetching TLD suggestions for:', baseName);
 
         const response = await fetch(`/api/tld-suggestions?websiteName=${encodeURIComponent(baseName)}`);
 
@@ -3497,7 +3412,6 @@ if (tldMatch) {
         }
 
         const data = await response.json();
-        console.log('TLD Suggestions Response:', data);
 
         if (data.success && data.tldList.length > 0) {
             let message = `🌍 Suggested TLDs for ${baseName}:\n`;
@@ -3538,7 +3452,6 @@ if (tldMatch) {
         const domainName = domainInfoMatch[1].trim();
     
         try {
-            console.log('Fetching domain details for:', domainName);
             const response = await fetch(`/api/domain-info?domain=${encodeURIComponent(domainName)}`);
     
             if (!response.ok) {
@@ -3546,10 +3459,8 @@ if (tldMatch) {
             }
     
             const data = await response.json();
-            console.log('Domain details response:', data);
     
             if (data.success) {
-                console.log('Domain data:', data.domainData);
     
                 // Beautify and format the domain data for display
                 const domainData = data.domainData;
@@ -3584,7 +3495,6 @@ if (authCodeMatch) {
     disableChat();
 
     try {
-        console.log('🔍 Fetching auth code for:', domainName);
         const response = await fetch(`/api/domain-auth-code?domain=${encodeURIComponent(domainName)}`);
 
         if (!response.ok) {
@@ -3592,10 +3502,8 @@ if (authCodeMatch) {
         }
 
         const data = await response.json();
-        console.log('📜 Auth code response:', data);
 
         if (data.success) {
-            console.log('✅ Auth Code:', data.authCode);
             updateChatLog(`🔑 Auth Code for ${domainName}: ${data.authCode}`, 'bot');
         } else {
             updateChatLog(`⚠️ ${data.message}`, 'bot');
@@ -3620,18 +3528,15 @@ const domainregisterRegex = /\b(?:when|check)\b.*?\b(?:was|did|is)?\s*([\w.-]+\.
 const userInput4 = document.getElementById("domain-query-text").value;
 const domainregisterMatch = userInput4.match(domainregisterRegex);
 
-console.log("✅ Matched Registration Query:", domainregisterMatch);
 
 if (domainregisterMatch) {
     const domainName = domainregisterMatch[1] || domainregisterMatch[3] || domainregisterMatch[4]; // Extract domain
-    console.log(`Extracted Domain: ${domainName}`);
 
     // Show fetching message & disable chat
     updateChatLog(`🔍 Fetching registration date for <strong>${domainName}</strong>...`, 'bot');
     disableChat();
 
     try {
-        console.log('Fetching domain details for:', domainName);
         const response = await fetch(`/api/domain-info?domain=${encodeURIComponent(domainName)}`);
 
         if (!response.ok) {
@@ -3639,10 +3544,8 @@ if (domainregisterMatch) {
         }
 
         const data = await response.json();
-        console.log('Domain details response:', data);
 
         if (data.success && data.domainData) {
-            console.log('Domain data:', data.domainData);
 
             const timestamp = data.domainData.creationDate || null;
             let registrationDate = "Not available";
@@ -3714,14 +3617,12 @@ if (!inputElement) {
     console.error("❌ Input field not found!");
 } else {
     const usersInput = inputElement.value.trim();
-    console.log(`📝 User Input: "${usersInput}"`);
 
     // Updated Regex: Detects "theft protection" in any form, with or without action/domain
     const theftRegex = /\b(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*\/?(?:enable|disable|on|off|switch\s+on|switch\s+off)?\s*(?:theft\s*protection|thief\s*protection)/i;
     const theftMatch = usersInput.match(theftRegex);
 
     if (theftMatch) {
-        console.log("✅ Theft Protection command detected in input.");
         updateChatLog(
             "🛡️ Please enter the domain name and select the action (Enable/Disable) from the dropdown, then click 'Update Theft Protection'.",
             "bot"
@@ -3739,8 +3640,6 @@ if (!inputElement) {
             return;
         }
 
-        console.log(`📌 Extracted Domain: ${domain}`);
-        console.log(`📌 Selected Action: ${action || "None"}`);
 
         let selectedAction = "";
         if (["on", "enable", "switch on"].includes(action)) {
@@ -3772,14 +3671,12 @@ if (!inputElement) {
         console.error("❌ Input field not found!");
     } else {
         const usersInput = inputElement.value.trim();
-        console.log(`📝 User Input: "${usersInput}"`);
     
         // Updated Regex: Supports various lock/unlock commands
         const lockUnlockRegex = /\b(lock|unlock|secure|remove\s+lock|turn\s+on\s+lock|turn\s+off\s+lock|enable\s+domain\s+lock|disable\s+domain\s+lock|lock\/unlock)\s+(?:the\s+|my\s+)?(?:domain\s*)?([\w.-]+\.[a-z]{2,})?/i;
         const lockUnlockMatch = usersInput.match(lockUnlockRegex);
     
         if (lockUnlockMatch) {
-            console.log("✅ Lock/Unlock command detected.");
             updateChatLog("📝 Please enter the domain name and select 'Lock' or 'Unlock' from the dropdown, then click 'Update Lock Status'.", 'bot');
             const selectedAction = lockUnlockMatch[1].toLowerCase();  // Extracted action: "lock", "unlock", etc.
             let domain = lockUnlockMatch[2] ? lockUnlockMatch[2].trim() : "";  // Set to "" if undefined
@@ -3790,9 +3687,7 @@ if (!inputElement) {
                 console.error("❌ Invalid or placeholder domain detected:", domain);
                 return;
             }
-    
-            console.log(`📌 Selected Action: ${selectedAction}`);
-            console.log(`📌 Extracted Domain: "${domain}"`);
+
     
             // Set dropdown value based on extracted action
             lockUnlockDropdown.value = selectedAction === "lock" ? "locked" : "unlocked";
@@ -3816,14 +3711,12 @@ if (!inputElement) {
     console.error("❌ Input field not found!");
 } else {
     const usersInput = inputElement.value.trim();
-    console.log(`📝 User Input: "${usersInput}"`);
 
     // Regex to match "suspend/unsuspend domain.com"
     const suspendUnsuspendRegex = /\b(suspend|unsuspend)(?:\/(suspend|unsuspend))?\s*(?:the\s+)?(?:domain\s*)?(?:for\s+)?([\w.-]+\.[a-z]{2,})?/i;
     const suspendUnsuspendMatch = usersInput.match(suspendUnsuspendRegex);
 
     if (suspendUnsuspendMatch) {
-        console.log("✅ Suspend/Unsuspend command detected.");
 
         const selectedAction = suspendUnsuspendMatch[1] || suspendUnsuspendMatch[2];  // Extracted "suspend" or "unsuspend"
         let domain = suspendUnsuspendMatch[3] ? suspendUnsuspendMatch[3].trim() : "";  // Empty string if domain not found
@@ -3836,8 +3729,6 @@ if (!inputElement) {
             return;
         }
 
-        console.log(`📌 Selected Action: ${selectedAction}`);
-        console.log(`📌 Extracted Domain: "${domain}"`);
 
         // Set dropdown value
         suspendUnsuspendDropdown.value = selectedAction.toLowerCase() === "suspend" ? "suspended" : "unsuspended";
@@ -3857,20 +3748,17 @@ if (!inputElement) {
     console.error("❌ Input field not found!");
 } else {
     const usersInput = inputElement.value.trim();
-    console.log(`📝 User Input: "${usersInput}"`);
 
     const privacyRegex = /\b(update|enable|disable|turn\s*on|turn\s*off)(?:\/(update|enable|disable|turn\s*on|turn\s*off))?\s*(?:the\s+)?(?:privacy[-\s]*protection)\s*(?:for\s+)?((?:[\w-]+\.)+[a-z]{2,})/i;
     const privacyMatch = usersInput.match(privacyRegex);
 
     if (privacyMatch) {
-        console.log("✅ Privacy Protection command detected.");
         updateChatLog("🔄 Please enter the domain name and select 'Enable' or 'Disable' privacy protection from the dropdown, then click 'Update Privacy Protection'.", 'bot');
 
         let action = privacyMatch[1]?.toLowerCase() || "";
         let domain = privacyMatch[3] ? privacyMatch[3].trim() : ""; 
 
-        console.log(`📌 Action: ${action || "None provided"}`);
-        console.log(`🌍 Domain: ${domain || "None provided"}`);
+
 
         // 🛑 Ignore "mydomain.com" or placeholder values
         const ignoredDomains = ["mydomain.com", "example.com", "test.com"];
@@ -3882,23 +3770,17 @@ if (!inputElement) {
         document.getElementById("privacy-protection-section").style.display = "block";
         document.getElementById("login-chat-section").style.display = "none";
 
-        // ✅ Debug Before Assignment
-        console.log("🔍 Before Assignment, Input Value:", privacyProtectionDomainInput.value);
 
         privacyProtectionDomainInput.value = domain;
 
-        // ✅ Debug After Assignment
-        console.log("✅ After Assignment, Input Value:", privacyProtectionDomainInput.value);
 
         // ✅ Ensure Value Persists
         setTimeout(() => {
             privacyProtectionDomainInput.value = domain;
-            console.log("✅ Forced Input Update:", privacyProtectionDomainInput.value);
         }, 100);
 
         if (action) {
             const isEnablePrivacy = action.includes("enable") || action === "turn on";
-            console.log(`🔄 Converted Boolean Value: ${isEnablePrivacy}`);
         } else {
             console.log("⚠️ No enable/disable/update action provided. Prompt user for selection.");
         }
@@ -3924,7 +3806,6 @@ if (updatenamematch) {
     // Set the extracted domain name in the input field
     document.getElementById("domain-name-input").value = domainName;
 
-    console.log(`Domain Name: ${domainName}`); // Optionally log the extracted domain name
 } else {
     console.log("No match found.");
 }
@@ -3976,7 +3857,6 @@ if (updateNameServerMatch) {
         "bot"
     );
 
-    console.log(`📌 Domain Name: ${domainName || "Not provided"}`); // Log extracted domain
     return;
 } else {
     console.log("❌ No match found.");
@@ -4000,8 +3880,6 @@ if (updatechildnamematch) {
 
     updateChatLog("🛠️ Enter Domain Name, Hostname, and IP Address for the child nameserver. You can add upto 4 child nameservers using the '➕Add Child Name Server' button.", "bot");
 
-
-    console.log(`✅ Extracted Domain Name: ${domainName || "None (User needs to enter manually)"}`);
     return;
 } else {
     console.log("❌ No match found.");
@@ -4030,7 +3908,6 @@ if (chatbotactionsmatch) {
 // If all other conditions fail, execute this fallback
 try {
 
-    console.log('Sending query to backend:', queryText);
 
     // Disable chat input and show "Generating response... Please wait ⏳"
     disableChat();
@@ -4069,7 +3946,6 @@ try {
     }
 
     const data = await response.json();
-    console.log('Backend response:', data);
 
     // Remove "Generating response..." and "Too many requests..." messages
     removeLastBotMessage();
@@ -4114,12 +3990,10 @@ if (inputElement) {
 //----------------------------------------------- Back button after verification --------------------------------------------------//
 
 function goBackToQuerySection() {
-    console.log("Navigating back to query section...");
   
     // Show the query section
     document.getElementById('login-chat-section').style.display = 'flex';
     document.getElementById('domain-query-text').value = '';
-    console.log("login-chat-section is now visible");
   
     // Hide the other sections
     const sectionsToHide = ['domain-section', 'domain-options', 'domain-options-next', 'domain-registration-section' , 'domain-transfer-section' , 'domain-renewal-section' , 'domain-availability-section' , 'name-server-update-section', 'add-child-name-server-section' ,'theft-protection-section' , 'privacy-protection-section' , 'domain-lock-section' , 'domain-suspension-section', 'additional-settings-section', 'name-server-container'];
@@ -4128,7 +4002,6 @@ function goBackToQuerySection() {
       const element = document.getElementById(sectionId);
       if (element) {
         element.style.display = 'none';
-        console.log(`Hid section: ${sectionId}`);
       } else {
         console.log(`Element not found: ${sectionId}`);
       }
@@ -4148,21 +4021,17 @@ if (backButton) {
 document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         event.preventDefault();
-        event.stopPropagation(); // ⛔ Prevent multiple triggers
+        event.stopPropagation(); 
 
-        console.log("🛑 Stopped multiple Enter key events.");
 
         const activeElement = document.activeElement;
 
         if (activeElement) {
             if (activeElement.classList.contains("chat-input")) {
-                console.log("💬 Chat Input - Enter key pressed");
                 document.getElementById("submit-question").click();
             } else if (activeElement.classList.contains("email-input")) {
-                console.log("📧 Email Input - Enter key pressed");
                 document.getElementById("submit-email").click();
             } else if (activeElement.id === "domain-query-text") {
-                console.log("🌍 Domain Query Input - Enter key pressed");
                 submitDomainQuery();
             }
         }
@@ -4184,8 +4053,9 @@ const domainQueryInput = document.getElementById("domain-query-text");
 if (domainQueryInput) {
     domainQueryInput.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
+
+
             event.preventDefault();
-            console.log("🌍 Domain Query Input - Enter key pressed");
             submitDomainQuery();
         }
     });
@@ -4193,8 +4063,9 @@ if (domainQueryInput) {
 
 document.getElementById("user-question").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
+
+
         event.preventDefault(); // Prevents accidental form submission or newline entry
-        console.log("💬 Enter key pressed in chat input");
 
         // Trigger the button click
         document.getElementById("submit-question").click();
@@ -4359,8 +4230,8 @@ fetch('/api/domain-queries', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ query: userQuery, chatHistory })
 })
-  .then(res => res.json())
-  .then(data => console.log(data));
+
+.then(res => res.json())
   
 function removeLastBotMessage() {
     const chatLog = document.getElementById('chat-log');

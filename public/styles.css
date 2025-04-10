@@ -163,7 +163,7 @@ body {
 }
 
 .faq-list li:hover {
-  background: black;
+  background: #066;
   color: white;
 }
 
@@ -182,7 +182,7 @@ body {
 
 .faq-list li {
   padding: 8px;
-  background: #066;
+  background: #1574b1;
   margin: 5px 0;
   border-radius: 5px;
   cursor: pointer;
@@ -1988,7 +1988,7 @@ login-chat-wrapper button:disabled {
   }
   .faq-list li {
     padding: 8px;
-    background: #066;
+    background: #1574b1;
     margin: 5px 0;
     border-radius: 5px;
     cursor: pointer;
@@ -2120,7 +2120,7 @@ login-chat-wrapper button:disabled {
   }
   .faq-list li {
     padding: 8px;
-    background: #066;
+    background: #1574b1;
     margin: 5px 0;
     border-radius: 5px;
     cursor: pointer;
@@ -2367,7 +2367,7 @@ login-chat-wrapper button:disabled {
   }
   .faq-list li {
     padding: 8px;
-    background: #066;
+    background: #1574b1;
     margin: 5px 0;
     border-radius: 5px;
     cursor: pointer;
@@ -2559,7 +2559,7 @@ login-chat-wrapper button:disabled {
   }
   .faq-list li {
     padding: 8px;
-    background: #066;
+    background: #1574b1;
     margin: 5px 0;
     border-radius: 5px;
     cursor: pointer;
@@ -2757,7 +2757,7 @@ login-chat-wrapper button:disabled {
   }
   .faq-list li {
     padding: 8px;
-    background: #066;
+    background: #1574b1;
     margin: 5px 0;
     border-radius: 5px;
     cursor: pointer;

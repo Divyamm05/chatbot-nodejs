@@ -278,7 +278,6 @@ app.post('/ask-question', (req, res) => {
   
   const greetingMatch = userQuestion.match(basicGreetingRegex);
   if (greetingMatch) {
-    console.log("👋 Greeting detected!");
 
     let response = "Hello! 😊 How can I assist you today?"; 
 
@@ -382,7 +381,6 @@ app.post('/api/check-email', async (req, res) => {
       if (otpRequired) {
         try {
           const otp = crypto.randomInt(100000, 999999).toString();
-          console.log(`🔑 First-Time OTP for ${normalizedEmail}: ${otp}`); 
           const expiresAt = new Date(Date.now() + 60000); // 1-minute expiry
 
           req.session.otp = otp;
@@ -450,7 +448,6 @@ app.post('/api/resend-otp', async (req, res) => {
     } else {
       try {
         const otp = crypto.randomInt(100000, 999999).toString();
-        console.log(`🔑 New OTP for ${normalizedEmail}: ${otp}`); 
         const expiresAt = new Date(Date.now() + 60000); // 1-minute expiration time
 
         req.session.otp = otp;
@@ -581,7 +578,6 @@ const updateAPIKey = async (email, retryCount = 1) => {
               [email]
           );
 
-          console.log(`⚙️ Fetched client rows for ${email}:`, clientRows);
 
           if (clientRows.length === 0) {
               throw new Error("Client not found in database.");
@@ -603,7 +599,6 @@ const updateAPIKey = async (email, retryCount = 1) => {
               console.warn(`❌ No API Key found for ResellerId: ${resellerId}. FETCHED_API_KEY set to null.`);
           } else {
               FETCHED_API_KEY = apiKeyRows[0].APIKey;
-              console.log(`✅ FETCHED_API_KEY updated for ${email}: ${FETCHED_API_KEY}`);
           }
 
           return true;
@@ -611,7 +606,6 @@ const updateAPIKey = async (email, retryCount = 1) => {
           console.error("❌ Query Error:", queryError);
 
           if (queryError.code === 'ETIMEDOUT' && retryCount > 0) {
-              console.log("⏳ Retrying updateAPIKey due to timeout...");
               return updateAPIKey(email, retryCount - 1);
           }
 
@@ -652,7 +646,6 @@ const domainRegistrationService = async (params) => {
       headers: { 'Accept': 'application/json' }
     });
 
-    console.log('✅ Domain Registration Successful:', response.data);
     return response.data;
 
   } catch (error) {
@@ -665,7 +658,6 @@ const checkDomainAvailability = async (domainName) => {
   try {
     const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable?APIKey=${FETCHED_API_KEY}&websiteName=${domainName}`;
 
-    console.log(`Checking domain availability for: ${domainName}`);
     console.log(`Request URL: ${url}`);
 
     const response = await axios.get(url, { headers: { "Accept": "application/json" } });
@@ -693,9 +685,6 @@ const checkDomainAvailability = async (domainName) => {
 
 app.get("/api/domainname-suggestions", async (req, res) => {
   const { domain } = req.query;
-
-  console.log("====================================");
-  console.log(`📥 Received request for domain suggestions: ${domain}`);
   
   if (!domain) {
       console.warn("⚠️ Domain keyword is missing in the request.");
@@ -707,12 +696,10 @@ app.get("/api/domainname-suggestions", async (req, res) => {
       const maxResults = 25;
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/domainSuggestion?APIKey=${API_KEY}&keyword=${domain}&maxResult=${maxResults}`;
 
-      console.log(`🔍 Fetching domain suggestions from API...`);
       console.log(`🌍 API Request URL: ${url}`);
 
       const response = await axios.get(url, { headers: { "Accept": "application/json" } });
 
-      console.log("✅ API Response Received:");
       console.log(JSON.stringify(response.data, null, 2));
 
       const suggestions = response.data?.registryDomainSuggestionList; 
@@ -722,7 +709,6 @@ app.get("/api/domainname-suggestions", async (req, res) => {
           return res.json({ success: false, message: "No domain suggestions found." });
       }
 
-      console.log(`📌 Found ${suggestions.length} domain suggestions for: ${domain}`);
       suggestions.forEach((suggestion, index) => {
           console.log(`   ${index + 1}. ${suggestion.domainName} - $${suggestion.price}`);
       });
@@ -732,7 +718,6 @@ app.get("/api/domainname-suggestions", async (req, res) => {
       console.error("❌ Error fetching domain suggestions:", error.message);
       res.status(500).json({ success: false, message: "Failed to fetch domain suggestions." });
   }
-  console.log("====================================");
 });
 
 app.get("/api/check-domain", async (req, res) => {
@@ -743,7 +728,6 @@ app.get("/api/check-domain", async (req, res) => {
 
   const result = await checkDomainAvailability(domain);
 
-  console.log("🟢 [CHECK DOMAIN] Backend Response:", JSON.stringify(result, null, 2));
 
   res.json({
     success: true,
@@ -760,9 +744,6 @@ app.get('/api/check-availability', async (req, res) => {
       console.warn("⚠️ Missing domain name in request!");
       return res.status(400).json({ success: false, message: "Domain name is required" });
   }
-
-  console.log(`🔍 Received domain check request for: ${domain}`);
-  console.log("🌍 Sending request to ConnectReseller API...");
 
   try {
       const response = await axios.get(`https://api.connectreseller.com/ConnectReseller/ESHOP/checkdomainavailable`, {
@@ -813,7 +794,6 @@ app.get("/api/register-domain", async (req, res) => {
     usAppPurpose, usNexusCategory 
   } = req.query;
 
-  console.log(`📥 [REGISTER DOMAIN] Request received for: ${WebsiteName}`);
 
   if (!req.session || !req.session.email) {
     console.warn("⚠️ [REGISTER DOMAIN] User not authenticated.");
@@ -839,13 +819,11 @@ app.get("/api/register-domain", async (req, res) => {
     clientId = clientRows[0].clientId;
     resellerId = clientRows[0].ResellerId;
 
-    console.log(`✅ [REGISTER DOMAIN] Retrieved ClientId: ${clientId}, ResellerId: ${resellerId}`);
   } catch (error) {
     console.error("❌ [DATABASE ERROR] Failed to fetch ClientId and ResellerId:", error.message);
     return res.status(500).json({ success: false, message: "Database error while fetching client details." });
   }
 
-  console.log(`🔍 Checking domain availability for: ${WebsiteName}`);
 
   try {
     const domainAvailability = await checkDomainAvailability(WebsiteName);
@@ -867,7 +845,6 @@ app.get("/api/register-domain", async (req, res) => {
 
     console.log(`💰 [DOMAIN PRICE] Total Registration Fee for ${Duration} years: $${totalPrice.toFixed(2)}`);
 
-    console.log(`📡 [BALANCE API] Fetching funds for ResellerId: ${resellerId}`);
 
     let balance = 0;
     try {
@@ -875,7 +852,6 @@ app.get("/api/register-domain", async (req, res) => {
         `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`
       );
 
-      console.log(`✅ [BALANCE API] Response:`, balanceResponse.data);
 
       balance = parseFloat(balanceResponse.data.responseData);
       if (isNaN(balance)) {
@@ -895,7 +871,6 @@ app.get("/api/register-domain", async (req, res) => {
       });
     }
 
-    console.log(`🚀 [DOMAIN REGISTRATION] Initiating for ${WebsiteName}...`);
 
     let apiParams = {
       APIKey: FETCHED_API_KEY,
@@ -963,7 +938,6 @@ app.get('/api/get-transfer-fee', async (req, res) => {
 
   try {
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/tldsync/?APIKey=${FETCHED_API_KEY}`;
-      console.log(`🔍 [GET TRANSFER FEE] Checking TLD Sync API: ${apiUrl}`);
 
       const response = await axios.get(apiUrl);
       const tldData = response.data.find(entry => entry.tld === tld);
@@ -1151,7 +1125,6 @@ app.get('/api/renew-domain', async (req, res) => {
 
       clientId = clientRows[0].clientId;
       resellerId = clientRows[0].ResellerId;
-      console.log(`✅ [DB] Found clientId: ${clientId}, ResellerId: ${resellerId}`);
 
   } catch (error) {
       console.error("❌ [ERROR] Database error while fetching client details:", error);
@@ -1313,10 +1286,8 @@ app.post('/api/domain-suggestions', async (req, res) => {
     let attempts = 0;
 
     while (availableDomains.length < 5 && attempts < 20) {
-      console.log(`Attempt #${attempts + 1} to find available domains...`);
 
       const suggestions = await getDomainSuggestions();
-      console.log('Generated suggestions:', suggestions);
 
       const availableSuggestions = await checkDomainsAvailability(suggestions);
 
@@ -1324,7 +1295,6 @@ app.post('/api/domain-suggestions', async (req, res) => {
 
       if (availableDomains.length < 5) {
         attempts++;
-        console.log(`Not enough available domains found. Attempting to generate new suggestions...`);
       }
     }
 
@@ -1360,7 +1330,6 @@ app.get('/api/domain-info', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Domain name is required in the query parameter.' });
   }
 
-  console.log('[DOMAIN-INFO] 🔍 Fetching information for domain:', domainName);
 
   const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain?APIKey=${FETCHED_API_KEY}&websiteName=${domainName}`;
   console.log('[DOMAIN-INFO] 🌐 API Request URL:', apiUrl);
@@ -1376,7 +1345,6 @@ app.get('/api/domain-info', async (req, res) => {
       console.log('[DOMAIN-INFO] 🌐 API Response:', response.data);
 
       if (response.data.responseMsg.statusCode === 200) {
-          console.log('[DOMAIN-INFO] ✅ Domain information retrieved successfully for:', domainName);
           return res.json({
               success: true,
               answer: `Domain information for ${domainName}:`,
@@ -1402,7 +1370,6 @@ const BASE_URL = "https://api.connectreseller.com/ConnectReseller";
 const API_KEY = FETCHED_API_KEY;
 async function getDomainDetails(domainName) {
   if (domainCache.has(domainName)) {
-      console.log(`✅ Using cached details for ${domainName}`);
       return domainCache.get(domainName);
   }
 
@@ -1453,12 +1420,10 @@ async function getDomainDetails(domainName) {
 //--------------------------------------------------------- Theft Protection ----------------------------------------------------------//
 
 async function manageTheftProtection(domainName, enable) {
-  console.log(`🔐 [${new Date().toISOString()}] Managing theft protection for ${domainName} - ${enable ? 'Enabled' : 'Disabled'}`);
 
   const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails || !domainDetails.domainNameId) {
       const response = { success: false, message: `Domain ${domainName} not found.` };
-      console.log('🚫 Sending response to frontend:', response);
       return response;
   }
 
@@ -1478,7 +1443,6 @@ async function manageTheftProtection(domainName, enable) {
           ...(isSuccess ? {} : { fullResponse: response.data }) 
       };
 
-      console.log('✅ Sending response to frontend:', result);
       return result;
   } catch (error) {
       console.error('❌ Error managing theft protection:', error);
@@ -1488,27 +1452,22 @@ async function manageTheftProtection(domainName, enable) {
           errorDetails: error 
       };
 
-      console.log('🚫 Sending error response to frontend:', errorResponse);
       return errorResponse;
   }
 }
 
 app.get('/api/manage-theft-protection', async (req, res) => {
-  console.log(`📥 [${new Date().toISOString()}] API request received. Query Params:`, req.query);
 
   const { domainName, enable } = req.query;
   if (!domainName || enable === undefined) {
       const errorResponse = { success: false, message: "Missing required parameters: domainName and enable." };
-      console.log('🚫 Sending response to frontend:', errorResponse);
       return res.status(400).json(errorResponse);
   }
 
   const isTheftProtection = enable === 'true'; 
-  console.log(`🔄 Parsed isTheftProtection: ${isTheftProtection} (Type: ${typeof isTheftProtection}, Raw: ${enable})`);
 
   try {
       const result = await manageTheftProtection(domainName, isTheftProtection);
-      console.log('📤 Final Response to Frontend:', result);
       res.json(result);
   } catch (error) {
       console.error('❌ API error:', error);
@@ -1518,7 +1477,6 @@ app.get('/api/manage-theft-protection', async (req, res) => {
           errorDetails: error 
       };
 
-      console.log('🚫 Sending error response to frontend:', errorResponse);
       res.status(500).json(errorResponse);
   }
 });
@@ -1526,11 +1484,9 @@ app.get('/api/manage-theft-protection', async (req, res) => {
 //------------------------------------------------------------ Domain Lock ------------------------------------------------------------//
 
 async function manageDomainLockStatus(domainName, lock) {
-  console.log(`🔒 Managing domain lock for ${domainName}: ${lock ? 'Locked' : 'Unlocked'}`);
 
   const domainDetails = await getDomainDetails(domainName);
   if (!domainDetails || !domainDetails.domainNameId) {
-      console.log(`❌ Domain details not found for: ${domainName}`);
       return { success: false, message: `❌ Domain ${domainName} not found.` };
   }
 
@@ -1545,12 +1501,10 @@ async function manageDomainLockStatus(domainName, lock) {
 
       if (response.data.responseMsg?.statusCode === 200) {
           const successMessage = `✅ Domain ${domainName} has been successfully ${lock ? "locked" : "unlocked"}.`;
-          console.log(`📤 Sending success response to frontend: ${successMessage}`);
           return { success: true, message: successMessage };
       }
 
       const errorMessage = `⚠️ API Error: ${response.data.responseMsg?.message || "Failed to update domain lock status."}`;
-      console.log(`📤 Sending error response to frontend: ${errorMessage}`);
       return { 
           success: false, 
           message: errorMessage, 
@@ -1563,19 +1517,15 @@ async function manageDomainLockStatus(domainName, lock) {
 }
 
 app.get('/api/lock-domain', async (req, res) => {
-  console.log(`📥 Received API request:`, req.query);
 
   const { domainName, lock } = req.query;
   if (!domainName || (lock !== "true" && lock !== "false")) {
-      console.log(`⚠️ Invalid request parameters: domainName=${domainName}, lock=${lock}`);
       return res.status(400).json({ success: false, message: "⚠️ Missing or invalid parameters: domainName and lock." });
   }
 
   const isDomainLocked = lock === 'true';
-  console.log(`🔄 Parsed isDomainLocked: ${isDomainLocked}`);
 
   const result = await manageDomainLockStatus(domainName, isDomainLocked);
-  console.log(`📤 Final response to frontend:`, JSON.stringify(result, null, 2)); 
   return res.json(result);
 });
 
@@ -1603,17 +1553,12 @@ app.get('/api/balance', async (req, res) => {
       }
 
       const resellerId = clientRows[0].ResellerId;
-      console.log('🔍 [BALANCE API] ResellerId fetched from MySQL:', resellerId);
 
-      // 🌍 Prepare and log the API request URL
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`;
       console.log('📡 [BALANCE API] Requesting URL:', url);
 
-      // 💬 Make the API request
       const response = await axios.get(url);
 
-      // ✅ Log API response status and data
-      console.log('✅ [BALANCE API] Response Status:', response.status);
       console.log('📦 [BALANCE API] Full Response Data:', JSON.stringify(response.data, null, 2));
 
       // Check if response status is 0 (success)
@@ -1627,8 +1572,6 @@ app.get('/api/balance', async (req, res) => {
               showInChat: true
           };
 
-          // Log the final response being sent to the frontend
-          console.log('📤 [BALANCE API] Final response sent to frontend:', JSON.stringify(finalResponse, null, 2));
 
           return res.json(finalResponse);
       } else {
@@ -1636,8 +1579,6 @@ app.get('/api/balance', async (req, res) => {
 
           const errorResponse = { success: false, message: 'Failed to fetch balance.' };
 
-          // Log the error response being sent to the frontend
-          console.log('📤 [BALANCE API] Final error response sent to frontend:', JSON.stringify(errorResponse, null, 2));
 
           return res.json(errorResponse);
       }
@@ -1646,12 +1587,10 @@ app.get('/api/balance', async (req, res) => {
 
       const errorResponse = { success: false, message: 'Error fetching balance.' };
 
-      // Log the error response being sent to the frontend
-      console.log('📤 [BALANCE API] Final error response sent to frontend:', JSON.stringify(errorResponse, null, 2));
 
       return res.status(500).json(errorResponse);
   } finally {
-      if (connection) connection.release(); // ✅ Ensure the connection is released
+      if (connection) connection.release(); 
   }
 });
 
@@ -1660,11 +1599,9 @@ app.get('/api/balance', async (req, res) => {
 async function manageDomainSuspension(domainName, suspend) {
   let connection;
   try {
-      console.log('[SUSPEND-DOMAIN] 🔍 Checking for domain:', domainName);
 
       // Normalize domain name
       const domain = domainName.trim().toLowerCase();
-      console.log('[SUSPEND-DOMAIN] ✅ Extracted and Normalized Domain:', domain);
 
       // Get database connection
       connection = await pool.getConnection();
@@ -1681,7 +1618,6 @@ async function manageDomainSuspension(domainName, suspend) {
       }
 
       const domainNameId = rows[0].domainNameId;
-      console.log('[SUSPEND-DOMAIN] ✅ Fetched domainNameId:', domainNameId);
 
       // API URL
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainSuspend?APIKey=${FETCHED_API_KEY}&domainNameId=${domainNameId}&websiteName=${domain}&isDomainSuspend=${suspend}`;
@@ -1717,24 +1653,18 @@ async function manageDomainSuspension(domainName, suspend) {
 
 app.get('/api/suspend-domain', async (req, res) => {
   const { domainName, suspend } = req.query;
-  console.log('[BACKEND] 📥 Received Request:', { domainName, suspend });
 
   // Validate domainName
   if (!domainName) {
       const errorResponse = { success: false, message: "❌ Missing domainName parameter." };
-      console.log('[BACKEND] 📤 Response to Frontend:', errorResponse);
       return res.status(400).json(errorResponse);
   }
 
   // Convert suspend to a proper boolean
   const isSuspend = String(suspend).toLowerCase() === 'true';
-  console.log('[BACKEND] 🔄 Computed isSuspend:', isSuspend);
 
   // Process suspension
   const result = await manageDomainSuspension(domainName, isSuspend);
-
-  // ✅ Log the final response before sending it to the frontend
-  console.log('[BACKEND] 📤 Final Response to Frontend:', result);
 
   return res.json(result);
 });
@@ -1744,18 +1674,14 @@ app.get('/api/suspend-domain', async (req, res) => {
 async function managePrivacyProtection(domainName, enableProtection) {
   let connection;
   try {
-      console.log(`[PRIVACY-PROTECTION] 🛠 Function managePrivacyProtection() called for ${domainName}`);
-      console.log(`[PRIVACY-PROTECTION] 🔄 Received enableProtection: ${enableProtection} (Type: ${typeof enableProtection})`);
+
 
       // Extract domain name
       const domain = domainName.trim();
-      console.log('[PRIVACY-PROTECTION] ✅ Domain extracted:', domain);
 
       // Fetch database connection
       connection = await pool.getConnection();
 
-      // Fetch domainNameId
-      console.log('[PRIVACY-PROTECTION] 🔍 Fetching domainNameId from database...');
       const [rows] = await connection.execute(
           "SELECT domainNameId FROM DomainName WHERE websiteName = ? LIMIT 1",
           [domain]
@@ -1767,11 +1693,9 @@ async function managePrivacyProtection(domainName, enableProtection) {
       }
 
       const domainNameId = rows[0].domainNameId;
-      console.log('[PRIVACY-PROTECTION] ✅ Fetched domainNameId:', domainNameId);
 
       // ✅ Correct API Endpoint
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ManageDomainPrivacyProtection?APIKey=${FETCHED_API_KEY}&domainNameId=${domainNameId}&iswhoisprotected=${enableProtection}`;
-      console.log('[PRIVACY-PROTECTION] 🌐 FINAL API Call:', apiUrl);
 
       // API Request
       const response = await axios.get(apiUrl);
@@ -1801,7 +1725,6 @@ async function managePrivacyProtection(domainName, enableProtection) {
 app.get('/api/manage-privacy-protection', async (req, res) => {
   const { domainName, enable } = req.query;
 
-  console.log('[BACKEND] 🛠 Received API Request with Parameters:', req.query);
 
   if (!domainName) {
       console.error("[BACKEND] ❌ No domain name received.");
@@ -1811,7 +1734,6 @@ app.get('/api/manage-privacy-protection', async (req, res) => {
   // Convert "enabled"/"disabled" to boolean
   const isEnableProtection = enable === 'true';
 
-  console.log(`[BACKEND] 🚀 Calling managePrivacyProtection() for ${domainName}`);
   const result = await managePrivacyProtection(domainName, isEnableProtection);
 
   return res.json(result);
@@ -1821,7 +1743,6 @@ app.get('/api/manage-privacy-protection', async (req, res) => {
 
 async function updateNameServer(domainName, nameServers) {
   try {
-      console.log(`[UPDATE-NS] 🔍 Checking domain: ${domainName}`);
 
       // Establish connection to MySQL database
       const connection = await pool.getConnection();
@@ -1839,7 +1760,6 @@ async function updateNameServer(domainName, nameServers) {
       }
 
       const domainId = rows[0].domainNameId;
-      console.log(`[UPDATE-NS] ✅ Found domainId: ${domainId}`);
 
       // Proceed with name server update if valid
       if (!Array.isArray(nameServers) || nameServers.length === 0 || nameServers.length > 13) {
@@ -1860,22 +1780,16 @@ async function updateNameServer(domainName, nameServers) {
 
       console.log(`[UPDATE-NS] 🌐 API Response:`, response.data);
 
-      // Log what is being sent to the frontend
       const result = {
           success: response.data.responseMsg?.statusCode === 200,
           message: response.data.responseMsg?.message || "Failed to update name servers."
       };
 
-      // Log the final response being sent to frontend
-      console.log(`[UPDATE-NS] 📤 Response Sent to Frontend:`, result);
 
       return result;
   } catch (error) {
       console.error(`[UPDATE-NS] ❌ Error:`, error);
       const errorMessage = { success: false, message: "Error processing name servers update." };
-      
-      // Log the error response sent to the frontend
-      console.log(`[UPDATE-NS] 📤 Error Response Sent to Frontend:`, errorMessage);
       
       return errorMessage;
   }
@@ -1897,9 +1811,6 @@ app.get('/update-name-servers', async (req, res) => {
 
       const result = await updateNameServer(domainName, parsedNameServers);
       
-      // Log what is being sent back to frontend
-      console.log(`[UPDATE-NS] 📤 Response Sent to Frontend:`, result);
-      
       res.json(result);
   } catch (error) {
       console.error(`[UPDATE-NS] ❌ Error processing request:`, error);
@@ -1912,7 +1823,6 @@ app.get('/update-name-servers', async (req, res) => {
 async function addChildNameServer(domainName, ipAddress, hostname) {
   let connection;
   try {
-      console.log(`[ADD-CHILD-NS] 🔍 Checking domain: ${domainName}`);
 
       // Establish connection to MySQL database
       connection = await pool.getConnection();  // No need to use promise().getConnection() since pool is already promise-based
@@ -1935,8 +1845,6 @@ async function addChildNameServer(domainName, ipAddress, hostname) {
           console.warn(`[ADD-CHILD-NS] ⚠️ domainNameId missing for ${domainName}`);
           return { success: false, message: `Invalid domain ID for ${domainName}.` };
       }
-
-      console.log(`[ADD-CHILD-NS] ✅ Found domainNameId: ${domainNameId}`);
 
       // Prepare API Request (Correct Order: ipAddress FIRST, then hostName)
       const apiUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/AddChildNameServer?APIKey=${FETCHED_API_KEY}&domainNameId=${domainNameId}&websiteName=${domainName}&ipAddress=${ipAddress}&hostName=${hostname}`;
@@ -2036,7 +1944,6 @@ app.get('/api/domain-auth-code', async (req, res) => {
   }
 
   const email = req.session.email;
-  console.log(`📧 Fetching clientId and resellerId for email: ${email}`);
 
   let connection;
   try {
@@ -2053,9 +1960,7 @@ app.get('/api/domain-auth-code', async (req, res) => {
       }
 
       const { clientId, ResellerId } = clientRows[0];
-      console.log(`✅ Retrieved clientId: ${clientId}, ResellerId: ${ResellerId}`);
 
-      // 2️⃣ Fetch domainNameId from DomainName table using ResellerId and websiteName
       const [domainRows] = await connection.execute(
           "SELECT domainNameId FROM DomainName WHERE websiteName = ? AND resellerId = ? LIMIT 1",
           [domain, ResellerId]
@@ -2067,7 +1972,6 @@ app.get('/api/domain-auth-code', async (req, res) => {
       }
 
       const domainNameId = domainRows[0].domainNameId;
-      console.log(`✅ Found domainNameId: ${domainNameId}`);
 
       // 3️⃣ Fetch Auth Code using domainNameId
       const authCodeUrl = `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewEPPCode?APIKey=${FETCHED_API_KEY}&domainNameId=${domainNameId}`;
@@ -2098,7 +2002,6 @@ app.get('/api/expiring-domains', async (req, res) => {
       const apiKey = FETCHED_API_KEY;
       const { date } = req.query;
 
-      console.log(`📥 Received Request for Expiring Domains on: ${date}`);
 
       if (!apiKey) {
           console.error("❌ API Key is missing.");
@@ -2110,15 +2013,12 @@ app.get('/api/expiring-domains', async (req, res) => {
           return res.status(400).json({ success: false, message: "Invalid or missing date. Use DD-MM-YYYY format." });
       }
 
-      console.log(`🌐 Fetching domains expiring on ${date}`);
-
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/SearchDomainList?APIKey=${apiKey}&page=1&maxIndex=100&orderby=ExpirationDate&orderType=asc`;
       const response = await axios.get(url);
 
-      console.log("📩 Raw API Response from ConnectReseller:", JSON.stringify(response.data, null, 2));
+      console.log("📩 Raw API Response: ", JSON.stringify(response.data, null, 2));
 
       if (!response.data || !response.data.records) {
-          console.log("⚠️ No records found in API response.");
           return res.json({ success: false, message: "No domains found.", domains: [] });
       }
 
@@ -2140,15 +2040,11 @@ app.get('/api/expiring-domains', async (req, res) => {
               expirationDate: moment(Number(domain.expirationDate)).format("DD-MM-YYYY") // Convert timestamp to formatted date
           }));
 
-      console.log(`✅ Filtered Domains Expiring on ${date}:`, JSON.stringify(domains, null, 2));
-
       const responseData = {
           success: true,
           domains,
           message: domains.length ? "" : `No domains expiring on ${date}.`
       };
-
-      console.log("🚀 Final Response Sent to Frontend:", JSON.stringify(responseData, null, 2));
 
       return res.json(responseData);
 
@@ -2205,8 +2101,6 @@ app.get("/api/tld-suggestions", async (req, res) => {
   try {
       const { websiteName } = req.query;
 
-      console.log(`[INFO] Received request for TLD suggestions - websiteName: ${websiteName}`);
-
       if (!websiteName) {
           console.warn(`[WARN] Missing websiteName parameter`);
           return res.status(400).json({ success: false, message: "websiteName is required" });
@@ -2219,7 +2113,6 @@ app.get("/api/tld-suggestions", async (req, res) => {
       // Make request to ConnectReseller API
       const response = await axios.get(apiUrl);
 
-      console.log(`[INFO] API Response Status: ${response.status}`);
       console.log(`[DEBUG] API Response Data:`, response.data);
 
       // Fix: Extract the correct field from the response
@@ -2310,7 +2203,6 @@ app.post('/api/domain-queries', async (req, res) => {
     const { query, chatHistory } = req.body; // Ensure chatHistory is passed in the request
     if (!query) return res.status(400).json({ success: false, message: 'Query is required.' });
 
-    console.log('Received query:', query);
     const lowerQuery = normalizeQuery(query);
     const domainName = extractDomain(query);
 
@@ -2368,7 +2260,6 @@ app.post('/api/domain-queries', async (req, res) => {
         }
 
         const { clientId, ResellerId } = clientRows[0];
-        console.log(`✅ Retrieved clientId: ${clientId}, ResellerId: ${ResellerId}`);
 
         // 2️⃣ Fetch available funds using resellerId
         const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${ResellerId}`;
@@ -2417,7 +2308,6 @@ app.post('/api/domain-queries', async (req, res) => {
 
 // Check for Domain Information or Specific Registration Date Request
 if (domainName && (lowerQuery.includes('domain information') || lowerQuery.includes('details of the domain') || lowerQuery.includes('when was this domain registered'))) {
-  console.log('[DOMAIN-QUERIES] 📝 Domain information requested for:', domainName);
   try {
       const response = await axios.get(
           `https://api.connectreseller.com/ConnectReseller/ESHOP/ViewDomain`,
@@ -2432,7 +2322,6 @@ if (domainName && (lowerQuery.includes('domain information') || lowerQuery.inclu
       console.log('[DOMAIN-QUERIES] 🌐 API Response:', response.data);
 
       if (response.data.responseMsg.statusCode === 200) {
-          console.log('[DOMAIN-QUERIES] ✅ Successfully fetched domain info for:', domainName);
 
           // Extract domain details
           const domainData = response.data.responseData;
@@ -2496,7 +2385,6 @@ if (lowerQuery.includes("current balance") || lowerQuery.includes("available fun
       }
 
       const resellerId = clientRows[0].ResellerId;
-      console.log("🔍 [BALANCE QUERY] ResellerId fetched from MySQL:", resellerId);
 
       // 🌍 Fetch balance from ConnectReseller API
       const url = `https://api.connectreseller.com/ConnectReseller/ESHOP/availablefund?APIKey=${FETCHED_API_KEY}&resellerId=${resellerId}`;
